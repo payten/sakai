@@ -166,6 +166,7 @@
 <![endif]-->
  
         #parse("/vm/morpheus/includeAnalytics.vm")
+        #parse("/vm/morpheus/includeNotifications.vm")
 
         ${includeExtraHead}
     </body>
