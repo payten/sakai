@@ -54,6 +54,7 @@ import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.IdUsedException;
 import org.sakaiproject.exception.PermissionException;
+import org.sakaiproject.pasystem.api.PASystem;
 import org.sakaiproject.portal.api.Editor;
 import org.sakaiproject.portal.api.PageFilter;
 import org.sakaiproject.portal.api.Portal;
@@ -1856,6 +1857,13 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 			rcontext.put("bottomNavServiceVersion", serviceVersion);
 			rcontext.put("bottomNavSakaiVersion", sakaiVersion);
 			rcontext.put("bottomNavServer", server);
+
+
+			if (ServerConfigurationService.getBoolean("pasystem.enabled", false)) {
+			    PASystem paSystem = (PASystem) ComponentManager.get(PASystem.class);
+			    rcontext.put("paSystemEnabled", true);
+			    rcontext.put("paSystem", paSystem);
+			}
 		}
 	}
 
