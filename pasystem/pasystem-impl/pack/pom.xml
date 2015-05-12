@@ -20,6 +20,11 @@
       <artifactId>pasystem-impl</artifactId>
       <version>11-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+      <version>3.2.1</version>
+    </dependency>
   </dependencies>
   <build>
     <resources/>
