@@ -22,8 +22,22 @@
   </properties>
 
 
+  <build>
+    <resources>
+      <resource>
+	<directory>${basedir}/src/resources</directory>
+      </resource>
+    </resources>
+  </build>
+
   <dependencies>
     
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+      <version>3.2.1</version>
+    </dependency>
+
     <!--  Sakai dependencies -->
     <dependency>
       <groupId>org.sakaiproject.kernel</groupId>
