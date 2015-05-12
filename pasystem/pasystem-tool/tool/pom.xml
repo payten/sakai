@@ -8,19 +8,14 @@
   <groupId>org.sakaiproject.pasystem</groupId>
   <artifactId>pasystem-tool</artifactId>
   
-  <packaging>jar</packaging>
-  
+  <packaging>war</packaging>
+
   <parent>
     <artifactId>pasystem-base</artifactId>
     <groupId>org.sakaiproject.pasystem</groupId>
     <version>11-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
-
-  <properties>
-    <deploy.target/>
-  </properties>
-
 
   <dependencies>
     

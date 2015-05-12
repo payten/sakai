@@ -1,5 +1,7 @@
 package org.sakaiproject.pasystem.impl;
 
+import java.io.IOException;
+
 import org.sakaiproject.pasystem.api.PASystem;
 
 import org.sakaiproject.db.cover.SqlService;
@@ -8,14 +10,22 @@ import org.sakaiproject.component.cover.ServerConfigurationService;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLFeatureNotSupportedException;
+
 import java.util.logging.Logger;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.flywaydb.core.Flyway;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
 import org.sakaiproject.pasystem.impl.banners.BannerAlert;
 import org.sakaiproject.pasystem.impl.banners.BannerSystem;
+import org.sakaiproject.portal.util.PortalUtils;
+
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
 
 
 class PASystemImpl implements PASystem {
@@ -28,7 +38,23 @@ class PASystemImpl implements PASystem {
 
     public void destroy() {}
 
-    public String getFooter() { return "<blink>PANTS</blink>"; }
+    public String getFooter() {
+      Handlebars handlebars = new Handlebars();
+
+      try {
+      Template template = handlebars.compile("templates/footer");
+
+      Map<String, String> context = new HashMap<String, String>();
+
+      context.put("bannerJSON", getActiveBannersJSON());
+      context.put("portalCDNQuery", PortalUtils.getCDNQuery());
+
+      return template.apply(context);
+      } catch (IOException e) {
+        // Log.warn("something clever")
+        return "";
+      }
+    }
 
 
     private void runDBMigration(final String vendor) {
