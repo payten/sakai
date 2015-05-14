@@ -28,13 +28,20 @@ public class DB {
     public static <E> E transaction(String actionDescription, DBAction<E> action) throws DBException {
         try {
             Connection db = SqlService.borrowConnection();
+            DBConnection dbc = new DBConnection(db);
             boolean autocommit = db.getAutoCommit();
 
             try {
                 db.setAutoCommit(false);
                 
-                return action.call(db);
+                return action.call(dbc);
             } finally {
+
+                if (!dbc.wasResolved()) {
+                    LOG.warn("DB Transaction was neither committed nor rolled back.  Committing for you.");
+                    dbc.commit();
+                }
+
                 if (autocommit) {
                     db.setAutoCommit(autocommit);
                 }
