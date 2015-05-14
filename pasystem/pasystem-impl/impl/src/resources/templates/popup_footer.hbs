@@ -1,0 +1,57 @@
+<script type="text/template" id="popup-container-content" data-popup-campaign="{{popupCampaign}}" data-csrf-token="{{sakai_csrf_token}}">
+{{{popupTemplate}}}
+</script>
+
+{{! FIXME: I18N for these}}
+<script type="text/template" id="popup-container-footer">
+<div class="popup-container-footer">
+  <div class="popup-dismiss-button permanent" id="popup-acknowledged-button">Don't show this again</div>
+  <div class="popup-dismiss-button temporary" id="popup-later-button">Remind me later</div>
+</div>
+</script>
+
+<script>
+$(function() {
+
+    var permanentlyAcknowledged = false;
+
+    var popupContent = $('#popup-container-content');
+    var campaign = popupContent.data('popup-campaign');
+    var csrf_token = popupContent.data('csrf-token');
+
+    var acknowledge = function (campaign, acknowledgement) {
+        $.ajax({
+            method: 'POST',
+            url: '/pasystem-tool/popups/acknowledge',
+            data: {
+                campaign: campaign,
+                acknowledgement: acknowledgement,
+                sakai_csrf_token: csrf_token
+            },
+        });
+    };
+
+
+    if (campaign) {
+        $.featherlight(popupContent.html() + $('#popup-container-footer').html(),
+                       {
+                           afterClose : function (event) {
+                               var acknowledgement = permanentlyAcknowledged ? 'permanent' : 'temporary';
+                               acknowledge(campaign, acknowledgement);
+                           },
+                           afterContent : function (event) {
+                               $('#popup-acknowledged-button').on('click', function () {
+                                   permanentlyAcknowledged = true;
+                                   $.featherlight.current().close();
+                               });
+
+                               $('#popup-later-button').on('click', function () {
+                                   permanentlyAcknowledged = false;
+                                   $.featherlight.current().close();
+                               });
+
+                           }
+                       });
+    }
+});
+</script>
