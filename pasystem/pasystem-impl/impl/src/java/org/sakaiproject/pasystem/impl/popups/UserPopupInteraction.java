@@ -4,11 +4,15 @@ import org.sakaiproject.db.cover.SqlService;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 
-import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.sakaiproject.pasystem.impl.common.DB;
+import org.sakaiproject.pasystem.impl.common.DBAction;
+import org.sakaiproject.pasystem.impl.common.DBConnection;
+import org.sakaiproject.pasystem.impl.common.DBResults;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,72 +43,68 @@ public class UserPopupInteraction {
             return Popup.createNullPopup();
         }
 
+        String sql = ("SELECT splash.uuid, content.template_content " +
+
+                      // Find a splash screen
+                      " FROM PASYSTEM_SPLASH_SCREENS splash" +
+
+                      // And its content
+                      " INNER JOIN PASYSTEM_SPLASH_CONTENT content on content.uuid = splash.uuid" +
+
+                      // That is either assigned to the current user, or open to all
+                      " LEFT OUTER JOIN PASYSTEM_SPLASH_ASSIGN assign " +
+                      " on assign.uuid = splash.uuid AND (lower(assign.user_eid) = ? OR assign.open_campaign = 1)" +
+
+                      // Which the current user hasn't yet dismissed
+                      " LEFT OUTER JOIN PASYSTEM_SPLASH_DISMISSED dismissed " +
+                      " on dismissed.uuid = splash.uuid AND lower(dismissed.user_eid) = ?" +
+
+                      " WHERE " +
+
+                      // It's assigned to us
+                      " assign.uuid IS NOT NULL AND " +
+
+                      // And currently active
+                      " splash.start_time <= ? AND " +
+                      " splash.end_time > ? AND " +
+
+                      // And either hasn't been dismissed yet
+                      " (dismissed.state is NULL OR" +
+
+                      // Or was dismissed temporarily, but some time has passed
+                      "  (dismissed.state = 'temporary' AND" +
+                      "   (? - dismissed.dismiss_time) >= ?))");
+
+
         try {
-            Connection db = SqlService.borrowConnection();
+            long now = System.currentTimeMillis();
 
-            try {
-                long now = System.currentTimeMillis();
+            return DB.transaction
+                ("Find a popup for the current user",
+                 new DBAction<Popup>() {
+                     public Popup call(DBConnection db) throws SQLException {
+                         try (DBResults results = db.run(sql)
+                              .param(eid).param(eid)
+                              .param(now).param(now).param(now)
+                              .param(getTemporaryTimeoutMilliseconds())
+                              .executeQuery()) {
+                             for (ResultSet result : results) {
+                                 Clob contentClob = result.getClob(2);
+                                 String templateContent = contentClob.getSubString(1, (int)contentClob.length());
 
-                PreparedStatement ps = db.prepareStatement("SELECT splash.uuid, content.template_content " +
+                                 // Got one!
+                                 return Popup.createPopup(result.getString(1), templateContent);
+                             }
 
-                                                           // Find a splash screen
-                                                           " FROM PASYSTEM_SPLASH_SCREENS splash" +
-
-                                                           // And its content
-                                                           " INNER JOIN PASYSTEM_SPLASH_CONTENT content on content.uuid = splash.uuid" +
-
-                                                           // That is either assigned to the current user, or open to all
-                                                           " LEFT OUTER JOIN PASYSTEM_SPLASH_ASSIGN assign " +
-                                                           " on assign.uuid = splash.uuid AND (lower(assign.user_eid) = ? OR assign.open_campaign = 1)" +
-
-                                                           // Which the current user hasn't yet dismissed
-                                                           " LEFT OUTER JOIN PASYSTEM_SPLASH_DISMISSED dismissed " +
-                                                           " on dismissed.uuid = splash.uuid AND lower(dismissed.user_eid) = ?" +
-
-                                                           " WHERE " +
-
-                                                           // It's assigned to us
-                                                           " assign.uuid IS NOT NULL AND " +
-
-                                                           // And currently active
-                                                           " splash.start_time <= ? AND " +
-                                                           " splash.end_time > ? AND " +
-
-                                                           // And either hasn't been dismissed yet
-                                                           " (dismissed.state is NULL OR" +
-
-                                                           // Or was dismissed temporarily, but some time has passed
-                                                           "  (dismissed.state = 'temporary' AND" +
-                                                           "   (? - dismissed.dismiss_time) >= ?))");
-
-                ps.setString(1, eid);
-                ps.setString(2, eid);
-                ps.setLong(3, now);
-                ps.setLong(4, now);
-                ps.setLong(5, now);
-                ps.setInt(6, getTemporaryTimeoutMilliseconds());
-
-                ResultSet rs = ps.executeQuery();
-
-                try {
-                    if (rs.next()) {
-                        Clob contentClob = rs.getClob(2);
-                        String templateContent = contentClob.getSubString(1, (int)contentClob.length());
-
-                        return Popup.createPopup(rs.getString(1), templateContent);
-                    }
-                } finally {
-                    rs.close();
-                }
-            } finally {
-                SqlService.returnConnection(db);
-            }
+                             // Otherwise, no suitable popup was found
+                             return Popup.createNullPopup();
+                         }
+                     }
+                 });
         } catch (Exception e) {
             LOG.error("Error determining active popup", e);
             return Popup.createNullPopup();
         }
-
-        return Popup.createNullPopup();
     }
 
 
@@ -113,22 +113,21 @@ public class UserPopupInteraction {
             return;
         }
 
-        acknowledgement = ("permanent".equals(acknowledgement) ? "permanent" : "temporary");
+        final String mappedAcknowledgement = ("permanent".equals(acknowledgement) ? "permanent" : "temporary");
 
         try {
-            Connection db = SqlService.borrowConnection();
-            boolean autocommit = db.getAutoCommit();
+            DB.transaction
+                ("Acknowledge campaign for user",
+                 new DBAction<Void>() {
+                     public Void call(DBConnection db) throws SQLException {
+                         deleteExistingEntry(db, campaign);
+                         insertNewEntry(db, campaign, mappedAcknowledgement);
+                         db.commit();
 
-            try {
-
-                db.setAutoCommit(false);
-                deleteExistingEntry(db, campaign);
-                insertNewEntry(db, campaign, acknowledgement);
-                db.commit();
-            } finally {
-                db.setAutoCommit(autocommit);
-                SqlService.returnConnection(db);
-            }
+                         return null;
+                     }
+                 }
+                );
         } catch (Exception e) {
             LOG.error("Error acknowledging popup", e);
         }
@@ -140,35 +139,25 @@ public class UserPopupInteraction {
     }
 
 
-    private boolean deleteExistingEntry(Connection db, String campaign) throws SQLException {
-        PreparedStatement ps = db.prepareStatement("DELETE FROM PASYSTEM_SPLASH_DISMISSED where lower(user_eid) = ? AND campaign = ?");
+    private boolean deleteExistingEntry(DBConnection db, String campaign) throws SQLException {
+        int updatedRows = db.run("DELETE FROM PASYSTEM_SPLASH_DISMISSED where lower(user_eid) = ? AND campaign = ?")
+            .param(eid)
+            .param(campaign)
+            .executeUpdate();
 
-        try {
-            ps.setString(1, eid);
-            ps.setString(2, campaign);
-
-            return (ps.executeUpdate() > 0);
-        } finally {
-            ps.close();
-        }
+        return (updatedRows > 0);
     }
 
 
-    private boolean insertNewEntry(Connection db, String campaign, String acknowledgement) throws SQLException {
-        PreparedStatement ps = db.prepareStatement("INSERT INTO PASYSTEM_SPLASH_DISMISSED (user_eid, campaign, state, dismiss_time) VALUES (?, ?, ?, ?)");
+    private boolean insertNewEntry(DBConnection db, String campaign, String acknowledgement) throws SQLException {
         long now = System.currentTimeMillis();
+        int updatedRows = db.run("INSERT INTO PASYSTEM_SPLASH_DISMISSED (user_eid, campaign, state, dismiss_time) VALUES (?, ?, ?, ?)")
+            .param(eid)
+            .param(campaign)
+            .param(acknowledgement)
+            .param(now)
+            .executeUpdate();
 
-        try {
-
-            ps.setString(1, eid);
-            ps.setString(2, campaign);
-            ps.setString(3, acknowledgement);
-            ps.setLong(4, now);
-
-            return (ps.executeUpdate() > 0);
-        } finally {
-            ps.close();
-        }
+        return (updatedRows > 0);
     }
-
 }
