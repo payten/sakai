@@ -20,6 +20,7 @@
   position: absolute;
   top: 5px;
   right: 0;
+  border-bottom: none;
 }
 .pasystem-banner-alert .pasystem-banner-alert-close:before {
   color: #444;
@@ -37,12 +38,12 @@
   transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 
   position: absolute;
-  width: 160px;
+  width: 180px;
   left: 50%;
   margin-left: -80px;
   background-color: #f7e084;
   color: #000 !important;
-  padding: 3px 0px 4px;
+  padding: 0 !important;
   border-radius: 0 0 4px 4px;
   border: 1px solid #f7e084;
   border-top: none;
@@ -52,7 +53,7 @@
 .pasystem-banner-alert-toggle:before {
   font-family: 'nyu-classes-icons';
   content: '\e019';
-  vertical-align: text-bottom;
+  vertical-align: middle;
   margin-right: 0.25em;
 }
 .pasystem-banner-alert-toggle:hover {
