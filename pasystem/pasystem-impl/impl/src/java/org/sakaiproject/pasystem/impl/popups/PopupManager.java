@@ -17,109 +17,96 @@ import java.io.InputStreamReader;
 import java.util.UUID;
 import java.util.Date;
 
+import org.sakaiproject.pasystem.impl.common.DB;
+import org.sakaiproject.pasystem.impl.common.DBAction;
+
 
 public class PopupManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(PopupManager.class);
 
+
     public String createPopup(String descriptor, Date startDate, Date endDate, InputStream templateContent) {
-        try {
-            Connection db = SqlService.borrowConnection();
-            boolean autocommit = db.getAutoCommit();
+        return DB.transaction
+            ("Popup creation",
+             new DBAction<String>() {
+                 public String call(Connection db) throws SQLException {
+                     String id = insertSplashScreen(db, descriptor, startDate, endDate);
+                     insertSplashContent(db, id, templateContent);
+                     db.commit();
 
-            try {
-                db.setAutoCommit(false);
-                String id = insertSplashScreen(db, descriptor, startDate, endDate);
-                insertSplashContent(db, id, templateContent);
-                db.commit();
-
-                return id;
-            } finally {
-                if (autocommit) {
-                    db.setAutoCommit(autocommit);
-                }
-                SqlService.returnConnection(db);
-            }
-
-        } catch (SQLException e) {
-            throw new PopupException("Popup creation failed", e);
-        }
+                     return id;
+                 }
+             });
     }
 
 
     public void openCampaign(String id) {
-        try {
-            Connection db = SqlService.borrowConnection();
+        DB.transaction
+            ("Mark popup " + id + " as open campaign",
+             new DBAction<Void>() {
+                 public Void call(Connection db) throws SQLException {
+                     String sql = "INSERT INTO PASYSTEM_SPLASH_ASSIGN (uuid, open_campaign) VALUES (?, 1)";
 
-            try {
-                PreparedStatement ps = db.prepareStatement("INSERT INTO PASYSTEM_SPLASH_ASSIGN (uuid, open_campaign) VALUES (?, 1)");
-        
-                ps.setString(1, id);
-                ps.executeUpdate();
-                db.commit();
-            } finally {
-                SqlService.returnConnection(db);
-            }
+                     try (PreparedStatement ps = db.prepareStatement(sql)) {
+                         ps.setString(1, id);
+                         ps.executeUpdate();
+                         db.commit();
 
-        } catch (SQLException e) {
-            throw new PopupException("Failed to mark popup as an open campaign", e);
-        }
+                         return null;
+                     }
+                 }
+             });
     }
 
 
     public boolean hasCampaign(String descriptor) {
-        try {
-            Connection db = SqlService.borrowConnection();
+        return DB.transaction
+            ("Check whether campaign exists for descriptor: " + descriptor,
+             new DBAction<Boolean>() {
+                 public Boolean call(Connection db) throws SQLException {
+                     String sql = "SELECT uuid from PASYSTEM_SPLASH_SCREENS WHERE descriptor = ?";
 
-            PreparedStatement ps = null;
-            ResultSet rs = null;
+                     try (PreparedStatement ps = db.prepareStatement(sql)) {
+                         ps.setString(1, descriptor);
 
-            try {
-                ps = db.prepareStatement("SELECT uuid from PASYSTEM_SPLASH_SCREENS WHERE descriptor = ?");
-                ps.setString(1, descriptor);
+                         try (ResultSet rs = ps.executeQuery()) {
+                             if (rs.next()) {
+                                 return true;
+                             }
 
-                rs = ps.executeQuery();
-
-                if (rs.next()) {
-                    return true;
-                }
-
-                return false;
-            } finally {
-                if (rs != null) { rs.close(); }
-                if (ps != null) { ps.close(); }
-                SqlService.returnConnection(db);
-            }
-
-        } catch (SQLException e) {
-            throw new PopupException("Failed to check for matching campaign", e);
-        }
+                             return false;
+                         }
+                     }
+                 }
+             });
     }
-
-
 
 
     private String insertSplashScreen(Connection db, String descriptor, Date startDate, Date endDate) throws SQLException {
         String id = UUID.randomUUID().toString();
-        PreparedStatement ps = db.prepareStatement("INSERT INTO PASYSTEM_SPLASH_SCREENS (uuid, descriptor, start_time, end_time) VALUES (?, ?, ?, ?)");
-        
-        ps.setString(1, id);
-        ps.setString(2, descriptor);
-        ps.setLong(3, startDate.getTime());
-        ps.setLong(4, endDate.getTime());
+        String sql = "INSERT INTO PASYSTEM_SPLASH_SCREENS (uuid, descriptor, start_time, end_time) VALUES (?, ?, ?, ?)";
 
-        ps.executeUpdate();
+        try (PreparedStatement ps = db.prepareStatement(sql)) {
+            ps.setString(1, id);
+            ps.setString(2, descriptor);
+            ps.setLong(3, startDate.getTime());
+            ps.setLong(4, endDate.getTime());
 
+            ps.executeUpdate();
+        }
         return id;
     }
 
 
     private void insertSplashContent(Connection db, String id, InputStream templateContent) throws SQLException {
-        PreparedStatement ps = db.prepareStatement("INSERT INTO PASYSTEM_SPLASH_CONTENT (uuid, template_content) VALUES (?, ?)");
+        String sql = "INSERT INTO PASYSTEM_SPLASH_CONTENT (uuid, template_content) VALUES (?, ?)";
+        try (PreparedStatement ps = db.prepareStatement(sql)) {
         
-        ps.setString(1, id);
-        ps.setClob(2, new InputStreamReader(templateContent));
+            ps.setString(1, id);
+            ps.setClob(2, new InputStreamReader(templateContent));
 
-        ps.executeUpdate();
+            ps.executeUpdate();
+        }
     }
 }
