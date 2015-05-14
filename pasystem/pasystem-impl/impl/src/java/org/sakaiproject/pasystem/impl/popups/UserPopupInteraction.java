@@ -1,9 +1,10 @@
-package org.sakaiproject.pasystem.popups.impl;
+package org.sakaiproject.pasystem.impl.popups;
 
 import org.sakaiproject.db.cover.SqlService;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,19 +13,16 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.sakaiproject.pasystem.popups.api.Popup;
-import org.sakaiproject.pasystem.popups.api.PopupManager;
 
+public class UserPopupInteraction {
 
-public class DBPopupManager implements PopupManager {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DBPopupManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserPopupInteraction.class);
 
     private User user;
     private String eid;
 
 
-    public DBPopupManager(User currentUser) {
+    public UserPopupInteraction(User currentUser) {
         user = currentUser;
 
         if (user != null && user.getEid() != null) {
@@ -38,7 +36,7 @@ public class DBPopupManager implements PopupManager {
     public Popup getPopup() {
         if (user == null) {
             // No user.
-            return PopupImpl.createNullPopup();
+            return Popup.createNullPopup();
         }
 
         try {
@@ -47,23 +45,26 @@ public class DBPopupManager implements PopupManager {
             try {
                 long now = System.currentTimeMillis();
 
-                PreparedStatement ps = db.prepareStatement("SELECT splash.campaign, splash.template_name " +
+                PreparedStatement ps = db.prepareStatement("SELECT splash.uuid, content.template_content " +
 
                                                            // Find a splash screen
-                                                           " FROM NYU_T_SPLASH_SCREENS splash" +
+                                                           " FROM PASYSTEM_SPLASH_SCREENS splash" +
+
+                                                           // And its content
+                                                           " INNER JOIN PASYSTEM_SPLASH_CONTENT content on content.uuid = splash.uuid" +
 
                                                            // That is either assigned to the current user, or open to all
-                                                           " LEFT OUTER JOIN NYU_T_SPLASH_ASSIGN assign " +
-                                                           " on assign.campaign = splash.campaign AND (lower(assign.netid) = ? OR assign.open_campaign = 1)" +
+                                                           " LEFT OUTER JOIN PASYSTEM_SPLASH_ASSIGN assign " +
+                                                           " on assign.uuid = splash.uuid AND (lower(assign.user_eid) = ? OR assign.open_campaign = 1)" +
 
                                                            // Which the current user hasn't yet dismissed
-                                                           " LEFT OUTER JOIN NYU_T_SPLASH_DISMISSED dismissed " +
-                                                           " on dismissed.campaign = splash.campaign AND lower(dismissed.netid) = ?" +
+                                                           " LEFT OUTER JOIN PASYSTEM_SPLASH_DISMISSED dismissed " +
+                                                           " on dismissed.uuid = splash.uuid AND lower(dismissed.user_eid) = ?" +
 
                                                            " WHERE " +
 
                                                            // It's assigned to us
-                                                           " assign.campaign IS NOT NULL AND " +
+                                                           " assign.uuid IS NOT NULL AND " +
 
                                                            // And currently active
                                                            " splash.start_time <= ? AND " +
@@ -87,7 +88,10 @@ public class DBPopupManager implements PopupManager {
 
                 try {
                     if (rs.next()) {
-                        return PopupImpl.createPopup(rs.getString(1), rs.getString(2));
+                        Clob contentClob = rs.getClob(2);
+                        String templateContent = contentClob.getSubString(1, (int)contentClob.length());
+
+                        return Popup.createPopup(rs.getString(1), templateContent);
                     }
                 } finally {
                     rs.close();
@@ -97,10 +101,10 @@ public class DBPopupManager implements PopupManager {
             }
         } catch (Exception e) {
             LOG.error("Error determining active popup", e);
-            return PopupImpl.createNullPopup();
+            return Popup.createNullPopup();
         }
 
-        return PopupImpl.createNullPopup();
+        return Popup.createNullPopup();
     }
 
 
@@ -137,7 +141,7 @@ public class DBPopupManager implements PopupManager {
 
 
     private boolean deleteExistingEntry(Connection db, String campaign) throws SQLException {
-        PreparedStatement ps = db.prepareStatement("DELETE FROM NYU_T_SPLASH_DISMISSED where lower(netid) = ? AND campaign = ?");
+        PreparedStatement ps = db.prepareStatement("DELETE FROM PASYSTEM_SPLASH_DISMISSED where lower(user_eid) = ? AND campaign = ?");
 
         try {
             ps.setString(1, eid);
@@ -151,7 +155,7 @@ public class DBPopupManager implements PopupManager {
 
 
     private boolean insertNewEntry(Connection db, String campaign, String acknowledgement) throws SQLException {
-        PreparedStatement ps = db.prepareStatement("INSERT INTO NYU_T_SPLASH_DISMISSED (netid, campaign, state, dismiss_time) VALUES (?, ?, ?, ?)");
+        PreparedStatement ps = db.prepareStatement("INSERT INTO PASYSTEM_SPLASH_DISMISSED (user_eid, campaign, state, dismiss_time) VALUES (?, ?, ?, ?)");
         long now = System.currentTimeMillis();
 
         try {
