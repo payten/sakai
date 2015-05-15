@@ -8,10 +8,12 @@ import java.sql.SQLException;
 
 public class DBPreparedStatement {
 
+    private DBConnection dbConnection;
     private PreparedStatement preparedStatement;
     private int paramCount;
 
-    public DBPreparedStatement(PreparedStatement preparedStatement) {
+    public DBPreparedStatement(PreparedStatement preparedStatement, DBConnection dbc) {
+        this.dbConnection = dbc;
         this.preparedStatement = preparedStatement;
         this.paramCount = 1;
     }
@@ -58,6 +60,7 @@ public class DBPreparedStatement {
 
     public int executeUpdate() throws SQLException {
         try {
+            dbConnection.markAsDirty();
             return preparedStatement.executeUpdate();
         } finally {
             cleanup();
