@@ -3,7 +3,7 @@ package org.sakaiproject.pasystem.impl.banners;
 import java.util.Arrays;
 import java.util.Date;
 
-public class BannerAlert {
+public class Banner {
   public String uuid;
   public String message;
 
@@ -13,7 +13,7 @@ public class BannerAlert {
   private long activeFrom;
   private long activeUntil;
 
-  public BannerAlert(String uuid, String message, String hosts, int dismissible, int active, long activeFrom, long activeUntil) {
+  public Banner(String uuid, String message, String hosts, int dismissible, int active, long activeFrom, long activeUntil) {
     this.uuid = uuid;
     this.message = message;
     this.hosts = hosts;

@@ -33,44 +33,6 @@ public class BannerSystem {
     }
   }
 
-  public List<BannerAlert> getActiveBannerAlertsForServer(String serverId) {
-    List<BannerAlert> alerts = new ArrayList<BannerAlert>();
-
-    try {
-      Connection db = sqlService.borrowConnection();
-
-      try {
-        PreparedStatement ps = db.prepareStatement("select * from PASYSTEM_BANNER_ALERT where ACTIVE = 1");
-
-        ResultSet rs = ps.executeQuery();
-        try {
-          while (rs.next()) {
-            BannerAlert alert = new BannerAlert(rs.getString("uuid"),
-                                                rs.getString("message"),
-                                                rs.getString("hosts"),
-                                                rs.getInt("dismissible"),
-                                                rs.getInt("active"),
-                                                rs.getLong("active_from"),
-                                                rs.getLong("active_until"));
-
-            if (alert.isActiveForHost(serverId)) {
-              alerts.add(alert);
-            }
-          }
-        } finally {
-          rs.close();
-        }
-      } finally {
-        sqlService.returnConnection(db);
-      }
-    } catch (SQLException e) {
-      System.err.println(e);
-    }
-
-    return alerts;
-  }
-
-
   public String getFooter() {
     Handlebars handlebars = new Handlebars();
 
@@ -89,11 +51,10 @@ public class BannerSystem {
   }
   
   private String getActiveBannersJSON() {
-    BannerSystem bannerSystem = new BannerSystem();
     JSONArray alerts = new JSONArray();
     String serverId = ServerConfigurationService.getString("serverId","localhost");
 
-    for (BannerAlert alert : bannerSystem.getActiveBannerAlertsForServer(serverId)) {
+    for (Banner alert : new BannerManager().getActiveAlertsForServer(serverId)) {
       JSONObject alertData = new JSONObject();
       alertData.put("id", alert.uuid);
       alertData.put("message", alert.message);
@@ -103,6 +64,4 @@ public class BannerSystem {
 
     return alerts.toJSONString();
   }
-
-
 }
