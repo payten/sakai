@@ -10,4 +10,8 @@
 			singleton="true">
 	</bean>
 
+	<bean parent="org.sakaiproject.entitybroker.entityprovider.AbstractEntityProvider" 
+	      class="org.sakaiproject.pasystem.impl.rest.PASystemEntityProvider">
+	</bean>
+
 </beans>
