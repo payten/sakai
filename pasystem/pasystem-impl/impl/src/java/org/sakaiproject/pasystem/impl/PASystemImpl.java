@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import org.sakaiproject.pasystem.api.PASystem;
 
-import org.sakaiproject.db.cover.SqlService;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 
 import javax.sql.DataSource;
@@ -19,7 +18,6 @@ import java.util.HashMap;
 
 import org.flywaydb.core.Flyway;
 
-import org.sakaiproject.pasystem.impl.banners.BannerAlert;
 import org.sakaiproject.pasystem.impl.banners.BannerSystem;
 import org.sakaiproject.portal.util.PortalUtils;
 
