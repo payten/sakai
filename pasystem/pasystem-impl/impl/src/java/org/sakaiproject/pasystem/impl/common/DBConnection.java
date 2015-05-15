@@ -5,11 +5,15 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DBConnection {
+
     private Connection connection;
     private boolean resolved;
+    private boolean dirty;
+
 
     public DBConnection(Connection connection) {
         this.connection = connection;
+        this.dirty = false;
         this.resolved = false;
     }
 
@@ -23,8 +27,16 @@ public class DBConnection {
         resolved = true;
     }
 
+    public void markAsDirty() {
+        this.dirty = true;
+    }
+
     public boolean wasResolved() {
-        return resolved;
+        if (dirty) {
+            return resolved;
+        } else {
+            return true;
+        }
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {
@@ -32,6 +44,6 @@ public class DBConnection {
     }
 
     public DBPreparedStatement run(String sql) throws SQLException {
-        return new DBPreparedStatement(connection.prepareStatement(sql));
+        return new DBPreparedStatement(connection.prepareStatement(sql), this);
     }
 }

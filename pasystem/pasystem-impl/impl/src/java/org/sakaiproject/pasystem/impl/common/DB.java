@@ -38,7 +38,8 @@ public class DB {
             } finally {
 
                 if (!dbc.wasResolved()) {
-                    LOG.warn("DB Transaction was neither committed nor rolled back.  Committing for you.");
+                    LOG.warn("**************\nDB Transaction was neither committed nor rolled back.  Committing for you.");
+                    new Throwable().printStackTrace();
                     dbc.commit();
                 }
 
