@@ -27,6 +27,8 @@ import org.sakaiproject.pasystem.impl.popups.PopupSystem;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 
+import org.sakaiproject.authz.cover.FunctionManager;
+
 
 class PASystemImpl implements PASystem {
 
@@ -34,6 +36,9 @@ class PASystemImpl implements PASystem {
         if (ServerConfigurationService.getBoolean("auto.ddl", false) || ServerConfigurationService.getBoolean("pasystem.auto.ddl", false)) {
             runDBMigration(ServerConfigurationService.getString("vendor@org.sakaiproject.db.api.SqlService"));
         }
+
+        FunctionManager.registerFunction("pasystem.manage");
+
 
         PopupSystem popupSystem = new PopupSystem();
         if (!popupSystem.hasCampaign("goat-warning")) {
