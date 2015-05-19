@@ -43,21 +43,21 @@ public class UserPopupInteraction {
             return Popup.createNullPopup();
         }
 
-        String sql = ("SELECT splash.uuid, content.template_content " +
+        String sql = ("SELECT popup.uuid, content.template_content " +
 
-                      // Find a splash screen
-                      " FROM PASYSTEM_SPLASH_SCREENS splash" +
+                      // Find a popup screen
+                      " FROM PASYSTEM_POPUP_SCREENS popup" +
 
                       // And its content
-                      " INNER JOIN PASYSTEM_SPLASH_CONTENT content on content.uuid = splash.uuid" +
+                      " INNER JOIN PASYSTEM_POPUP_CONTENT content on content.uuid = popup.uuid" +
 
                       // That is either assigned to the current user, or open to all
-                      " LEFT OUTER JOIN PASYSTEM_SPLASH_ASSIGN assign " +
-                      " on assign.uuid = splash.uuid AND (lower(assign.user_eid) = ? OR assign.open_campaign = 1)" +
+                      " LEFT OUTER JOIN PASYSTEM_POPUP_ASSIGN assign " +
+                      " on assign.uuid = popup.uuid AND (lower(assign.user_eid) = ? OR assign.open_campaign = 1)" +
 
                       // Which the current user hasn't yet dismissed
-                      " LEFT OUTER JOIN PASYSTEM_SPLASH_DISMISSED dismissed " +
-                      " on dismissed.uuid = splash.uuid AND lower(dismissed.user_eid) = ?" +
+                      " LEFT OUTER JOIN PASYSTEM_POPUP_DISMISSED dismissed " +
+                      " on dismissed.uuid = popup.uuid AND lower(dismissed.user_eid) = ?" +
 
                       " WHERE " +
 
@@ -65,8 +65,8 @@ public class UserPopupInteraction {
                       " assign.uuid IS NOT NULL AND " +
 
                       // And currently active
-                      " splash.start_time <= ? AND " +
-                      " splash.end_time > ? AND " +
+                      " popup.start_time <= ? AND " +
+                      " popup.end_time > ? AND " +
 
                       // And either hasn't been dismissed yet
                       " (dismissed.state is NULL OR" +
@@ -140,7 +140,7 @@ public class UserPopupInteraction {
 
 
     private boolean deleteExistingEntry(DBConnection db, String campaign) throws SQLException {
-        int updatedRows = db.run("DELETE FROM PASYSTEM_SPLASH_DISMISSED where lower(user_eid) = ? AND campaign = ?")
+        int updatedRows = db.run("DELETE FROM PASYSTEM_POPUP_DISMISSED where lower(user_eid) = ? AND campaign = ?")
             .param(eid)
             .param(campaign)
             .executeUpdate();
@@ -151,7 +151,7 @@ public class UserPopupInteraction {
 
     private boolean insertNewEntry(DBConnection db, String campaign, String acknowledgement) throws SQLException {
         long now = System.currentTimeMillis();
-        int updatedRows = db.run("INSERT INTO PASYSTEM_SPLASH_DISMISSED (user_eid, campaign, state, dismiss_time) VALUES (?, ?, ?, ?)")
+        int updatedRows = db.run("INSERT INTO PASYSTEM_POPUP_DISMISSED (user_eid, campaign, state, dismiss_time) VALUES (?, ?, ?, ?)")
             .param(eid)
             .param(campaign)
             .param(acknowledgement)

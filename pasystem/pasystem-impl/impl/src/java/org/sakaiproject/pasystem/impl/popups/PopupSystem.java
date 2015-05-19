@@ -22,7 +22,7 @@ import com.github.jknack.handlebars.Template;
 
 public class PopupSystem {
 
-    private final String SPLASH_SCREEN_SHOWN = "pasystem.splash.screen.shown";
+    private final String POPUP_SCREEN_SHOWN = "pasystem.popup.screen.shown";
 
     private static final Logger LOG = LoggerFactory.getLogger(PopupSystem.class);
 
@@ -30,7 +30,7 @@ public class PopupSystem {
         Session session = SessionManager.getCurrentSession();
         User currentUser = UserDirectoryService.getCurrentUser();
 
-        if (currentUser == null || session.getAttribute(SPLASH_SCREEN_SHOWN) != null) {
+        if (currentUser == null || session.getAttribute(POPUP_SCREEN_SHOWN) != null) {
             return "";
         }
 
@@ -47,7 +47,7 @@ public class PopupSystem {
 
             if (currentUser.getEid() != null) {
                 // Delivered!
-                session.setAttribute(SPLASH_SCREEN_SHOWN, "true");
+                session.setAttribute(POPUP_SCREEN_SHOWN, "true");
             }
 
             return generateFooter(context);

@@ -1,6 +1,6 @@
--- Splash screens
+-- Popup screens
 
-CREATE TABLE `pasystem_splash_screens` (
+CREATE TABLE `pasystem_popup_screens` (
   `uuid` VARCHAR(255) PRIMARY KEY,
   `descriptor` VARCHAR(255),
   `start_time` BIGINT,
@@ -9,27 +9,27 @@ CREATE TABLE `pasystem_splash_screens` (
   INDEX `descriptor` (`descriptor`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `pasystem_splash_content` (
+CREATE TABLE `pasystem_popup_content` (
   `uuid` varchar(255) PRIMARY KEY,
   `template_content` MEDIUMTEXT,
-  FOREIGN KEY (uuid) REFERENCES pasystem_splash_screens(uuid)
+  FOREIGN KEY (uuid) REFERENCES pasystem_popup_screens(uuid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `pasystem_splash_assign` (
+CREATE TABLE `pasystem_popup_assign` (
   `uuid` varchar(255),
   `user_eid` varchar(255) DEFAULT NULL,
   `open_campaign` int(11) DEFAULT NULL,
-   FOREIGN KEY (uuid) REFERENCES pasystem_splash_screens(uuid),
+   FOREIGN KEY (uuid) REFERENCES pasystem_popup_screens(uuid),
    INDEX `user_eid` (`user_eid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `pasystem_splash_dismissed` (
+CREATE TABLE `pasystem_popup_dismissed` (
   `uuid` varchar(255),
   `user_eid` varchar(255) DEFAULT NULL,
   `state` varchar(50) DEFAULT NULL,
   `dismiss_time` BIGINT,
-   UNIQUE KEY `unique_splash_dismissed` (`user_eid`,`state`, `uuid`),
-   FOREIGN KEY (uuid) REFERENCES pasystem_splash_screens(uuid),
+   UNIQUE KEY `unique_popup_dismissed` (`user_eid`,`state`, `uuid`),
+   FOREIGN KEY (uuid) REFERENCES pasystem_popup_screens(uuid),
    INDEX `user_eid` (`user_eid`),
    INDEX `state` (`state`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
