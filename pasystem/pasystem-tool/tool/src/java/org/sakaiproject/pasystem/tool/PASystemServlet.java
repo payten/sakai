@@ -111,7 +111,7 @@ public class PASystemServlet extends HttpServlet {
 
         handlebars.registerHelper("show-time", new Helper<Object>() {
                 public CharSequence apply(final Object context, final Options options) {
-                    long utcTime = options.param(0);
+                    long utcTime = options.param(0) == null ? 0 : options.param(0);
 
                     if (utcTime == 0) {
                         return "-";
@@ -138,6 +138,21 @@ public class PASystemServlet extends HttpServlet {
                     }
                 }
             });
+
+
+        handlebars.registerHelper("newURL", new Helper<Object>() {
+            public CharSequence apply(final Object context, final Options options) {
+                String type = options.param(0);
+                String action = options.param(1);
+
+
+                try {
+                    return new URL(toolBaseURL, type + "/" + action).toString();
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
 
 
         return handlebars;

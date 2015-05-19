@@ -45,20 +45,20 @@ public class BannerStorage implements Banners {
 
   public Optional<Banner> getForId(final String uuid) {
     return DB.transaction
-      ("Find a popup by uuid",
+      ("Find a banner by uuid",
        new DBAction<Optional<Banner>>() {
          public Optional<Banner> call(DBConnection db) throws SQLException {
-           try (DBResults results = db.run("SELECT * from PASYSTEM_POPUP_SCREENS WHERE UUID = ?")
+           try (DBResults results = db.run("SELECT * from PASYSTEM_BANNER_ALERT WHERE UUID = ?")
                 .param(uuid)
                 .executeQuery()) {
              for (ResultSet result : results) {
-               Optional.of(new BannerImpl(result.getString("uuid"),
-                                          result.getString("message"),
-                                          result.getString("hosts"),
-                                          result.getInt("dismissible"),
-                                          result.getInt("active"),
-                                          result.getLong("start_time"),
-                                          result.getLong("end_time")));
+               return Optional.of(new BannerImpl(result.getString("uuid"),
+                                                 result.getString("message"),
+                                                 result.getString("hosts"),
+                                                 result.getInt("dismissible"),
+                                                 result.getInt("active"),
+                                                 result.getLong("start_time"),
+                                                 result.getLong("end_time")));
              }
 
              return Optional.empty();
