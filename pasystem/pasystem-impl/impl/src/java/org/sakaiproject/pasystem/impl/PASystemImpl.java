@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.sakaiproject.pasystem.api.PASystem;
+import org.sakaiproject.pasystem.api.Popups;
+import org.sakaiproject.pasystem.api.Banners;
 
 import org.sakaiproject.component.cover.ServerConfigurationService;
 
@@ -18,16 +20,15 @@ import java.util.HashMap;
 
 import org.flywaydb.core.Flyway;
 
-import org.sakaiproject.pasystem.impl.banners.BannerSystem;
 import org.sakaiproject.portal.util.PortalUtils;
-
-import org.sakaiproject.pasystem.impl.popups.PopupSystem;
-
 
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 
 import org.sakaiproject.authz.cover.FunctionManager;
+
+import org.sakaiproject.pasystem.impl.banners.BannerManager;
+import org.sakaiproject.pasystem.impl.popups.PopupManager;
 
 
 class PASystemImpl implements PASystem {
@@ -40,11 +41,11 @@ class PASystemImpl implements PASystem {
         FunctionManager.registerFunction("pasystem.manage");
 
 
-        PopupSystem popupSystem = new PopupSystem();
+        Popups popupSystem = getPopups();
         if (!popupSystem.hasCampaign("goat-warning")) {
           try {
-            String id = popupSystem.createPopup("goat-warning", new Date(0), new Date(System.currentTimeMillis() + Integer.MAX_VALUE),
-                                                new FileInputStream("/var/tmp/custom-templates/goatwarning.vm"));
+              String id = popupSystem.createCampaign("goat-warning", new Date(0), new Date(System.currentTimeMillis() + Integer.MAX_VALUE),
+                                                     new FileInputStream("/var/tmp/custom-templates/goatwarning.vm"));
 
             popupSystem.openCampaign(id);
 
@@ -74,13 +75,20 @@ class PASystemImpl implements PASystem {
         return "";
       }
 
-      BannerSystem bannerSystem = new BannerSystem();
-      result.append(bannerSystem.getFooter());
-
-      PopupSystem popupSystem = new PopupSystem();
-      result.append(popupSystem.getFooter());
+      result.append(getBanners().getFooter());
+      result.append(getPopups().getFooter());
 
       return result.toString();
+    }
+
+
+    public Banners getBanners() {
+        return new BannerManager();
+    }
+
+
+    public Popups getPopups() {
+        return new PopupManager();
     }
 
 

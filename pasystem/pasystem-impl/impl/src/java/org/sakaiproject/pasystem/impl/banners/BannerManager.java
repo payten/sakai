@@ -1,22 +1,71 @@
 package org.sakaiproject.pasystem.impl.banners;
 
+import java.io.IOException;
+
 import java.util.UUID;
 import java.util.Date;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
+
+import org.sakaiproject.component.cover.ServerConfigurationService;
 
 import org.sakaiproject.pasystem.impl.common.DB;
 import org.sakaiproject.pasystem.impl.common.DBAction;
 import org.sakaiproject.pasystem.impl.common.DBConnection;
 import org.sakaiproject.pasystem.impl.common.DBResults;
 
+import org.sakaiproject.pasystem.api.Banners;
+import org.sakaiproject.pasystem.api.Banner;
 
-public class BannerManager {
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
+
+
+
+public class BannerManager implements Banners {
   
+  public String getFooter() {
+    Handlebars handlebars = new Handlebars();
+
+    try {
+      Template template = handlebars.compile("templates/banner_footer");
+
+      Map<String, String> context = new HashMap<String, String>();
+
+      context.put("bannerJSON", getActiveBannersJSON());
+
+      return template.apply(context);
+    } catch (IOException e) {
+      // Log.warn("something clever")
+      return "";
+    }
+  }
+  
+  private String getActiveBannersJSON() {
+    JSONArray alerts = new JSONArray();
+    String serverId = ServerConfigurationService.getString("serverId","localhost");
+
+    for (Banner alert : new BannerManager().getActiveAlertsForServer(serverId)) {
+      JSONObject alertData = new JSONObject();
+      alertData.put("id", alert.getUuid());
+      alertData.put("message", alert.getMessage());
+      alertData.put("dismissible", alert.isDismissible());
+      alerts.add(alertData);
+    }
+
+    return alerts.toJSONString();
+  }
+
+
   public List<Banner> getActiveAlertsForServer(String serverId) {
     return DB.transaction
       ("Find all active alerts for the server: " + serverId,
@@ -26,13 +75,13 @@ public class BannerManager {
           try (DBResults results = db.run("SELECT * from PASYSTEM_BANNER_ALERT where ACTIVE = 1")
                                      .executeQuery()) {
             for (ResultSet result : results) {
-              Banner alert = new Banner(result.getString("uuid"),
-                                        result.getString("message"),
-                                        result.getString("hosts"),
-                                        result.getInt("dismissible"),
-                                        result.getInt("active"),
-                                        result.getLong("active_from"),
-                                        result.getLong("active_until"));
+              Banner alert = new BannerImpl(result.getString("uuid"),
+                                            result.getString("message"),
+                                            result.getString("hosts"),
+                                            result.getInt("dismissible"),
+                                            result.getInt("active"),
+                                            result.getLong("active_from"),
+                                            result.getLong("active_until"));
   
               if (alert.isActiveForHost(serverId)) {
                 alerts.add(alert);
