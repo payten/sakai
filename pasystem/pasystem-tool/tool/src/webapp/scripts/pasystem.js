@@ -19,7 +19,7 @@ PASystemBannerAlerts.prototype.setupAlertBannerToggle = function() {
 
   self.$toggle = $($("#pasystemBannerAlertsToggleTemplate").html());
   self.$toggle.hide();
-  $(".Mrphs-portalWrapper").prepend(self.$toggle);
+  $("#loginLinks").prepend(self.$toggle);
 
   self.$toggle.on("click", function(event) {
     event.preventDefault();
@@ -70,6 +70,9 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
     return self.clearBannerAlerts();
   }
 
+  self.$container = $("<div>").addClass("pasystem-banner-alerts");
+  $(document.body).prepend(self.$container);
+
   var dismissedAlertIds = [];
   var activeAlertIds = [];
 
@@ -88,7 +91,7 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
           $alert.find(".pasystem-banner-alert-close").remove();
         }
         $alert.hide();
-        $(document.body).prepend($alert);
+        self.$container.append($alert);
     }
 
     if (self.hasAlertBeenDismissed(alertId)) {
