@@ -1,7 +1,7 @@
 <section class="pasystem-section">
   <h3>Banners</h3>
 
-  <table class="listHier lines">
+  <table class="pasystem-table table table-striped table-hover table-condensed">
     <thead>
       <tr>
         <th>Message</th>
@@ -12,6 +12,17 @@
       </tr>
     </thead>
     <tbody>
+      {{#each banners}}
+      <tr>
+        <td>{{this.message}}</td>
+        <td>{{this.active}}</td>
+        <td>{{show-time this this.startTime}}</td>
+        <td>{{show-time this this.endTime}}</td>    
+        <td class="actions">
+            <a href="{{{actionURL this 'banners' this.uuid "edit"}}}" class="btn btn-primary btn-sm">Edit</a>
+        </td>
+      </tr>
+      {{/each}}
     </tbody>
   </table>
 </section>
@@ -19,7 +30,7 @@
 <section class="pasystem-section">
   <h3>Popups</h3>
 
-  <table class="listHier lines">
+  <table class="pasystem-table table table-striped table-hover table-condensed">
     <thead>
       <tr>
         <th>Description</th>
@@ -30,6 +41,17 @@
       </tr>
     </thead>
     <tbody>
+      {{#each popups}}
+      <tr>
+        <td>{{this.descriptor}}</td>
+        <td>{{this.active}}</td>
+        <td>{{show-time this this.startTime}}</td>
+        <td>{{show-time this this.endTime}}</td>    
+        <td class="actions">
+            <a href="{{{actionURL this 'popups' this.uuid "edit"}}}" class="btn btn-primary btn-sm">Edit</a>
+        </td>
+      </tr>
+      {{/each}}
     </tbody>
   </table>
 </section>

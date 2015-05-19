@@ -17,7 +17,7 @@ PASystemBannerAlerts.prototype.clearBannerAlerts = function() {
 PASystemBannerAlerts.prototype.setupAlertBannerToggle = function() {
   var self = this;
 
-  self.$toggle = $($("#pasystemBannerAlertsToggleTemplate").html());
+  self.$toggle = $($("#pasystemBannerAlertsToggleTemplate").html().trim());
   self.$toggle.hide();
   $("#loginLinks").prepend(self.$toggle);
 
@@ -85,7 +85,7 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
     // if alert is not in the DOM.. add it.
     var $alert = $("#"+alertId);
     if ($alert.length == 0) {
-        $alert = $($("#pasystemBannerAlertsTemplate").html()).attr("id", alertId);
+        $alert = $($("#pasystemBannerAlertsTemplate").html().trim()).attr("id", alertId);
         $alert.find(".pasystem-banner-alert-message").html(alert.message);
         if (!alert.dismissible) {
           $alert.find(".pasystem-banner-alert-close").remove();
