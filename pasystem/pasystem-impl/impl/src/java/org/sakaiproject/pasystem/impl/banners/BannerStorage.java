@@ -1,71 +1,21 @@
 package org.sakaiproject.pasystem.impl.banners;
 
-import java.io.IOException;
-
-import java.util.UUID;
-import java.util.Date;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.ArrayList;
-
-import org.sakaiproject.component.cover.ServerConfigurationService;
-
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import org.sakaiproject.pasystem.api.Banner;
+import org.sakaiproject.pasystem.api.Banners;
 import org.sakaiproject.pasystem.impl.common.DB;
 import org.sakaiproject.pasystem.impl.common.DBAction;
 import org.sakaiproject.pasystem.impl.common.DBConnection;
 import org.sakaiproject.pasystem.impl.common.DBResults;
 
-import org.sakaiproject.pasystem.api.Banners;
-import org.sakaiproject.pasystem.api.Banner;
 
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-
-
-
-public class BannerManager implements Banners {
+public class BannerStorage implements Banners {
   
-  public String getFooter() {
-    Handlebars handlebars = new Handlebars();
-
-    try {
-      Template template = handlebars.compile("templates/banner_footer");
-
-      Map<String, String> context = new HashMap<String, String>();
-
-      context.put("bannerJSON", getActiveBannersJSON());
-
-      return template.apply(context);
-    } catch (IOException e) {
-      // Log.warn("something clever")
-      return "";
-    }
-  }
-  
-  private String getActiveBannersJSON() {
-    JSONArray alerts = new JSONArray();
-    String serverId = ServerConfigurationService.getString("serverId","localhost");
-
-    for (Banner alert : new BannerManager().getActiveAlertsForServer(serverId)) {
-      JSONObject alertData = new JSONObject();
-      alertData.put("id", alert.getUuid());
-      alertData.put("message", alert.getMessage());
-      alertData.put("dismissible", alert.isDismissible());
-      alerts.add(alertData);
-    }
-
-    return alerts.toJSONString();
-  }
-
-
   public List<Banner> getActiveAlertsForServer(String serverId) {
     return DB.transaction
       ("Find all active alerts for the server: " + serverId,

@@ -1,37 +1,39 @@
 package org.sakaiproject.pasystem.impl;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import org.sakaiproject.pasystem.api.PASystem;
-import org.sakaiproject.pasystem.api.Popups;
-import org.sakaiproject.pasystem.api.Banners;
-
-import org.sakaiproject.component.cover.ServerConfigurationService;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLFeatureNotSupportedException;
-
-import java.util.logging.Logger;
-import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
-
-import org.flywaydb.core.Flyway;
-
-import org.sakaiproject.portal.util.PortalUtils;
-
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
-
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import org.flywaydb.core.Flyway;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.sakaiproject.authz.cover.FunctionManager;
-
-import org.sakaiproject.pasystem.impl.banners.BannerManager;
-import org.sakaiproject.pasystem.impl.popups.PopupManager;
+import org.sakaiproject.component.cover.ServerConfigurationService;
+import org.sakaiproject.pasystem.api.Banner;
+import org.sakaiproject.pasystem.api.Banners;
+import org.sakaiproject.pasystem.api.PASystem;
+import org.sakaiproject.pasystem.api.Popup;
+import org.sakaiproject.pasystem.api.Popups;
+import org.sakaiproject.pasystem.impl.banners.BannerStorage;
+import org.sakaiproject.pasystem.impl.popups.PopupStorage;
+import org.sakaiproject.pasystem.impl.popups.PopupForUser;
+import org.sakaiproject.portal.util.PortalUtils;
+import org.sakaiproject.tool.api.Session;
+import org.sakaiproject.tool.cover.SessionManager;
+import org.sakaiproject.user.api.User;
+import org.sakaiproject.user.cover.UserDirectoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 class PASystemImpl implements PASystem {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PASystemImpl.class);
+
+    private final String POPUP_SCREEN_SHOWN = "pasystem.popup.screen.shown";
 
     public void init() {
         if (ServerConfigurationService.getBoolean("auto.ddl", false) || ServerConfigurationService.getBoolean("pasystem.auto.ddl", false)) {
@@ -75,20 +77,20 @@ class PASystemImpl implements PASystem {
         return "";
       }
 
-      result.append(getBanners().getFooter());
-      result.append(getPopups().getFooter());
+      result.append(getBannersFooter());
+      result.append(getPopupsFooter());
 
       return result.toString();
     }
 
 
     public Banners getBanners() {
-        return new BannerManager();
+        return new BannerStorage();
     }
 
 
     public Popups getPopups() {
-        return new PopupManager();
+        return new PopupStorage();
     }
 
 
@@ -121,4 +123,77 @@ class PASystemImpl implements PASystem {
             migrationRunner.join();
         } catch (InterruptedException e) {}
     }
+
+
+    private String getBannersFooter() {
+        Handlebars handlebars = new Handlebars();
+
+        try {
+            Template template = handlebars.compile("templates/banner_footer");
+
+            Map<String, String> context = new HashMap<String, String>();
+
+            context.put("bannerJSON", getActiveBannersJSON());
+
+            return template.apply(context);
+        } catch (IOException e) {
+            // Log.warn("something clever")
+            return "";
+        }
+    }
+  
+
+    private String getActiveBannersJSON() {
+        JSONArray alerts = new JSONArray();
+        String serverId = ServerConfigurationService.getString("serverId","localhost");
+
+        for (Banner alert : getBanners().getActiveAlertsForServer(serverId)) {
+            JSONObject alertData = new JSONObject();
+            alertData.put("id", alert.getUuid());
+            alertData.put("message", alert.getMessage());
+            alertData.put("dismissible", alert.isDismissible());
+            alerts.add(alertData);
+        }
+
+        return alerts.toJSONString();
+    }
+
+
+    private String getPopupsFooter() {
+        Session session = SessionManager.getCurrentSession();
+        User currentUser = UserDirectoryService.getCurrentUser();
+
+        if (currentUser == null || session.getAttribute(POPUP_SCREEN_SHOWN) != null) {
+            return "";
+        }
+
+        Popup popup = new PopupForUser(currentUser).getPopup();
+
+        if (popup.isActive()) {
+            Map<String, Object> context = new HashMap<String, Object>();
+            context.put("popupTemplate", popup.getTemplate());
+            context.put("popupCampaign", popup.getCampaign());
+            context.put("sakai_csrf_token", session.getAttribute("sakai.csrf.token"));
+            context.put("popup", true);
+
+            if (currentUser.getEid() != null) {
+                // Delivered!
+                session.setAttribute(POPUP_SCREEN_SHOWN, "true");
+            }
+
+            Handlebars handlebars = new Handlebars();
+
+            try {
+                Template template = handlebars.compile("templates/popup_footer");
+                return template.apply(context);
+            } catch (IOException e) {
+                LOG.warn("Popup footer failed", e);
+                return "";
+            }
+        }
+
+
+        return "";
+    }
+
 }
