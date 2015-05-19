@@ -1,7 +1,7 @@
 package org.sakaiproject.pasystem.api;
 
-import java.util.Date;
 import java.io.InputStream;
+import java.util.Date;
 
 public interface Popups {
 
@@ -10,7 +10,5 @@ public interface Popups {
     public void openCampaign(String id);
 
     public boolean hasCampaign(String descriptor);
-
-    public String getFooter();
 }
     

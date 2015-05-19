@@ -2,8 +2,8 @@ package org.sakaiproject.pasystem.impl.banners;
 
 import java.util.Arrays;
 import java.util.Date;
-
 import org.sakaiproject.pasystem.api.Banner;
+
 
 public class BannerImpl implements Banner {
   private String uuid;

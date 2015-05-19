@@ -1,11 +1,10 @@
 package org.sakaiproject.pasystem.impl.common;
 
-import java.util.Iterator;
-
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
+
 
 public class DBResults implements Iterable<ResultSet>, Iterator<ResultSet>, AutoCloseable {
     private PreparedStatement originalStatement;

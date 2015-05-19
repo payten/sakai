@@ -1,10 +1,9 @@
 package org.sakaiproject.pasystem.impl.common;
 
 import java.io.Reader;
-
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
 
 public class DBPreparedStatement {
 

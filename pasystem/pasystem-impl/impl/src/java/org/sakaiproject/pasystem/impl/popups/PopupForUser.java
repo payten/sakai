@@ -1,32 +1,28 @@
 package org.sakaiproject.pasystem.impl.popups;
 
-import org.sakaiproject.db.cover.SqlService;
-import org.sakaiproject.user.api.User;
-import org.sakaiproject.component.cover.ServerConfigurationService;
-
-import java.sql.Connection;
 import java.sql.Clob;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.sakaiproject.component.cover.ServerConfigurationService;
+import org.sakaiproject.pasystem.api.Popup;
 import org.sakaiproject.pasystem.impl.common.DB;
 import org.sakaiproject.pasystem.impl.common.DBAction;
 import org.sakaiproject.pasystem.impl.common.DBConnection;
 import org.sakaiproject.pasystem.impl.common.DBResults;
-
+import org.sakaiproject.user.api.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class UserPopupInteraction {
+public class PopupForUser {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UserPopupInteraction.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PopupForUser.class);
 
     private User user;
     private String eid;
 
 
-    public UserPopupInteraction(User currentUser) {
+    public PopupForUser(User currentUser) {
         user = currentUser;
 
         if (user != null && user.getEid() != null) {
@@ -40,7 +36,7 @@ public class UserPopupInteraction {
     public Popup getPopup() {
         if (user == null) {
             // No user.
-            return Popup.createNullPopup();
+            return PopupImpl.createNullPopup();
         }
 
         String sql = ("SELECT popup.uuid, content.template_content " +
@@ -93,17 +89,17 @@ public class UserPopupInteraction {
                                  String templateContent = contentClob.getSubString(1, (int)contentClob.length());
 
                                  // Got one!
-                                 return Popup.createPopup(result.getString(1), templateContent);
+                                 return PopupImpl.createPopup(result.getString(1), templateContent);
                              }
 
                              // Otherwise, no suitable popup was found
-                             return Popup.createNullPopup();
+                             return PopupImpl.createNullPopup();
                          }
                      }
                  });
         } catch (Exception e) {
             LOG.error("Error determining active popup", e);
-            return Popup.createNullPopup();
+            return PopupImpl.createNullPopup();
         }
     }
 

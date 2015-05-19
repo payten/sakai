@@ -1,18 +1,10 @@
 package org.sakaiproject.pasystem.impl.common;
 
-import org.sakaiproject.db.cover.SqlService;
-
-import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-
+import org.sakaiproject.db.cover.SqlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 
 public class DB {
