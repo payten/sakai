@@ -1,4 +1,4 @@
-<script type="text/template" id="popup-container-content" data-popup-campaign="{{popupCampaign}}" data-csrf-token="{{sakai_csrf_token}}">
+<script type="text/template" id="popup-container-content" data-popup-rued="{{popupUuid}}" data-csrf-token="{{sakai_csrf_token}}">
 {{{popupTemplate}}}
 </script>
 
@@ -16,15 +16,15 @@ $(function() {
     var permanentlyAcknowledged = false;
 
     var popupContent = $('#popup-container-content');
-    var campaign = popupContent.data('popup-campaign');
+    var uuid = popupContent.data('popup-uuid');
     var csrf_token = popupContent.data('csrf-token');
 
-    var acknowledge = function (campaign, acknowledgement) {
+    var acknowledge = function (uuid, acknowledgement) {
         $.ajax({
             method: 'POST',
             url: '/pasystem-tool/popups/acknowledge',
             data: {
-                campaign: campaign,
+                uuid: uuid,
                 acknowledgement: acknowledgement,
                 sakai_csrf_token: csrf_token
             },
@@ -32,12 +32,12 @@ $(function() {
     };
 
 
-    if (campaign) {
-        $.featherlight(popupContent.html() + $('#popup-container-footer').html(),
+    if (uuid) {
+        $.featherlight((popupContent.html() + $('#popup-container-footer').html()).trim(),
                        {
                            afterClose : function (event) {
                                var acknowledgement = permanentlyAcknowledged ? 'permanent' : 'temporary';
-                               acknowledge(campaign, acknowledgement);
+                               acknowledge(uuid, acknowledgement);
                            },
                            afterContent : function (event) {
                                $('#popup-acknowledged-button').on('click', function () {

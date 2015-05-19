@@ -48,6 +48,6 @@ CREATE TABLE pasystem_banner_alert
   hosts VARCHAR2(512),
   active NUMBER(1,0) DEFAULT 0 NOT NULL,
   dismissible NUMBER(1,0) DEFAULT 1 NOT NULL,
-  active_from NUMBER,
-  active_until NUMBER
+  start_time NUMBER,
+  end_time NUMBER
 );

@@ -4,44 +4,40 @@ import java.util.Arrays;
 import java.util.Date;
 import org.sakaiproject.pasystem.api.Banner;
 
+import lombok.Getter;
+
 
 public class BannerImpl implements Banner {
-  private String uuid;
-  private String message;
+  @Getter private String uuid;
+  @Getter private String message;
+  @Getter private long startTime;
+  @Getter private long endTime;
 
-  private String hosts;
   private boolean isActive;
+  private String hosts;
   private boolean isDismissible;
-  private long activeFrom;
-  private long activeUntil;
 
-  public BannerImpl(String uuid, String message, String hosts, int dismissible, int active, long activeFrom, long activeUntil) {
+
+  public BannerImpl(String uuid, String message, String hosts, int dismissible, int active, long startTime, long endTime) {
     this.uuid = uuid;
     this.message = message;
     this.hosts = hosts;
     this.isActive = (active == 1);
     this.isDismissible = (dismissible == 1);
-    this.activeFrom = activeFrom;
-    this.activeUntil = activeUntil;
+    this.startTime = startTime;
+    this.endTime = endTime;
   }
 
-  public String getUuid() {
-    return uuid;
-  }
-
-  public String getMessage() {
-    return message;
-  }
 
   public boolean isActive() {
-    if (activeFrom == 0 && activeUntil == 0) {
+    if (startTime == 0 && endTime == 0) {
       return isActive;
     }
 
     Date now = new Date();
 
-    return (now.after(new Date(activeFrom))
-            && (activeUntil == 0 || now.before(new Date(activeUntil))));
+    return (now.after(new Date(startTime))
+            && (endTime == 0 || now.before(new Date(endTime))));
   }
 
   public boolean isDismissible() {

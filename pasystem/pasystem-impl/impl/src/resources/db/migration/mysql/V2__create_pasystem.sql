@@ -42,6 +42,6 @@ CREATE TABLE pasystem_banner_alert
   `hosts` VARCHAR(512) DEFAULT NULL,
   `active` INT(1) NOT NULL DEFAULT 0,
   `dismissible` INT(1) NOT NULL DEFAULT 1,
-  `active_from` BIGINT DEFAULT NULL,
-  `active_until` BIGINT DEFAULT NULL
+  `start_time` BIGINT DEFAULT NULL,
+  `end_time` BIGINT DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

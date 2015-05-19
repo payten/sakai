@@ -11,5 +11,9 @@ public interface Banner {
     public String getUuid();
 
     public String getMessage();
+
+    public long getStartTime();
+
+    public long getEndTime();
 }
     

@@ -4,8 +4,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.sakaiproject.pasystem.api.Popup;
 import org.sakaiproject.pasystem.api.Popups;
 import org.sakaiproject.pasystem.impl.common.DB;
 import org.sakaiproject.pasystem.impl.common.DBAction;
@@ -13,6 +17,7 @@ import org.sakaiproject.pasystem.impl.common.DBConnection;
 import org.sakaiproject.pasystem.impl.common.DBResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class PopupStorage implements Popups {
 
@@ -62,6 +67,92 @@ public class PopupStorage implements Popups {
                          }
 
                          return false;
+                     }
+                 }
+             });
+    }
+
+
+    public List<Popup> getAll() {
+        return DB.transaction
+            ("Find all popups",
+             new DBAction<List<Popup>>() {
+                 public List<Popup> call(DBConnection db) throws SQLException {
+                     List<Popup> popups = new ArrayList<Popup>();
+                     try (DBResults results = db.run("SELECT * from PASYSTEM_POPUP_SCREENS")
+                          .executeQuery()) {
+                         for (ResultSet result : results) {
+                             popups.add(PopupImpl.createPopup(result.getString("uuid"),
+                                                              result.getString("descriptor"),
+                                                              result.getLong("start_time"),
+                                                              result.getLong("end_time")));
+                         }
+
+                         return popups;
+                     }
+                 }
+             });
+    }
+
+
+    public Optional<Popup> getForId(final String uuid) {
+        return DB.transaction
+            ("Find a popup by uuid",
+             new DBAction<Optional<Popup>>() {
+                 public Optional<Popup> call(DBConnection db) throws SQLException {
+                     try (DBResults results = db.run("SELECT * from PASYSTEM_POPUP_SCREENS WHERE UUID = ?")
+                          .param(uuid)
+                          .executeQuery()) {
+                         for (ResultSet result : results) {
+                             return Optional.of(PopupImpl.createPopup(result.getString("uuid"),
+                                                                      result.getString("descriptor"),
+                                                                      result.getLong("start_time"),
+                                                                      result.getLong("end_time")));
+                         }
+
+                         return Optional.empty();
+                     }
+                 }
+             });
+    }
+
+
+    public boolean isOpenCampaign(final String uuid) {
+        return DB.transaction
+            ("True if uuid refers to an open campaign",
+             new DBAction<Boolean>() {
+                 public Boolean call(DBConnection db) throws SQLException {
+                     List<String> users = new ArrayList<String>();
+
+                     try (DBResults results = db.run("SELECT * from PASYSTEM_POPUP_ASSIGN WHERE UUID = ? AND open_campaign = 1")
+                          .param(uuid)
+                          .executeQuery()) {
+                         for (ResultSet result : results) {
+                             return true;
+                         }
+
+                         return false;
+                     }
+                 }
+             });
+    }
+
+
+    public List<String> getAssignees(final String uuid) {
+        return DB.transaction
+            ("Find a list of assignees by popup uuid",
+             new DBAction<List<String>>() {
+                 public List<String> call(DBConnection db) throws SQLException {
+                     List<String> users = new ArrayList<String>();
+
+                     try (DBResults results = db.run("SELECT user_eid from PASYSTEM_POPUP_ASSIGN WHERE UUID = ? AND user_eid is not NULL")
+                          .param(uuid)
+                          .executeQuery()) {
+                         for (ResultSet result : results) {
+                             users.add(result.getString(1));
+                         }
+
+                         return users;
                      }
                  }
              });

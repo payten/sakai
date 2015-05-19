@@ -3,6 +3,7 @@ package org.sakaiproject.pasystem.api;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 
 public interface Banners {
@@ -16,5 +17,9 @@ public interface Banners {
     public void deleteBanner(String uuid);
 
     public void setBannerActiveState(String uuid, boolean isActive);
+
+    public List<Banner> getAll();
+
+    public Optional<Banner> getForId(String uuid);
 }
     

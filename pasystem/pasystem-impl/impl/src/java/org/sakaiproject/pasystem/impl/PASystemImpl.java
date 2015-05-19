@@ -172,7 +172,7 @@ class PASystemImpl implements PASystem {
         if (popup.isActive()) {
             Map<String, Object> context = new HashMap<String, Object>();
             context.put("popupTemplate", popup.getTemplate());
-            context.put("popupCampaign", popup.getCampaign());
+            context.put("popupUuid", popup.getUuid());
             context.put("sakai_csrf_token", session.getAttribute("sakai.csrf.token"));
             context.put("popup", true);
 
