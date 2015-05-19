@@ -1,5 +1,8 @@
 <section class="pasystem-section">
-  <h3>Banners</h3>
+  <header class="pasystem-section-header">
+    <h3>Banners</h3>
+    <a href="{{{newURL this 'banners' 'new'}}}" class="btn btn-primary btn-sm pull-right">Create Banner</a>
+  </header>
 
   <table class="pasystem-table table table-striped table-hover table-condensed">
     <thead>
@@ -19,7 +22,7 @@
         <td>{{show-time this this.startTime}}</td>
         <td>{{show-time this this.endTime}}</td>    
         <td class="actions">
-            <a href="{{{actionURL this 'banners' this.uuid "edit"}}}" class="btn btn-primary btn-sm">Edit</a>
+            <a href="{{{actionURL this 'banners' this.uuid "edit"}}}" class="btn btn-primary btn-xs">Edit</a>
         </td>
       </tr>
       {{/each}}
@@ -28,7 +31,11 @@
 </section>
 
 <section class="pasystem-section">
-  <h3>Popups</h3>
+  <header class="pasystem-section-header">
+    <h3>Popups</h3>
+
+    <a href="{{{newURL this 'popups' 'new'}}}" class="btn btn-primary btn-sm pull-right">Create Popup</a>
+  </header>
 
   <table class="pasystem-table table table-striped table-hover table-condensed">
     <thead>
@@ -48,7 +55,7 @@
         <td>{{show-time this this.startTime}}</td>
         <td>{{show-time this this.endTime}}</td>    
         <td class="actions">
-            <a href="{{{actionURL this 'popups' this.uuid "edit"}}}" class="btn btn-primary btn-sm">Edit</a>
+            <a href="{{{actionURL this 'popups' this.uuid "edit"}}}" class="btn btn-primary btn-xs">Edit</a>
         </td>
       </tr>
       {{/each}}
@@ -57,7 +64,9 @@
 </section>
 
 <section class="pasystem-section">
-  <h3>Timezone Check</h3>
+  <header class="pasystem-section-header">
+    <h3>Timezone Check</h3>
+  </header>
 
   <p>TODO</p>
 </section>
