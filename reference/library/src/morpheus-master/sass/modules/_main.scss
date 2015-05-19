@@ -1,18 +1,26 @@
 //.#{$namespace}
 .is-logged-out{
 	#content, .#{$namespace}container--footer{
-		margin: #{$header-size * 1.55 } 0 0 #{$tool-menu-width};
+		margin: 0 0 0 #{$tool-menu-width};
+		padding-top: #{$header-size * 1.55 };
 		@media #{$phone}{
 			margin: #{$header-size * 1.55 } 0 0 0;
+			padding-top: 0;
 		}
 	}
 }
 
+.#{$namespace}portalWrapper {
+	position: relative;
+}
+
 #content, .#{$namespace}container--footer{
-	margin: #{$header-size * 3 } 0 0 #{$tool-menu-width};
+	margin: 0 0 0 #{$tool-menu-width};
+	padding-top: #{$header-size * 3 };
 
 	@media #{$phone}{
 		margin: #{$header-size * 1.55 } 20px 0 20px;
+		padding-top: 0;
 	}
 	
 	#col1of2, #col2of2{

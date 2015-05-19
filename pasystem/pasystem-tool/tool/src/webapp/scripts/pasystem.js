@@ -70,8 +70,10 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
     return self.clearBannerAlerts();
   }
 
-  self.$container = $("<div>").addClass("pasystem-banner-alerts");
-  $(document.body).prepend(self.$container);
+  if (typeof self.$container == "undefined") {
+    self.$container = $("<div>").addClass("pasystem-banner-alerts");
+    $(document.body).prepend(self.$container);
+  }
 
   var dismissedAlertIds = [];
   var activeAlertIds = [];
