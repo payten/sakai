@@ -15,7 +15,33 @@ import org.sakaiproject.pasystem.impl.common.DBResults;
 
 
 public class BannerStorage implements Banners {
-  
+
+
+  public List<Banner> getAllBanners() {
+    return DB.transaction
+    ("Find all banners",
+    new DBAction<List<Banner>>() {
+      public List<Banner> call(DBConnection db) throws SQLException {
+        List<Banner> banners = new ArrayList<Banner>();
+        try (DBResults results = db.run("SELECT * from PASYSTEM_BANNER_ALERT")
+                                   .executeQuery()) {
+          for (ResultSet result : results) {
+            banners.add(new BannerImpl(result.getString("uuid"),
+                                      result.getString("message"),
+                                      result.getString("hosts"),
+                                      result.getInt("dismissible"),
+                                      result.getInt("active"),
+                                      result.getLong("active_from"),
+                                      result.getLong("active_until")));
+          }
+
+          return banners;
+        }
+      }
+    });
+  };
+
+
   public List<Banner> getActiveAlertsForServer(String serverId) {
     return DB.transaction
       ("Find all active alerts for the server: " + serverId,
