@@ -3,9 +3,11 @@ package org.sakaiproject.pasystem.impl.banners;
 import java.util.Arrays;
 import java.util.Date;
 
-public class Banner {
-  public String uuid;
-  public String message;
+import org.sakaiproject.pasystem.api.Banner;
+
+public class BannerImpl implements Banner {
+  private String uuid;
+  private String message;
 
   private String hosts;
   private boolean isActive;
@@ -13,7 +15,7 @@ public class Banner {
   private long activeFrom;
   private long activeUntil;
 
-  public Banner(String uuid, String message, String hosts, int dismissible, int active, long activeFrom, long activeUntil) {
+  public BannerImpl(String uuid, String message, String hosts, int dismissible, int active, long activeFrom, long activeUntil) {
     this.uuid = uuid;
     this.message = message;
     this.hosts = hosts;
@@ -21,6 +23,14 @@ public class Banner {
     this.isDismissible = (dismissible == 1);
     this.activeFrom = activeFrom;
     this.activeUntil = activeUntil;
+  }
+
+  public String getUuid() {
+    return uuid;
+  }
+
+  public String getMessage() {
+    return message;
   }
 
   public boolean isActive() {
