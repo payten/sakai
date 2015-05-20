@@ -10,17 +10,10 @@ class PopupImpl implements Popup {
 
     private static final Logger LOG = LoggerFactory.getLogger(Popup.class);
 
-    @Getter
-    private String uuid;
-
-    @Getter
-    private String descriptor;
-
-    @Getter
-    private long startTime;
-
-    @Getter
-    private long endTime;
+    @Getter private String uuid;
+    @Getter private String descriptor;
+    @Getter private long startTime;
+    @Getter private long endTime;
 
     private String template;
 

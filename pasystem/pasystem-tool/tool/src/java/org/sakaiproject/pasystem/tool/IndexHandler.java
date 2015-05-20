@@ -9,16 +9,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.sakaiproject.pasystem.api.PASystem;
 
 
-public class IndexHandler implements Handler {
+public class IndexHandler extends BaseHandler {
 
     private PASystem paSystem;
 
     public IndexHandler(PASystem pasystem) {
         this.paSystem = pasystem;
-    }
-
-    public boolean willHandle(HttpServletRequest request) {
-        return (request.getPathInfo() == null);
     }
 
     public void handle(HttpServletRequest request, HttpServletResponse response, Map<String, Object> context) {

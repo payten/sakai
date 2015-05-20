@@ -21,6 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import org.sakaiproject.tool.api.Session;
+import org.sakaiproject.tool.cover.SessionManager;
+
 import org.sakaiproject.time.cover.TimeService;
 import org.sakaiproject.time.api.Time;
 import org.sakaiproject.tool.cover.ToolManager;
@@ -36,39 +39,47 @@ import org.sakaiproject.tool.api.ToolURLManager;
 
 public class PASystemServlet extends HttpServlet {
 
+    private static String FLASH_MESSAGE_KEY = "pasystem-tool.flash.errors";
+
     private static final Logger LOG = LoggerFactory.getLogger(PASystemServlet.class);
 
     private PASystem paSystem;
     private URL toolBaseURL;
 
-    private List<Handler> handlers;
-
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
         paSystem = (PASystem) ComponentManager.get(PASystem.class);
+    }
 
-        try { 
-            String siteId = ToolManager.getCurrentPlacement().getContext();
-            String toolId = ToolManager.getCurrentPlacement().getId();
 
-            toolBaseURL = new URL(ServerConfigurationService.getPortalUrl() + "/site/" + siteId + "/tool/" + toolId + "/");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+    private Handler handlerForRequest(HttpServletRequest request) {
+        String path = request.getPathInfo();
+
+        if (path == null) {
+            path = "";
         }
 
-        handlers = new ArrayList<Handler>();
+        if (path.contains("/popups/")) {
+            return new PopupsHandler(paSystem);
+        } else if (path.contains("/banners/")) {
+            return new BannersHandler(paSystem);
+        } else {
+            return new IndexHandler(paSystem);
+        }
+    }
 
-        handlers.add(new IndexHandler(paSystem));
-        handlers.add(new BannersHandler(paSystem));
-        handlers.add(new PopupsHandler(paSystem));
+
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request, response);
     }
 
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setHeader("Content-Type", "text/html");
 
-        Handlebars handlebars = loadHandlebars();
+        URL toolBaseURL = determineBaseURL();
+        Handlebars handlebars = loadHandlebars(toolBaseURL);
 
         try {
             Template template = handlebars.compile("org/sakaiproject/pasystem/tool/views/layout");
@@ -77,16 +88,22 @@ public class PASystemServlet extends HttpServlet {
             context.put("skinRepo", ServerConfigurationService.getString("skin.repo", ""));
             context.put("randomSakaiHeadStuff", request.getAttribute("sakai.html.head"));
 
-            for (Handler handler : handlers) {
-                if (handler.willHandle(request)) {
-                    LOG.info("Using request handler {}", handler);
-                    
-                    handler.handle(request, response, context);
-                    break;
-                }
-            }
+            Handler handler = handlerForRequest(request);
 
-        response.getWriter().write(template.apply(context));
+
+            Map<String, List<String>> messages = loadFlashMessages();
+
+            handler.handle(request, response, context);
+
+            storeFlashMessages(handler.getFlashMessages());
+
+            if (handler.hasRedirect()) {
+                response.sendRedirect(toolBaseURL + handler.getRedirect());
+            } else {
+                context.put("flash", messages);
+                context.put("errors", handler.getErrors());
+                response.getWriter().write(template.apply(context));
+            }
         } catch (IOException e) {
             e.printStackTrace();
             // Log.warn("something clever")
@@ -94,7 +111,41 @@ public class PASystemServlet extends HttpServlet {
     }
 
 
-    private Handlebars loadHandlebars() {
+
+    private void storeFlashMessages(Map<String, List<String>> messages) {
+        Session session = SessionManager.getCurrentSession();
+        session.setAttribute(FLASH_MESSAGE_KEY, messages);
+    }
+
+
+    private Map<String, List<String>> loadFlashMessages() {
+        Session session = SessionManager.getCurrentSession();
+        
+
+        if (session.getAttribute(FLASH_MESSAGE_KEY) != null) {
+            Map<String, List<String>> flashErrors = (Map<String, List<String>>) session.getAttribute(FLASH_MESSAGE_KEY);
+            session.removeAttribute(FLASH_MESSAGE_KEY);
+
+            return flashErrors;
+        } else {
+            return new HashMap<String, List<String>>();
+        }
+    }
+
+
+    private URL determineBaseURL() {
+        String siteId = ToolManager.getCurrentPlacement().getContext();
+        String toolId = ToolManager.getCurrentPlacement().getId();
+
+        try {
+            return new URL(ServerConfigurationService.getPortalUrl() + "/site/" + siteId + "/tool/" + toolId + "/");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private Handlebars loadHandlebars(final URL baseURL) {
         Handlebars handlebars = new Handlebars();
 
         handlebars.registerHelper("subpage", new Helper<Object>() {
@@ -132,7 +183,7 @@ public class PASystemServlet extends HttpServlet {
 
 
                     try {
-                        return new URL(toolBaseURL, type + "/" + uuid + "/" + action).toString();
+                        return new URL(baseURL, type + "/" + uuid + "/" + action).toString();
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }
@@ -147,7 +198,7 @@ public class PASystemServlet extends HttpServlet {
 
 
                 try {
-                    return new URL(toolBaseURL, type + "/" + action).toString();
+                    return new URL(baseURL, type + "/" + action).toString();
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }
