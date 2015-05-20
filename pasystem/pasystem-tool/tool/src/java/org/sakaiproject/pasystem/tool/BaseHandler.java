@@ -58,19 +58,6 @@ abstract class BaseHandler implements Handler {
         }
     }
 
-    protected long extractUTCMillis(String timeString, String field) {
-        if (timeString == null || "".equals(timeString)) {
-            return 0;
-        }
-
-        try {
-            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX").parse(timeString).getTime();
-        } catch (ParseException e) {
-            add_error(field, "malformed_date", timeString);
-            return -1;
-        }
-    }
-
 
     protected void add_error(String field, String errorCode, String ... values) {
         if (errors == null) {
