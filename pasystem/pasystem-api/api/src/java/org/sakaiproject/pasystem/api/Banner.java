@@ -12,6 +12,8 @@ public interface Banner {
 
     public String getMessage();
 
+    public String getHosts();
+
     public long getStartTime();
 
     public long getEndTime();

@@ -13,10 +13,13 @@ import org.sakaiproject.pasystem.impl.common.DB;
 import org.sakaiproject.pasystem.impl.common.DBAction;
 import org.sakaiproject.pasystem.impl.common.DBConnection;
 import org.sakaiproject.pasystem.impl.common.DBResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class BannerStorage implements Banners {
 
+  private static final Logger LOG = LoggerFactory.getLogger(BannerStorage.class);
 
   public List<Banner> getAll() {
     return DB.transaction
@@ -97,7 +100,7 @@ public class BannerStorage implements Banners {
   }
 
 
-  public String createBanner(String message, String hosts, boolean isDismissible, boolean isActive, Date activeFrom, Date activeUntil) throws SQLException {
+  public String createBanner(String message, String hosts, boolean isDismissible, boolean isActive, long startTime, long endTime) {
     return DB.transaction(
       "Create an banner",
       new DBAction<String>() {
@@ -110,9 +113,11 @@ public class BannerStorage implements Banners {
             .param(hosts)
             .param(new Integer(isDismissible ? 1 : 0))
             .param(new Integer(isActive ? 1 : 0))
-            .param(activeFrom.getTime())
-            .param(activeUntil.getTime())
+            .param(startTime)
+            .param(endTime)
             .executeUpdate();
+
+          db.commit();
 
           return id;
         }
@@ -121,18 +126,18 @@ public class BannerStorage implements Banners {
   }
 
 
-  public void updateBanner(String uuid, String message, String hosts, boolean isDismissible, boolean isActive, Date activeFrom, Date activeUntil) {
+  public void updateBanner(String uuid, String message, String hosts, boolean isDismissible, boolean isActive, long startTime, long endTime) {
     DB.transaction(
       "Update banner with uuid " + uuid,
       new DBAction<Void>() {
         public Void call(DBConnection db) throws SQLException {
-          db.run("UPDATE PASYSTEM_BANNER_ALERT SET (message, hosts, dismissible, active, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?) WHERE uuid = ?")
+          db.run("UPDATE PASYSTEM_BANNER_ALERT SET message = ?, hosts = ?, dismissible = ?, active = ?, start_time = ?, end_time = ? WHERE uuid = ?")
             .param(message)
             .param(hosts)
             .param(new Integer(isDismissible ? 1 : 0))
             .param(new Integer(isActive ? 1 : 0))
-            .param(activeFrom.getTime())
-            .param(activeUntil.getTime())
+            .param(startTime)
+            .param(endTime)
             .param(uuid)
             .executeUpdate();
 
