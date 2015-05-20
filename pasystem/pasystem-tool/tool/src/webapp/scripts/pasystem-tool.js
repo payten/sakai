@@ -16,8 +16,14 @@ $(function () {
             });
 
             // setup input button to trigger date-time picker
-            $datepicker.siblings().find("button").click(function() {
+            $datepicker.siblings().find(".invoke-datepicker-btn").click(function() {
                 $datepicker.focus();
+            });
+
+            // add clear action if present
+            $datepicker.siblings().find(".clear-datepicker-btn").click(function() {
+              $datepicker.val("");
+              $("[name='" + $datepicker.attr('id') + "_selected_datetime']").val("");
             });
         });
     };
