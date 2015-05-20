@@ -41,20 +41,6 @@ class PASystemImpl implements PASystem {
         }
 
         FunctionManager.registerFunction("pasystem.manage");
-
-
-        Popups popupSystem = getPopups();
-        if (!popupSystem.hasCampaign("goat-warning")) {
-          try {
-              String id = popupSystem.createCampaign("goat-warning", new Date(0), new Date(System.currentTimeMillis() + Integer.MAX_VALUE),
-                                                     new FileInputStream("/var/tmp/custom-templates/goatwarning.vm"));
-
-            popupSystem.openCampaign(id);
-
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
-        }
     }
 
     public void destroy() {}

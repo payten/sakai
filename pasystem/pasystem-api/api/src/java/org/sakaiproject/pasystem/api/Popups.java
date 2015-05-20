@@ -7,11 +7,15 @@ import java.util.Optional;
 
 public interface Popups {
 
-    public String createCampaign(String descriptor, Date startDate, Date endDate, InputStream templateContent);
+    public String createCampaign(String descriptor, long startTime, long endTime,
+                                 InputStream templateContent,
+                                 boolean isOpenCampaign,
+                                 Optional<List<String>> assignToUsers);
 
-    public void openCampaign(String id);
-
-    public boolean hasCampaign(String descriptor);
+    public boolean updateCampaign(String uuid, String descriptor, long startTime, long endTime,
+                                  Optional<InputStream> templateInput,
+                                  boolean isOpenCampaign,
+                                  Optional<List<String>> assignToUsers);
 
     public List<Popup> getAll();
 

@@ -10,10 +10,28 @@
         {{{randomSakaiHeadStuff}}}
     </head>
     <body>
+
         <div class="portletBody pasystem-body">
+            {{#if flash}}
+                {{#each flash}}
+                    <ul class="alert alert-{{@key}}">
+                        {{#each this}}
+                            <li>{{this}}</li>
+                        {{/each}}
+                    </ul>
+                {{/each}}
+            {{/if}}
+
+            {{#if errors}}
+                <ul class="alert alert-danger">
+                    {{#each errors}}
+                        <li> {{this.field}} - {{this.errorCode}}</li>
+                    {{/each}}
+                </ul>
+            {{/if}}
+
             {{{subpage this subpage}}}
         </div>
-
 
         <script type="text/javascript" src="/library/js/jquery/jquery-1.9.1.min.js"></script>
         <script type="text/javascript" src="/library/js/jquery/ui/1.10.3/jquery-ui.1.10.3.full.min.js"></script>

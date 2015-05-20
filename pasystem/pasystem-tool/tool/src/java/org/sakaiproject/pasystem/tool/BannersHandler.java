@@ -24,12 +24,6 @@ public class BannersHandler extends BaseHandler implements Handler {
         this.paSystem = pasystem;
     }
 
-
-    public boolean willHandle(HttpServletRequest request) {
-      return (request.getPathInfo() != null) && (request.getPathInfo().contains("/banners/"));
-    }
-
-
     public void handle(HttpServletRequest request, HttpServletResponse response, Map<String, Object> context) {
         if (request.getPathInfo().contains("/edit")) {
             if (isGet(request)) {

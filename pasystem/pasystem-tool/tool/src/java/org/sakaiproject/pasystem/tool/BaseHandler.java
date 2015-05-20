@@ -1,23 +1,119 @@
 package org.sakaiproject.pasystem.tool;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 
 abstract class BaseHandler implements Handler {
 
-    public boolean isGet(HttpServletRequest request) {
+    private List<Error> errors;
+    private Map<String, List<String>> flashMessages;
+    private String redirectURI;
+
+    enum CrudMode {
+        CREATE,
+        UPDATE
+    };
+
+
+    protected boolean isGet(HttpServletRequest request) {
         return "GET".equals(request.getMethod());
     }
 
 
-    public String extractId(HttpServletRequest request) {
+    protected boolean isPost(HttpServletRequest request) {
+        return "POST".equals(request.getMethod());
+    }
+
+
+    protected void sendRedirect(String uri) {
+        redirectURI = uri;
+    }
+
+
+    public boolean hasRedirect() {
+        return redirectURI != null;
+    }
+
+
+    public String getRedirect() {
+        return redirectURI;
+    }
+
+
+    protected String extractId(HttpServletRequest request) {
         String[] bits = request.getPathInfo().split("/");
 
         if (bits.length < 2) {
-            throw new RuntimeException("Couldn't extract an ID from: " + request.getPathInfo());
+            add_error("uuid", "uuid_missing", request.getPathInfo());
+            return "";
         } else {
             return bits[bits.length - 2];
         }
+    }
+
+    protected long extractUTCMillis(String timeString, String field) {
+        if (timeString == null || "".equals(timeString)) {
+            return 0;
+        }
+
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX").parse(timeString).getTime();
+        } catch (ParseException e) {
+            add_error(field, "malformed_date", timeString);
+            return -1;
+        }
+    }
+
+
+    protected void add_error(String field, String errorCode, String ... values) {
+        if (errors == null) {
+            errors = new ArrayList<Error>();
+        }
+
+        errors.add(new Error(field, errorCode, values));
+    }
+
+
+    protected boolean hasErrors() {
+        return !getErrors().isEmpty();
+    }
+
+
+    public List<Error> getErrors() {
+        if (errors == null) {
+            errors = new ArrayList<Error>();
+        }
+
+        return errors;
+    }
+
+
+    public void flash(String level, String message) {
+        if (flashMessages == null) {
+            flashMessages = new HashMap<String, List<String>>();
+        }
+
+        if (flashMessages.get(level) == null) {
+            flashMessages.put(level, new ArrayList<String>());
+        }
+
+        flashMessages.get(level).add(message);
+    }
+
+
+    public Map<String, List<String>> getFlashMessages() {
+        if (flashMessages == null) {
+            flashMessages = new HashMap<String, List<String>>();
+        }
+
+        return flashMessages;
     }
 
 
