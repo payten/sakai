@@ -33,7 +33,7 @@ public class PopupsHandler extends BaseHandler implements Handler {
                 if (popup.isPresent()) {
                     showEditForm(PopupForm.fromPopup(popup.get(), paSystem), context);
                 } else {
-                    LOG.warn("No popup found for UUID: " + uuid);
+                    flash("danger", "No popup found for UUID: " + uuid);
                     sendRedirect("");
                 }
             } else if (isPost(request)) {
