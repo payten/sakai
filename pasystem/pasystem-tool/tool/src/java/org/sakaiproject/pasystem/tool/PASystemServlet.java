@@ -44,7 +44,7 @@ public class PASystemServlet extends HttpServlet {
     private static final Logger LOG = LoggerFactory.getLogger(PASystemServlet.class);
 
     private PASystem paSystem;
-    private URL toolBaseURL;
+
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -90,7 +90,6 @@ public class PASystemServlet extends HttpServlet {
 
             Handler handler = handlerForRequest(request);
 
-
             Map<String, List<String>> messages = loadFlashMessages();
 
             handler.handle(request, response, context);
@@ -109,7 +108,6 @@ public class PASystemServlet extends HttpServlet {
             // Log.warn("something clever")
         }
     }
-
 
 
     private void storeFlashMessages(Map<String, List<String>> messages) {
@@ -181,7 +179,6 @@ public class PASystemServlet extends HttpServlet {
                     String uuid = options.param(1);
                     String action = options.param(2);
 
-
                     try {
                         return new URL(baseURL, type + "/" + uuid + "/" + action).toString();
                     } catch (MalformedURLException e) {
@@ -195,7 +192,6 @@ public class PASystemServlet extends HttpServlet {
             public CharSequence apply(final Object context, final Options options) {
                 String type = options.param(0);
                 String action = options.param(1);
-
 
                 try {
                     return new URL(baseURL, type + "/" + action).toString();
