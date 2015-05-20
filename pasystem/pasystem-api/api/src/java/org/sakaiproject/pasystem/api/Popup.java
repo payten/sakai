@@ -16,11 +16,15 @@ public class Popup {
         return new Popup();
     }
 
-    public static Popup createPopup(String uuid, String descriptor, long startTime, long endTime) {
-        return createPopup(uuid, descriptor, startTime, endTime, null);
+    public static Popup create(String descriptor, long startTime, long endTime) {
+        return create(null, descriptor, startTime, endTime);
     }
 
-    public static Popup createPopup(String uuid, String descriptor, long startTime, long endTime, String template) {
+    public static Popup create(String uuid, String descriptor, long startTime, long endTime) {
+        return create(uuid, descriptor, startTime, endTime, null);
+    }
+
+    public static Popup create(String uuid, String descriptor, long startTime, long endTime, String template) {
         return new Popup(uuid, descriptor, startTime, endTime, template);
     }
 

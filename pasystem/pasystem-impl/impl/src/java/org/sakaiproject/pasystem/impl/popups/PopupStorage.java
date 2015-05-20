@@ -23,7 +23,7 @@ public class PopupStorage implements Popups {
 
     private static final Logger LOG = LoggerFactory.getLogger(PopupStorage.class);
 
-    public String createCampaign(String descriptor, long startTime, long endTime,
+    public String createCampaign(Popup popup,
                                  InputStream templateInput,
                                  boolean isOpenCampaign,
                                  Optional<List<String>> assignToUsers) {
@@ -35,9 +35,9 @@ public class PopupStorage implements Popups {
                      
                      db.run("INSERT INTO PASYSTEM_POPUP_SCREENS (uuid, descriptor, start_time, end_time) VALUES (?, ?, ?, ?)")
                          .param(uuid)
-                         .param(descriptor)
-                         .param(startTime)
-                         .param(endTime)
+                         .param(popup.getDescriptor())
+                         .param(popup.getStartTime())
+                         .param(popup.getEndTime())
                          .executeUpdate();
 
                      setPopupContent(db, uuid, templateInput);
@@ -51,17 +51,17 @@ public class PopupStorage implements Popups {
     }
 
 
-  public boolean updateCampaign(String uuid, String descriptor, long startTime, long endTime,
-                                Optional<InputStream> templateInput,
-                                boolean isOpenCampaign,
-                                Optional<List<String>> assignToUsers) {
-    return DB.transaction
+    public boolean updateCampaign(String uuid, Popup popup,
+                                  Optional<InputStream> templateInput,
+                                  boolean isOpenCampaign,
+                                  Optional<List<String>> assignToUsers) {
+        return DB.transaction
             ("Update an existing popup campaign",
              new DBAction<Boolean>() {
                  public Boolean call(DBConnection db) throws SQLException {
 
                      if (db.run("UPDATE PASYSTEM_POPUP_SCREENS SET descriptor = ?, start_time = ?, end_time = ? WHERE uuid = ?")
-                         .param(descriptor).param(startTime).param(endTime).param(uuid)
+                         .param(popup.getDescriptor()).param(popup.getStartTime()).param(popup.getEndTime()).param(uuid)
                          .executeUpdate() == 0) {
                          LOG.warn("Failed to update popup with UUID: {}", uuid);
                          return false;
@@ -92,10 +92,10 @@ public class PopupStorage implements Popups {
                      try (DBResults results = db.run("SELECT * from PASYSTEM_POPUP_SCREENS")
                           .executeQuery()) {
                          for (ResultSet result : results) {
-                           popups.add(Popup.createPopup(result.getString("uuid"),
-                                                        result.getString("descriptor"),
-                                                        result.getLong("start_time"),
-                                                        result.getLong("end_time")));
+                             popups.add(Popup.create(result.getString("uuid"),
+                                                     result.getString("descriptor"),
+                                                     result.getLong("start_time"),
+                                                     result.getLong("end_time")));
                          }
 
                          return popups;
@@ -114,10 +114,10 @@ public class PopupStorage implements Popups {
                           .param(uuid)
                           .executeQuery()) {
                          for (ResultSet result : results) {
-                           return Optional.of(Popup.createPopup(result.getString("uuid"),
-                                                                result.getString("descriptor"),
-                                                                result.getLong("start_time"),
-                                                                result.getLong("end_time")));
+                             return Optional.of(Popup.create(result.getString("uuid"),
+                                                             result.getString("descriptor"),
+                                                             result.getLong("start_time"),
+                                                             result.getLong("end_time")));
                          }
 
                          return Optional.empty();
