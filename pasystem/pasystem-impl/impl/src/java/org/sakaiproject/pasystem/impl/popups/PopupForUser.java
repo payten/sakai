@@ -36,7 +36,7 @@ public class PopupForUser {
     public Popup getPopup() {
         if (user == null) {
             // No user.
-            return PopupImpl.createNullPopup();
+            return Popup.createNullPopup();
         }
 
         String sql = ("SELECT popup.uuid, popup.descriptor, popup.start_time, popup.end_time, content.template_content " +
@@ -89,21 +89,21 @@ public class PopupForUser {
                                  String templateContent = contentClob.getSubString(1, (int)contentClob.length());
 
                                  // Got one!
-                                 return PopupImpl.createPopup(result.getString(1),
-                                                              result.getString(2),
-                                                              result.getLong(3),
-                                                              result.getLong(4),
-                                                              templateContent);
+                                 return Popup.createPopup(result.getString(1),
+                                                          result.getString(2),
+                                                          result.getLong(3),
+                                                          result.getLong(4),
+                                                          templateContent);
                              }
 
                              // Otherwise, no suitable popup was found
-                             return PopupImpl.createNullPopup();
+                             return Popup.createNullPopup();
                          }
                      }
                  });
         } catch (Exception e) {
             LOG.error("Error determining active popup", e);
-            return PopupImpl.createNullPopup();
+            return Popup.createNullPopup();
         }
     }
 
