@@ -31,14 +31,29 @@ public class BannersHandler extends BaseHandler implements Handler {
             } else if (isPost(request)) {
                 handleCreateOrUpdate(request, context, CrudMode.UPDATE);
             }
-        }
-        if (request.getPathInfo().contains("/new")) {
+        } else if (request.getPathInfo().contains("/new")) {
             if (isGet(request)) {
                 showNewForm(context);
             } else if (isPost(request)) {
                 handleCreateOrUpdate(request, context, CrudMode.CREATE);
             }
+        } else if (request.getPathInfo().contains("/delete")) {
+            if (isGet(request)) {
+            //    sendRedirect("");
+            //} else if (isPost(request)) {
+                handleDelete(extractId(request), context);
+            }
+        } else {
+            sendRedirect("");
         }
+    }
+
+
+    private void handleDelete(String uuid, Map<String, Object> context) {
+        paSystem.getBanners().deleteBanner(uuid);
+
+        flash("info", "banner_deleted");
+        sendRedirect("");
     }
 
 

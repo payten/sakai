@@ -25,6 +25,7 @@
         <td>{{show-time this this.endTime}}</td>    
         <td class="actions">
             <a href="{{{actionURL this 'banners' this.uuid "edit"}}}" class="btn btn-primary btn-xs">Edit</a>
+            <a href="{{{actionURL this 'banners' this.uuid "delete"}}}" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></a>
         </td>
       </tr>
       {{/each}}
