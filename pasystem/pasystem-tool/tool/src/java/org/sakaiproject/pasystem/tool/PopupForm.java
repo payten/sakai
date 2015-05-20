@@ -40,6 +40,11 @@ class PopupForm {
 
 
 
+    public Popup toPopup() {
+        return Popup.create(getDescriptor(), getStartTime(), getEndTime());
+    }
+
+
     private static long parseTime(String timeString) {
         if (timeString == null || "".equals(timeString)) {
             return 0;

@@ -7,12 +7,13 @@ import java.util.Optional;
 
 public interface Popups {
 
-    public String createCampaign(String descriptor, long startTime, long endTime,
+    public String createCampaign(Popup popup,
                                  InputStream templateContent,
                                  boolean isOpenCampaign,
                                  Optional<List<String>> assignToUsers);
 
-    public boolean updateCampaign(String uuid, String descriptor, long startTime, long endTime,
+    public boolean updateCampaign(String uuid,
+                                  Popup popup,
                                   Optional<InputStream> templateInput,
                                   boolean isOpenCampaign,
                                   Optional<List<String>> assignToUsers);
