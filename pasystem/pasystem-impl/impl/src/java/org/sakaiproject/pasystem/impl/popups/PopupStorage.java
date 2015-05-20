@@ -92,10 +92,10 @@ public class PopupStorage implements Popups {
                      try (DBResults results = db.run("SELECT * from PASYSTEM_POPUP_SCREENS")
                           .executeQuery()) {
                          for (ResultSet result : results) {
-                             popups.add(PopupImpl.createPopup(result.getString("uuid"),
-                                                              result.getString("descriptor"),
-                                                              result.getLong("start_time"),
-                                                              result.getLong("end_time")));
+                           popups.add(Popup.createPopup(result.getString("uuid"),
+                                                        result.getString("descriptor"),
+                                                        result.getLong("start_time"),
+                                                        result.getLong("end_time")));
                          }
 
                          return popups;
@@ -114,10 +114,10 @@ public class PopupStorage implements Popups {
                           .param(uuid)
                           .executeQuery()) {
                          for (ResultSet result : results) {
-                             return Optional.of(PopupImpl.createPopup(result.getString("uuid"),
-                                                                      result.getString("descriptor"),
-                                                                      result.getLong("start_time"),
-                                                                      result.getLong("end_time")));
+                           return Optional.of(Popup.createPopup(result.getString("uuid"),
+                                                                result.getString("descriptor"),
+                                                                result.getLong("start_time"),
+                                                                result.getLong("end_time")));
                          }
 
                          return Optional.empty();
