@@ -8,6 +8,7 @@ public class Popup {
     @Getter private String descriptor;
     @Getter private long startTime;
     @Getter private long endTime;
+    @Getter private boolean isOpenCampaign;
 
     private String template;
 
@@ -16,28 +17,29 @@ public class Popup {
         return new Popup();
     }
 
-    public static Popup create(String descriptor, long startTime, long endTime) {
-        return create(null, descriptor, startTime, endTime);
+    public static Popup create(String descriptor, long startTime, long endTime, boolean isOpenCampaign) {
+        return create(null, descriptor, startTime, endTime, isOpenCampaign);
     }
 
-    public static Popup create(String uuid, String descriptor, long startTime, long endTime) {
-        return create(uuid, descriptor, startTime, endTime, null);
+    public static Popup create(String uuid, String descriptor, long startTime, long endTime, boolean isOpenCampaign) {
+        return create(uuid, descriptor, startTime, endTime, isOpenCampaign, null);
     }
 
-    public static Popup create(String uuid, String descriptor, long startTime, long endTime, String template) {
-        return new Popup(uuid, descriptor, startTime, endTime, template);
+    public static Popup create(String uuid, String descriptor, long startTime, long endTime, boolean isOpenCampaign, String template) {
+        return new Popup(uuid, descriptor, startTime, endTime, isOpenCampaign, template);
     }
 
     private Popup() {
         this.uuid = null;
     }
 
-    private Popup(String uuid, String descriptor, long startTime, long endTime, String template) {
+    private Popup(String uuid, String descriptor, long startTime, long endTime, boolean isOpenCampaign, String template) {
         this.uuid = uuid;
         this.descriptor = descriptor;
         this.startTime = startTime;
         this.endTime = endTime;
         this.template = template;
+        this.isOpenCampaign = isOpenCampaign;
     }
 
     public boolean isActive() {

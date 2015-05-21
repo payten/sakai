@@ -23,7 +23,5 @@ public interface Popups {
     public Optional<Popup> getForId(String uuid);
 
     public List<String> getAssignees(String uuid);
-
-    public boolean isOpenCampaign(final String uuid);
 }
     

@@ -33,15 +33,16 @@ public class PopupStorage implements Popups {
                  public String call(DBConnection db) throws SQLException {
                      String uuid = UUID.randomUUID().toString();
                      
-                     db.run("INSERT INTO PASYSTEM_POPUP_SCREENS (uuid, descriptor, start_time, end_time) VALUES (?, ?, ?, ?)")
+                     db.run("INSERT INTO PASYSTEM_POPUP_SCREENS (uuid, descriptor, start_time, end_time, open_campaign) VALUES (?, ?, ?, ?, ?)")
                          .param(uuid)
                          .param(popup.getDescriptor())
                          .param(popup.getStartTime())
                          .param(popup.getEndTime())
+                         .param(isOpenCampaign ? 1 : 0)
                          .executeUpdate();
 
                      setPopupContent(db, uuid, templateInput);
-                     setPopupAssignees(db, uuid, isOpenCampaign, assignToUsers);
+                     setPopupAssignees(db, uuid, assignToUsers);
 
                      db.commit();
 
@@ -60,14 +61,18 @@ public class PopupStorage implements Popups {
              new DBAction<Boolean>() {
                  public Boolean call(DBConnection db) throws SQLException {
 
-                     if (db.run("UPDATE PASYSTEM_POPUP_SCREENS SET descriptor = ?, start_time = ?, end_time = ? WHERE uuid = ?")
-                         .param(popup.getDescriptor()).param(popup.getStartTime()).param(popup.getEndTime()).param(uuid)
+                     if (db.run("UPDATE PASYSTEM_POPUP_SCREENS SET descriptor = ?, start_time = ?, end_time = ?, open_campaign = ? WHERE uuid = ?")
+                         .param(popup.getDescriptor())
+                         .param(popup.getStartTime())
+                         .param(popup.getEndTime())
+                         .param(isOpenCampaign ? 1 : 0)
+                         .param(uuid)
                          .executeUpdate() == 0) {
                          LOG.warn("Failed to update popup with UUID: {}", uuid);
                          return false;
                      }
 
-                     setPopupAssignees(db, uuid, isOpenCampaign, assignToUsers);
+                     setPopupAssignees(db, uuid, assignToUsers);
 
                      if (templateInput.isPresent()) {
                          setPopupContent(db, uuid, templateInput.get());
@@ -95,7 +100,8 @@ public class PopupStorage implements Popups {
                              popups.add(Popup.create(result.getString("uuid"),
                                                      result.getString("descriptor"),
                                                      result.getLong("start_time"),
-                                                     result.getLong("end_time")));
+                                                     result.getLong("end_time"),
+                                                     result.getInt("open_campaign") == 1));
                          }
 
                          return popups;
@@ -117,31 +123,11 @@ public class PopupStorage implements Popups {
                              return Optional.of(Popup.create(result.getString("uuid"),
                                                              result.getString("descriptor"),
                                                              result.getLong("start_time"),
-                                                             result.getLong("end_time")));
+                                                             result.getLong("end_time"),
+                                                             result.getInt("open_campaign") == 1));
                          }
 
                          return Optional.empty();
-                     }
-                 }
-             });
-    }
-
-
-    public boolean isOpenCampaign(final String uuid) {
-        return DB.transaction
-            ("True if uuid refers to an open campaign",
-             new DBAction<Boolean>() {
-                 public Boolean call(DBConnection db) throws SQLException {
-                     List<String> users = new ArrayList<String>();
-
-                     try (DBResults results = db.run("SELECT * from PASYSTEM_POPUP_ASSIGN WHERE UUID = ? AND open_campaign = 1")
-                          .param(uuid)
-                          .executeQuery()) {
-                         for (ResultSet result : results) {
-                             return true;
-                         }
-
-                         return false;
                      }
                  }
              });
@@ -170,29 +156,27 @@ public class PopupStorage implements Popups {
 
 
     private void setPopupContent(DBConnection db, String uuid, InputStream templateContent) throws SQLException {
-        if (db.run("UPDATE PASYSTEM_POPUP_CONTENT set template_content = ? WHERE uuid = ?")
+        // A little hoop jumping here to avoid having to rewind the InputStream
+        //
+        // Add an empty record if one is missing
+        try {
+            db.run("INSERT INTO PASYSTEM_POPUP_CONTENT (uuid) VALUES (?)")
+                .param(uuid)
+                .executeUpdate();
+        } catch (SQLException e) {
+            // Expected for updates
+        }
+
+        // Set the content CLOB
+        db.run("UPDATE PASYSTEM_POPUP_CONTENT set template_content = ? WHERE uuid = ?")
             .param(new InputStreamReader(templateContent))
             .param(uuid)
-            .executeUpdate() == 0) {
-
-            db.run("INSERT INTO PASYSTEM_POPUP_CONTENT (uuid, template_content) VALUES (?, ?)")
-                .param(uuid)
-                .param(new InputStreamReader(templateContent))
-                .executeUpdate();
-        }
+            .executeUpdate();
     }
 
 
-    private void setPopupAssignees(DBConnection db, String uuid, boolean isOpenCampaign, Optional<List<String>> assignToUsers) throws SQLException {
-        db.run("DELETE FROM PASYSTEM_POPUP_ASSIGN where uuid = ? AND open_campaign = 1")
-            .param(uuid)
-            .executeUpdate();
-
-        if (isOpenCampaign) {
-            db.run("INSERT INTO PASYSTEM_POPUP_ASSIGN (uuid, open_campaign) VALUES (?, 1)")
-                .param(uuid)
-                .executeUpdate();
-        } else if (assignToUsers.isPresent()) {
+    private void setPopupAssignees(DBConnection db, String uuid, Optional<List<String>> assignToUsers) throws SQLException {
+        if (assignToUsers.isPresent()) {
             db.run("DELETE FROM PASYSTEM_POPUP_ASSIGN where uuid = ? AND user_eid is not NULL")
                 .param(uuid)
                 .executeUpdate();
