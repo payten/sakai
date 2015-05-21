@@ -65,6 +65,7 @@ class PASystemImpl implements PASystem {
 
       result.append(getBannersFooter());
       result.append(getPopupsFooter());
+      result.append(getTimezoneCheckFooter());
 
       return result.toString();
     }
@@ -181,4 +182,21 @@ class PASystemImpl implements PASystem {
         }
     }
 
+
+    private String getTimezoneCheckFooter() {
+        if (ServerConfigurationService.getBoolean("pasystem.timezone-check", false)) {
+            Handlebars handlebars = new Handlebars();
+
+            try {
+                Template template = handlebars.compile("templates/timezone_footer");
+
+                return template.apply(this);
+            } catch (IOException e) {
+                LOG.warn("Timezone footer failed", e);
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
 }

@@ -1,0 +1,9 @@
+<script id="timezoneBannerTemplate" type="text/template">
+  <span>
+    <a href="${setTimezoneURL}" id="setTimezoneMsg">Your computer's time zone <span class="computerTimezone">${reportedTimezone}</span> does not match your account's time zone of <span class="prefsTimezone">${prefsTimezone}</span>. <span class="pasystem-tz-click-here">Click here to update your time zone preferences</span>.</a>
+  </span>
+</script>
+
+<script>
+ new PASystemTimezoneChecker();
+</script>
