@@ -108,10 +108,12 @@ public class PopupsHandler extends BaseHandler implements Handler {
         if (request.getAttribute(attributeName) != null) {
             DiskFileItem templateItem = (DiskFileItem) request.getAttribute(attributeName);
 
-            try {
-                return Optional.of(templateItem.getInputStream());
-            } catch (IOException e) {
-                add_error("template", "template_upload_failed", e.toString());
+            if (templateItem.getSize() > 0) {
+                try {
+                    return Optional.of(templateItem.getInputStream());
+                } catch (IOException e) {
+                    add_error("template", "template_upload_failed", e.toString());
+                }
             }
         }
 
