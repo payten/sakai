@@ -5,6 +5,7 @@ CREATE TABLE `pasystem_popup_screens` (
   `descriptor` VARCHAR(255),
   `start_time` BIGINT,
   `end_time` BIGINT,
+  `open_campaign` int(1) DEFAULT NULL,
   INDEX `start_time` (`start_time`),
   INDEX `descriptor` (`descriptor`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -18,7 +19,6 @@ CREATE TABLE `pasystem_popup_content` (
 CREATE TABLE `pasystem_popup_assign` (
   `uuid` varchar(255),
   `user_eid` varchar(255) DEFAULT NULL,
-  `open_campaign` int(11) DEFAULT NULL,
    FOREIGN KEY (uuid) REFERENCES pasystem_popup_screens(uuid),
    INDEX `user_eid` (`user_eid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

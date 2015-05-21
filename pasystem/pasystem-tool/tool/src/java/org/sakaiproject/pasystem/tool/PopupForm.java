@@ -27,13 +27,12 @@ class PopupForm {
 
     public static PopupForm fromPopup(Popup existingPopup, PASystem paSystem) {
         String uuid = existingPopup.getUuid();
-        boolean isOpenCampaign = paSystem.getPopups().isOpenCampaign(uuid);
         List<String> assignees = paSystem.getPopups().getAssignees(uuid);
 
         return new PopupForm(uuid, existingPopup.getDescriptor(),
                              existingPopup.getStartTime(),
                              existingPopup.getEndTime(),
-                             isOpenCampaign,
+                             existingPopup.isOpenCampaign(),
                              assignees,
                              null);
     }
@@ -41,7 +40,7 @@ class PopupForm {
 
 
     public Popup toPopup() {
-        return Popup.create(getDescriptor(), getStartTime(), getEndTime());
+        return Popup.create(descriptor, startTime, endTime, isOpenCampaign);
     }
 
 

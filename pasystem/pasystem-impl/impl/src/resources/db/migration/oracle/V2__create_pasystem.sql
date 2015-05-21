@@ -4,7 +4,8 @@ CREATE TABLE pasystem_popup_screens (
   uuid varchar2(255) PRIMARY KEY ,
   descriptor varchar2(255),
   start_time NUMBER,
-  end_time NUMBER
+  end_time NUMBER,
+  open_campaign number(1) DEFAULT NULL
 );
 
 CREATE INDEX popup_screen_descriptor on pasystem_popup_screens (descriptor);
@@ -22,7 +23,6 @@ CREATE TABLE pasystem_popup_content (
 CREATE TABLE pasystem_popup_assign (
   uuid varchar2(255),
   user_eid varchar2(255) DEFAULT NULL,
-  open_campaign number(1) DEFAULT NULL,
   CONSTRAINT popup_assign_uuid_fk FOREIGN KEY (uuid) REFERENCES pasystem_popup_screens(uuid)
 );
 
