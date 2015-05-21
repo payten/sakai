@@ -9,6 +9,7 @@
       <tr>
         <th>Message</th>
         <th>Active</th>
+        <th>Dismissible</th>
         <th>From</th>
         <th>Until</th>
         <th><!-- actions --></th>
@@ -19,10 +20,12 @@
       <tr>
         <td>{{this.message}}</td>
         <td>{{this.active}}</td>
+        <td>{{this.dismissible}}</td>
         <td>{{show-time this this.startTime}}</td>
         <td>{{show-time this this.endTime}}</td>    
         <td class="actions">
             <a href="{{{actionURL this 'banners' this.uuid "edit"}}}" class="btn btn-primary btn-xs">Edit</a>
+            <a href="{{{actionURL this 'banners' this.uuid "delete"}}}" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></a>
         </td>
       </tr>
       {{/each}}
