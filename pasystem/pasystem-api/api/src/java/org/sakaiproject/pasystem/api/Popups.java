@@ -20,6 +20,8 @@ public interface Popups {
 
     public List<Popup> getAll();
 
+    public String getPopupContent(String uuid);
+
     public Optional<Popup> getForId(String uuid);
 
     public List<String> getAssignees(String uuid);

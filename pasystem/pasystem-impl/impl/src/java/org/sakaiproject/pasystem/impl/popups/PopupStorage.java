@@ -2,6 +2,7 @@ package org.sakaiproject.pasystem.impl.popups;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -105,6 +106,26 @@ public class PopupStorage implements Popups {
                          }
 
                          return popups;
+                     }
+                 }
+             });
+    }
+
+
+    public String getPopupContent(String uuid) {
+        return DB.transaction
+            ("Get the content for a popup",
+             new DBAction<String>() {
+                 public String call(DBConnection db) throws SQLException {
+                     try (DBResults results = db.run("SELECT template_content from PASYSTEM_POPUP_CONTENT where uuid = ?")
+                          .param(uuid)
+                          .executeQuery()) {
+                         for (ResultSet result : results) {
+                             Clob contentClob = result.getClob(1);
+                             return contentClob.getSubString(1, (int)contentClob.length());
+                         }
+
+                         return "";
                      }
                  }
              });

@@ -23,7 +23,7 @@ import javax.servlet.ServletException;
 
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.cover.SessionManager;
-
+import org.sakaiproject.authz.cover.SecurityService;
 import org.sakaiproject.time.cover.TimeService;
 import org.sakaiproject.time.api.Time;
 import org.sakaiproject.tool.cover.ToolManager;
@@ -39,7 +39,8 @@ import org.sakaiproject.tool.api.ToolURLManager;
 
 public class PASystemServlet extends HttpServlet {
 
-    private static String FLASH_MESSAGE_KEY = "pasystem-tool.flash.errors";
+    private static final String ADMIN_SITE_REALM = "/site/!admin";
+    private static final String FLASH_MESSAGE_KEY = "pasystem-tool.flash.errors";
 
     private static final Logger LOG = LoggerFactory.getLogger(PASystemServlet.class);
 
@@ -76,6 +77,8 @@ public class PASystemServlet extends HttpServlet {
 
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        checkAccessControl();
+
         response.setHeader("Content-Type", "text/html");
 
         URL toolBaseURL = determineBaseURL();
@@ -85,6 +88,7 @@ public class PASystemServlet extends HttpServlet {
             Template template = handlebars.compile("org/sakaiproject/pasystem/tool/views/layout");
             Map<String, Object> context = new HashMap<String, Object>();
 
+            context.put("layout", true);
             context.put("skinRepo", ServerConfigurationService.getString("skin.repo", ""));
             context.put("randomSakaiHeadStuff", request.getAttribute("sakai.html.head"));
 
@@ -101,11 +105,21 @@ public class PASystemServlet extends HttpServlet {
             } else {
                 context.put("flash", messages);
                 context.put("errors", handler.getErrors());
-                response.getWriter().write(template.apply(context));
+
+                if (Boolean.TRUE.equals(context.get("layout"))) {
+                    response.getWriter().write(template.apply(context));
+                }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            // Log.warn("something clever")
+            LOG.warn("Write failed", e);
+        }
+    }
+
+
+    private void checkAccessControl() {
+        if (!SecurityService.unlock("pasystem.manage", ADMIN_SITE_REALM)) {
+            LOG.error("Access denied to PA System management tool for user " + SessionManager.getCurrentSessionUserId());
+            throw new RuntimeException("Access denied");
         }
     }
 

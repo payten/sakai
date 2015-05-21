@@ -149,37 +149,36 @@ class PASystemImpl implements PASystem {
         Session session = SessionManager.getCurrentSession();
         User currentUser = UserDirectoryService.getCurrentUser();
 
-        if (currentUser == null || session.getAttribute(POPUP_SCREEN_SHOWN) != null) {
+        if (currentUser == null) {
             return "";
         }
 
-        Popup popup = new PopupForUser(currentUser).getPopup();
+        Map<String, Object> context = new HashMap<String, Object>();
 
-        if (popup.isActive()) {
-            Map<String, Object> context = new HashMap<String, Object>();
-            context.put("popupTemplate", popup.getTemplate());
-            context.put("popupUuid", popup.getUuid());
-            context.put("sakai_csrf_token", session.getAttribute("sakai.csrf.token"));
-            context.put("popup", true);
+        if (session.getAttribute(POPUP_SCREEN_SHOWN) != null) {
+            Popup popup = new PopupForUser(currentUser).getPopup();
+            if (popup.isActive()) {
+                context.put("popupTemplate", popup.getTemplate());
+                context.put("popupUuid", popup.getUuid());
+                context.put("sakai_csrf_token", session.getAttribute("sakai.csrf.token"));
+                context.put("popup", true);
 
-            if (currentUser.getEid() != null) {
-                // Delivered!
-                session.setAttribute(POPUP_SCREEN_SHOWN, "true");
-            }
-
-            Handlebars handlebars = new Handlebars();
-
-            try {
-                Template template = handlebars.compile("templates/popup_footer");
-                return template.apply(context);
-            } catch (IOException e) {
-                LOG.warn("Popup footer failed", e);
-                return "";
+                if (currentUser.getEid() != null) {
+                    // Delivered!
+                    session.setAttribute(POPUP_SCREEN_SHOWN, "true");
+                }
             }
         }
 
+        Handlebars handlebars = new Handlebars();
 
-        return "";
+        try {
+            Template template = handlebars.compile("templates/popup_footer");
+            return template.apply(context);
+        } catch (IOException e) {
+            LOG.warn("Popup footer failed", e);
+            return "";
+        }
     }
 
 }
