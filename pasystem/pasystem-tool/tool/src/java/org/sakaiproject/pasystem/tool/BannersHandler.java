@@ -39,8 +39,8 @@ public class BannersHandler extends BaseHandler implements Handler {
             }
         } else if (request.getPathInfo().contains("/delete")) {
             if (isGet(request)) {
-            //    sendRedirect("");
-            //} else if (isPost(request)) {
+                sendRedirect("");
+            } else if (isPost(request)) {
                 handleDelete(extractId(request), context);
             }
         } else {
