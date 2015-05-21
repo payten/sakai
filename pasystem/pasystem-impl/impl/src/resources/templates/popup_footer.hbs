@@ -1,4 +1,4 @@
-<script type="text/template" id="popup-container-content" data-popup-rued="{{popupUuid}}" data-csrf-token="{{sakai_csrf_token}}">
+<script type="text/template" id="popup-container-content">
 {{{popupTemplate}}}
 </script>
 
@@ -11,47 +11,5 @@
 </script>
 
 <script>
-$(function() {
-
-    var permanentlyAcknowledged = false;
-
-    var popupContent = $('#popup-container-content');
-    var uuid = popupContent.data('popup-uuid');
-    var csrf_token = popupContent.data('csrf-token');
-
-    var acknowledge = function (uuid, acknowledgement) {
-        $.ajax({
-            method: 'POST',
-            url: '/pasystem-tool/popups/acknowledge',
-            data: {
-                uuid: uuid,
-                acknowledgement: acknowledgement,
-                sakai_csrf_token: csrf_token
-            },
-        });
-    };
-
-
-    if (uuid) {
-        $.featherlight((popupContent.html() + $('#popup-container-footer').html()).trim(),
-                       {
-                           afterClose : function (event) {
-                               var acknowledgement = permanentlyAcknowledged ? 'permanent' : 'temporary';
-                               acknowledge(uuid, acknowledgement);
-                           },
-                           afterContent : function (event) {
-                               $('#popup-acknowledged-button').on('click', function () {
-                                   permanentlyAcknowledged = true;
-                                   $.featherlight.current().close();
-                               });
-
-                               $('#popup-later-button').on('click', function () {
-                                   permanentlyAcknowledged = false;
-                                   $.featherlight.current().close();
-                               });
-
-                           }
-                       });
-    }
-});
+  new PASystemPopup("{{popupUuid}}, {{sakai_csrf_token}}");
 </script>
