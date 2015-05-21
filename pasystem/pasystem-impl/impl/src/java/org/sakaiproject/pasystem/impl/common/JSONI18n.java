@@ -1,4 +1,4 @@
-package org.sakaiproject.pasystem.tool;
+package org.sakaiproject.pasystem.impl.common;
 
 import java.io.InputStreamReader;
 import java.io.InputStream;
@@ -8,25 +8,31 @@ import java.util.Properties;
 import org.sakaiproject.user.cover.PreferencesService;
 import org.sakaiproject.tool.cover.SessionManager;
 
+import org.sakaiproject.pasystem.api.I18n;
+
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.json.simple.JSONObject;
 
-class I18n {
+public class JSONI18n implements I18n {
 
     private JSONObject translations;
 
-    public I18n(Locale locale) {
+    public JSONI18n(ClassLoader loader, String resourceBase, Locale locale) {
         String language = "default";
 
         if (locale != null) {
             language = locale.getLanguage();
         }
 
-        InputStream stream = getClass().getClassLoader().getResourceAsStream("org/sakaiproject/pasystem/tool/i18n/" + language + ".json");
+        InputStream stream = loader.getResourceAsStream(resourceBase + "/" + language + ".json");
 
         if (stream == null) {
-            stream = getClass().getClassLoader().getResourceAsStream("org/sakaiproject/pasystem/tool/i18n/default.json");
+            stream = loader.getResourceAsStream(resourceBase + "/default.json");
+        }
+
+        if (stream == null) {
+            throw new RuntimeException("Missing default I18n file: " + resourceBase + "/default.json");
         }
 
 

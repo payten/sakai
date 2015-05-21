@@ -1,23 +1,29 @@
 package org.sakaiproject.pasystem.impl;
 
 import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Helper;
+import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.Template;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Locale;
 import org.flywaydb.core.Flyway;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.sakaiproject.authz.cover.FunctionManager;
+import org.sakaiproject.user.cover.PreferencesService;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.pasystem.api.Banner;
 import org.sakaiproject.pasystem.api.Banners;
+import org.sakaiproject.pasystem.api.I18n;
 import org.sakaiproject.pasystem.api.PASystem;
 import org.sakaiproject.pasystem.api.Popup;
 import org.sakaiproject.pasystem.api.Popups;
 import org.sakaiproject.pasystem.impl.banners.BannerStorage;
+import org.sakaiproject.pasystem.impl.common.JSONI18n;
 import org.sakaiproject.pasystem.impl.popups.PopupStorage;
 import org.sakaiproject.pasystem.impl.popups.PopupForUser;
 import org.sakaiproject.portal.util.PortalUtils;
@@ -25,6 +31,7 @@ import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.cover.SessionManager;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.cover.UserDirectoryService;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +42,16 @@ class PASystemImpl implements PASystem {
 
     private final String POPUP_SCREEN_SHOWN = "pasystem.popup.screen.shown";
 
+    private ConcurrentHashMap<String, I18n> i18nStore;
+
     public void init() {
         if (ServerConfigurationService.getBoolean("auto.ddl", false) || ServerConfigurationService.getBoolean("pasystem.auto.ddl", false)) {
             runDBMigration(ServerConfigurationService.getString("vendor@org.sakaiproject.db.api.SqlService"));
         }
 
         FunctionManager.registerFunction("pasystem.manage");
+
+        i18nStore = new ConcurrentHashMap<String, I18n>(1);
     }
 
     public void destroy() {}
@@ -48,7 +59,9 @@ class PASystemImpl implements PASystem {
     public String getFooter() {
       StringBuilder result = new StringBuilder();
 
-      Handlebars handlebars = new Handlebars();
+      Locale userLocale = PreferencesService.getLocale(SessionManager.getCurrentSessionUserId());
+      I18n i18n = getI18n(this.getClass().getClassLoader(), "i18n", userLocale);
+      Handlebars handlebars = loadHandleBars(i18n);
 
       try {
         Template template = handlebars.compile("templates/shared_footer");
@@ -63,9 +76,9 @@ class PASystemImpl implements PASystem {
         return "";
       }
 
-      result.append(getBannersFooter());
-      result.append(getPopupsFooter());
-      result.append(getTimezoneCheckFooter());
+      result.append(getBannersFooter(handlebars));
+      result.append(getPopupsFooter(handlebars));
+      result.append(getTimezoneCheckFooter(handlebars));
 
       return result.toString();
     }
@@ -78,6 +91,41 @@ class PASystemImpl implements PASystem {
 
     public Popups getPopups() {
         return new PopupStorage();
+    }
+
+
+    public I18n getI18n(ClassLoader loader, String resourceBase, Locale locale) {
+        String language = "en";
+
+        if (locale != null) {
+            language = locale.getLanguage();
+        }
+
+        String i18nKey = resourceBase + "::" + language + "::" + loader.hashCode();
+
+        // i18nKey
+        System.err.println("\n*** DEBUG " + System.currentTimeMillis() + "[PASystemImpl.java:107 e2733e]: " + "\n    i18nKey => " + (i18nKey) + "\n");
+        
+
+        if (!i18nStore.containsKey(i18nKey)) {
+            i18nStore.put(i18nKey, new JSONI18n(loader, resourceBase, locale));
+        }
+
+        return i18nStore.get(i18nKey);
+    }
+
+
+    private Handlebars loadHandleBars(final I18n i18n) {
+      Handlebars handlebars = new Handlebars();
+
+      handlebars.registerHelper("t", new Helper<Object>() {
+              public CharSequence apply(final Object context, final Options options) {
+                  String key = options.param(0);
+                  return i18n.t(key);
+              }
+          });
+
+      return handlebars;
     }
 
 
@@ -112,9 +160,7 @@ class PASystemImpl implements PASystem {
     }
 
 
-    private String getBannersFooter() {
-        Handlebars handlebars = new Handlebars();
-
+    private String getBannersFooter(Handlebars handlebars) {
         try {
             Template template = handlebars.compile("templates/banner_footer");
 
@@ -146,7 +192,7 @@ class PASystemImpl implements PASystem {
     }
 
 
-    private String getPopupsFooter() {
+    private String getPopupsFooter(Handlebars handlebars) {
         Session session = SessionManager.getCurrentSession();
         User currentUser = UserDirectoryService.getCurrentUser();
 
@@ -171,8 +217,6 @@ class PASystemImpl implements PASystem {
             }
         }
 
-        Handlebars handlebars = new Handlebars();
-
         try {
             Template template = handlebars.compile("templates/popup_footer");
             return template.apply(context);
@@ -183,9 +227,8 @@ class PASystemImpl implements PASystem {
     }
 
 
-    private String getTimezoneCheckFooter() {
+    private String getTimezoneCheckFooter(Handlebars handlebars) {
         if (ServerConfigurationService.getBoolean("pasystem.timezone-check", false)) {
-            Handlebars handlebars = new Handlebars();
 
             try {
                 Template template = handlebars.compile("templates/timezone_footer");
