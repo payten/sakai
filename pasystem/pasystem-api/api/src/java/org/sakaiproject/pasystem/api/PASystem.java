@@ -1,5 +1,7 @@
 package org.sakaiproject.pasystem.api;
 
+import java.util.Locale;
+
 public interface PASystem {
 
     public void init();
@@ -11,5 +13,7 @@ public interface PASystem {
     public Popups getPopups();
 
     public Banners getBanners();
+
+    public I18n getI18n(ClassLoader loader, String resourceBase, Locale locale);
 }
     
