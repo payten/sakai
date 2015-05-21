@@ -7,27 +7,25 @@
   border: 1px solid rgba(165, 138, 29, 0.1);
 }
 .pasystem-banner-alert:before {
-  font-family: 'nyu-classes-icons';
-  font-size: 20px;
-  content: '\e019';
-  vertical-align: middle;
-  margin-left: 0.5em;
-  margin-right: 0.5em;
+  background-image: url(../images/warning.png);
+  background-repeat: no-repeat;
+  content: ' ';
+  width: 20px;
+  height: 20px;
+  float: left;
+  margin: 0 10px;
 }
 .pasystem-banner-alert .pasystem-banner-alert-close {
   position: absolute;
   top: 50%;
-  right: 0;
+  right: 10px;
   text-decoration: none;
-  margin-top: -1em;
-}
-.pasystem-banner-alert .pasystem-banner-alert-close:before {
-  color: #444;
-  font-family: 'nyu-classes-icons';
-  content: '\e600';
-  font-size: 20px;
-  vertical-align: middle;
-  margin-right: 0.25em;
+  background-image: url(../images/dismiss.png);
+  background-repeat: no-repeat;
+  content: ' ';
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
 }
 .pasystem-banner-alert-toggle-list-item {
   float: left;
@@ -42,16 +40,12 @@
   background-color: #f7e084;
   color: #000 !important;
   text-align: center;
-  padding: 6px 8px;
+  padding: 6px 8px 6px 30px;
   border-radius: 3px;
   text-decoration: none;
-}
-.pasystem-banner-alert-toggle:before {
-  font-family: 'nyu-classes-icons';
-  content: '\e019';
-  vertical-align: middle;
-  margin-right: 0.25em;
-}
+  background-image: url(../images/warning.png);
+  background-repeat: no-repeat;
+  background-position: 5px center;
 .pasystem-banner-alert-toggle:hover {
   -webkit-transition: background-color 0.2s, color 0.2s;
   -moz-transition: background-color 0.2s, color 0.2s;
