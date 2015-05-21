@@ -39,7 +39,7 @@ public class PopupForUser {
             return Popup.createNullPopup();
         }
 
-        String sql = ("SELECT popup.uuid, popup.descriptor, popup.start_time, popup.end_time, content.template_content " +
+        String sql = ("SELECT popup.uuid, popup.descriptor, popup.start_time, popup.end_time, popup.open_campaign, content.template_content " +
 
                       // Find a popup screen
                       " FROM PASYSTEM_POPUP_SCREENS popup" +
@@ -85,7 +85,7 @@ public class PopupForUser {
                               .param(getTemporaryTimeoutMilliseconds())
                               .executeQuery()) {
                              for (ResultSet result : results) {
-                                 Clob contentClob = result.getClob(5);
+                                 Clob contentClob = result.getClob(6);
                                  String templateContent = contentClob.getSubString(1, (int)contentClob.length());
 
                                  // Got one!

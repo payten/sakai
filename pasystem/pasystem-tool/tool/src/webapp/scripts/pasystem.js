@@ -1,3 +1,6 @@
+/************************************************************************************
+ * PASystemBannerAlerts - for handle banner things!
+ */
 function PASystemBannerAlerts(json) {
   this.json = json;
   this.setupAlertBannerToggle();
@@ -118,5 +121,60 @@ PASystemBannerAlerts.prototype.setupEvents = function() {
   $(document).on("click", ".pasystem-banner-alert-close", function() {
     self.handleBannerAlertClose($(this).closest(".pasystem-banner-alert"));
     return false;
+  });
+};
+
+
+/************************************************************************************
+ * PASystemPopup - for handle popup things!
+ */
+function PASystemPopup(uuid, csrf_token) {
+  this.permanentlyAcknowledged = false;
+  this.uuid = uuid;
+  this.csrf_token = csrf_token;
+
+  this.$popupContent = $('#popup-container-content');
+
+  if (this.uuid) {
+    this.showPopup();
+  }
+};
+
+
+PASystemPopup.prototype.showPopup = function() {
+  var self = this;
+
+  var popupHTML = (self.$popupContent.html() + $('#popup-container-footer').html()).trim();
+
+  $.featherlight(popupHTML,
+                 {
+                   afterClose : function (event) {
+                     var acknowledgement = self.permanentlyAcknowledged ? 'permanent' : 'temporary';
+                     self.acknowledge(acknowledgement);
+                   },
+                   afterContent : function (event) {
+                     $('#popup-acknowledged-button').on('click', function () {
+                       self.permanentlyAcknowledged = true;
+                       $.featherlight.current().close();
+                     });
+
+                     $('#popup-later-button').on('click', function () {
+                       self.permanentlyAcknowledged = false;
+                       $.featherlight.current().close();
+                     });
+                   }
+                 });
+};
+
+
+PASystemPopup.prototype.acknowledge = function(acknowledgement) {
+  $.ajax({
+      method: 'POST',
+      url: '/pasystem-tool/popups/acknowledge',
+      data: {
+          uuid: this.uuid,
+          acknowledgement: acknowledgement,
+          sakai_csrf_token: this.csrf_token
+      },
   });
 };
