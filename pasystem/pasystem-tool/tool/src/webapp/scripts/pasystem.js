@@ -219,14 +219,14 @@ PASystemTimezoneChecker.prototype.checkTimezone = function() {
 
   if (self.isCheckRequired()) {
     $.ajax({
-      url: '/portal/timezoneCheck',
+      url: '/direct/pasystem/checkTimeZone',
       data: {timezone: self.tz.name()},
       type: "GET",
       dataType: 'json',
       success: function(data) {
         if (data.status == 'MISMATCH' && data.setTimezoneUrl) {
           // Add banner for Timezone check message
-          sakai.pasystem.banners.addBannerAlert("tz", self.getTimezoneBannerContent(), true, "pasystem-timezone-banner-alert");
+          sakai.pasystem.banners.addBannerAlert("tz", self.getTimezoneBannerContent(data), true, "pasystem-timezone-banner-alert");
         } else {
           self.doNotCheckAgainForAWhile();
         }
@@ -236,8 +236,15 @@ PASystemTimezoneChecker.prototype.checkTimezone = function() {
 };
 
 
-PASystemTimezoneChecker.prototype.getTimezoneBannerContent = function() {
-  return $("#timezoneBannerTemplate").html().trim();
+PASystemTimezoneChecker.prototype.getTimezoneBannerContent = function(msg) {
+  var template = $("#timezoneBannerTemplate").html().trim();
+  var trimPathTemplate = TrimPath.parseTemplate(template, "timezoneBannerTemplate");
+
+  return $(trimPathTemplate.process({
+    setTimezoneUrl: msg.setTimezoneUrl,
+    reportedTimezone: msg.reportedTimezone,
+    prefsTimezone: msg.prefsTimezone
+  }));
 };
 
 

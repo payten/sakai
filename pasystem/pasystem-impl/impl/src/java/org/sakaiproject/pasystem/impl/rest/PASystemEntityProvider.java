@@ -66,7 +66,7 @@ public class PASystemEntityProvider implements EntityProvider, AutoRegisterEntit
             try {
                 Site userSite = SiteService.getSite("~"+userid);
                 ToolConfiguration preferences = userSite.getToolForCommonId("sakai.preferences");
-                return String.format("/portal/tool/%s/timezone", preferences.getId());
+                return String.format("/portal/site/~%s/tool/%s/timezone", userid, preferences.getId());
             } catch (Exception ex) {
                 return null;
             }

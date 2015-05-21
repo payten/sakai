@@ -10,17 +10,19 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-
+import org.sakaiproject.user.cover.PreferencesService;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.cover.SessionManager;
 import org.sakaiproject.authz.cover.SecurityService;
@@ -44,6 +46,8 @@ public class PASystemServlet extends HttpServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(PASystemServlet.class);
 
+    private ConcurrentHashMap<String, I18n> i18nStore;
+
     private PASystem paSystem;
 
 
@@ -51,6 +55,7 @@ public class PASystemServlet extends HttpServlet {
         super.init(config);
 
         paSystem = (PASystem) ComponentManager.get(PASystem.class);
+        i18nStore = new ConcurrentHashMap<String, I18n>(1);
     }
 
 
@@ -79,10 +84,13 @@ public class PASystemServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         checkAccessControl();
 
+        Locale userLocale = PreferencesService.getLocale(SessionManager.getCurrentSessionUserId());
+        I18n i18n = getI18nForLocale(userLocale);
+
         response.setHeader("Content-Type", "text/html");
 
         URL toolBaseURL = determineBaseURL();
-        Handlebars handlebars = loadHandlebars(toolBaseURL);
+        Handlebars handlebars = loadHandlebars(toolBaseURL, i18n);
 
         try {
             Template template = handlebars.compile("org/sakaiproject/pasystem/tool/views/layout");
@@ -113,6 +121,21 @@ public class PASystemServlet extends HttpServlet {
         } catch (IOException e) {
             LOG.warn("Write failed", e);
         }
+    }
+
+
+    private I18n getI18nForLocale(Locale userLocale) {
+        String language = "en";
+
+        if (userLocale != null) {
+            language = userLocale.getLanguage();
+        }
+
+        if (!i18nStore.containsKey(language)) {
+            i18nStore.put(language, new I18n(userLocale));
+        }
+
+        return i18nStore.get(language);
     }
 
 
@@ -157,7 +180,7 @@ public class PASystemServlet extends HttpServlet {
     }
 
 
-    private Handlebars loadHandlebars(final URL baseURL) {
+    private Handlebars loadHandlebars(final URL baseURL, final I18n i18n) {
         Handlebars handlebars = new Handlebars();
 
         handlebars.registerHelper("subpage", new Helper<Object>() {
@@ -212,6 +235,14 @@ public class PASystemServlet extends HttpServlet {
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }
+            }
+        });
+
+
+        handlebars.registerHelper("t", new Helper<Object>() {
+            public CharSequence apply(final Object context, final Options options) {
+                String key = options.param(0);
+                return i18n.t(key);
             }
         });
 
