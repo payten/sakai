@@ -29,6 +29,26 @@ $(function () {
     };
 
 
+    var initDeleteConfirmation = function() {
+      $(".pasystem-delete-btn").on("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var template = $("#pasystemDeleteConfirmationModalTemplate").html().trim().toString();
+        var trimPathTemplate = TrimPath.parseTemplate(template, "pasystemDeleteConfirmationModalTemplate");
+
+        var $modal = $(trimPathTemplate.process({
+                      recordType: $(this).data("record-type"),
+                      deleteURL: $(this).prop("href")
+                     }));
+
+        $(document.body).append($modal);
+
+        $modal.modal();
+      });
+    };
+
+
     var addFormHandlers = function () {
         var openCampaignRadio = $('#open-campaign-radio');
 
@@ -49,6 +69,7 @@ $(function () {
 
 
     initDatePickers();
+    initDeleteConfirmation();
     addFormHandlers();
 
 });

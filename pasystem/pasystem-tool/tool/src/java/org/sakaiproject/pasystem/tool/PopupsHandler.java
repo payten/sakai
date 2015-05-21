@@ -45,6 +45,12 @@ public class PopupsHandler extends BaseHandler implements Handler {
             } else if (isPost(request)) {
                 handleCreateOrUpdate(request, context, CrudMode.CREATE);
             }
+        } else if (request.getPathInfo().contains("/delete")) {
+            if (isGet(request)) {
+                sendRedirect("");
+            } else if (isPost(request)) {
+                handleDelete(extractId(request), context);
+            }
         }
     }
 
@@ -125,5 +131,13 @@ public class PopupsHandler extends BaseHandler implements Handler {
         context.put("subpage", "popup_form");
         context.put("mode", "new");
         context.put("templateRequired", true);
+    }
+
+
+    private void handleDelete(String uuid, Map<String, Object> context) {
+        paSystem.getPopups().deleteCampaign(uuid);
+
+        flash("info", "popup_deleted");
+        sendRedirect("");
     }
 }

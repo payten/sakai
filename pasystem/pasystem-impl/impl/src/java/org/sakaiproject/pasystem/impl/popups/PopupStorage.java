@@ -189,5 +189,33 @@ public class PopupStorage implements Popups {
             }
         }
     }
-                                   
+
+
+    public boolean deleteCampaign(final String uuid) {
+        return DB.transaction
+        ("Delete an existing popup campaign",
+        new DBAction<Boolean>() {
+            public Boolean call(DBConnection db) throws SQLException {
+                db.run("DELETE FROM PASYSTEM_POPUP_ASSIGN where uuid = ?")
+                  .param(uuid)
+                  .executeUpdate();
+
+                db.run("DELETE FROM PASYSTEM_POPUP_DISMISSED where uuid = ?")
+                  .param(uuid)
+                  .executeUpdate();
+
+                db.run("DELETE FROM PASYSTEM_POPUP_CONTENT where uuid = ?")
+                  .param(uuid)
+                  .executeUpdate();
+
+                db.run("DELETE FROM PASYSTEM_POPUP_SCREENS WHERE uuid = ?")
+                  .param(uuid)
+                  .executeUpdate();
+
+                db.commit();
+
+                return true;
+            }
+        });
+    }
 }
