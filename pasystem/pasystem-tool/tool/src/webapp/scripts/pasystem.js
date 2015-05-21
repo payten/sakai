@@ -95,6 +95,9 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
         if (!alert.dismissible) {
           $alert.find(".pasystem-banner-alert-close").remove();
         }
+        if (alert.cssClass) {
+          $alert.addClass(alert.cssClass);
+        }
         $alert.hide();
         self.$container.append($alert);
     }
@@ -114,6 +117,18 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
     }
   });
 };
+
+PASystemBannerAlerts.prototype.addBannerAlert = function(id, message, dismissible, cssClass) {
+  this.json.push({
+    id: id,
+    message: message,
+    dismissible: dismissible,
+    cssClass: cssClass
+  });
+
+  this.renderBannerAlerts();
+};
+
 
 PASystemBannerAlerts.prototype.setupEvents = function() {
   var self = this;
