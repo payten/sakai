@@ -51,6 +51,24 @@ public class PopupsHandler extends BaseHandler implements Handler {
             } else if (isPost(request)) {
                 handleDelete(extractId(request), context);
             }
+        } else if (request.getPathInfo().contains("/preview")) {
+            if (isGet(request)) {
+                String uuid = extractId(request);
+
+                context.put("layout", false);
+                try {
+                    String content = paSystem.getPopups().getPopupContent(uuid);
+
+                    if (content.isEmpty()) {
+                        // Don't let the portal buffering hijack our response.
+                        content = "     ";
+                    }
+
+                    response.getWriter().write(content);
+                } catch (IOException e) {
+                    LOG.warn("Write failed while previewing popup", e);
+                }
+            }
         }
     }
 

@@ -168,13 +168,15 @@ PASystemPopup.prototype.showPopup = function() {
 
 
 PASystemPopup.prototype.acknowledge = function(acknowledgement) {
-  $.ajax({
+  if (this.uuid !== 'preview') {
+    $.ajax({
       method: 'POST',
       url: '/pasystem-tool/popups/acknowledge',
       data: {
-          uuid: this.uuid,
-          acknowledgement: acknowledgement,
-          sakai_csrf_token: this.csrf_token
+        uuid: this.uuid,
+        acknowledgement: acknowledgement,
+        sakai_csrf_token: this.csrf_token
       },
-  });
+    });
+  }
 };

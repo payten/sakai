@@ -58,6 +58,7 @@
         <td>{{show-time this this.startTime}}</td>
         <td>{{show-time this this.endTime}}</td>    
         <td class="actions">
+            <a href="{{{actionURL this 'popups' this.uuid "preview"}}}" class="btn btn-default btn-xs preview-btn">Preview</a>
             <a href="{{{actionURL this 'popups' this.uuid "edit"}}}" class="btn btn-primary btn-xs">Edit</a>
             <a href="{{{actionURL this 'popups' this.uuid "delete"}}}" class="btn btn-danger btn-xs pasystem-delete-btn" data-record-type="popup"><span class="glyphicon glyphicon-trash"></span></a>
         </td>

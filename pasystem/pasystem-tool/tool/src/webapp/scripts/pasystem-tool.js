@@ -49,6 +49,23 @@ $(function () {
     };
 
 
+    var addPreviewHandlers = function () {
+        $(document).on('click', '.preview-btn', function () {
+            var url = $(this).prop('href')
+
+            $.ajax({
+                url: url,
+                success: function (data) {
+                    $('#popup-container-content').html(data);
+                    new PASystemPopup('preview', 'preview');
+                }
+            });
+
+            return false;
+        });
+    }
+
+
     var addFormHandlers = function () {
         var openCampaignRadio = $('#open-campaign-radio');
 
@@ -71,5 +88,5 @@ $(function () {
     initDatePickers();
     initDeleteConfirmation();
     addFormHandlers();
-
+    addPreviewHandlers();
 });
