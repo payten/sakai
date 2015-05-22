@@ -31,7 +31,7 @@ public class PopupsHandler extends BaseHandler implements Handler {
                 Optional<Popup> popup = paSystem.getPopups().getForId(uuid);
 
                 if (popup.isPresent()) {
-                    showEditForm(PopupForm.fromPopup(popup.get(), paSystem), context);
+                    showEditForm(PopupForm.fromPopup(popup.get(), paSystem), context, CrudMode.UPDATE);
                 } else {
                     flash("danger", "No popup found for UUID: " + uuid);
                     sendRedirect("");
@@ -73,9 +73,15 @@ public class PopupsHandler extends BaseHandler implements Handler {
     }
 
 
-    private void showEditForm(PopupForm popupForm, Map<String, Object> context) {
+    private void showEditForm(PopupForm popupForm, Map<String, Object> context, CrudMode mode) {
         context.put("subpage", "popup_form");
-        context.put("mode", "edit");
+
+        if (CrudMode.UPDATE.equals(mode)) {
+            context.put("mode", "edit");
+        } else {
+            context.put("mode", "new");
+        }
+
         context.put("popup", popupForm);
     }
 
@@ -104,7 +110,7 @@ public class PopupsHandler extends BaseHandler implements Handler {
         }
 
         if (hasErrors()) {
-            showEditForm(popupForm, context);
+            showEditForm(popupForm, context, mode);
             return;
         }
 

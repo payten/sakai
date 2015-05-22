@@ -56,15 +56,8 @@ class BannerForm {
         String message = request.getParameter("message");
         String hosts = request.getParameter("hosts");
 
-        long startTime = 0;
-        if (request.getParameter("start_time") != "") {
-            startTime = parseTime(request.getParameter("start_time_selected_datetime")); 
-        }
-
-        long endTime = 0;
-        if (request.getParameter("end_time") != "") {
-            endTime = parseTime(request.getParameter("end_time_selected_datetime"));
-        }
+        long startTime = "".equals(request.getParameter("start_time")) ? 0 : parseTime(request.getParameter("start_time_selected_datetime"));
+        long endTime = "".equals(request.getParameter("end_time")) ? 0 : parseTime(request.getParameter("end_time_selected_datetime"));
 
         boolean isActive = "on".equals(request.getParameter("active"));
         boolean isDismissible = "on".equals(request.getParameter("dismissible"));
@@ -78,7 +71,7 @@ class BannerForm {
     public boolean hasValidEndTime() { return endTime >= 0; }
 
     public boolean startTimeBeforeEndTime() {
-        if (startTime < 0 || endTime < 0) {
+        if (startTime <= 0 || endTime <= 0) {
             return true;
         } else {
             return (startTime <= endTime);

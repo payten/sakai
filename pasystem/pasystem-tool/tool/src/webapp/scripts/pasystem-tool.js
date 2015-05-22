@@ -69,18 +69,21 @@ $(function () {
     var addFormHandlers = function () {
         var openCampaignRadio = $('#open-campaign-radio');
 
-        if (openCampaignRadio.length == 0) {
-            return;
+        if (openCampaignRadio.length > 0) {
+
+          var distribution = $('#distribution');
+
+          $('.campaign-visibility').on('change', function () {
+            if ($(this).attr('id') == openCampaignRadio.attr('id')) {
+              distribution.prop('disabled', true);
+            } else {
+              distribution.prop('disabled', false);
+            }
+          });
         }
 
-        var distribution = $('#distribution');
-
-        $('.campaign-visibility').on('change', function () {
-            if ($(this).attr('id') == openCampaignRadio.attr('id')) {
-                distribution.prop('disabled', true);
-            } else {
-                distribution.prop('disabled', false);
-            }
+        $('.pasystem-cancel-btn').on('click', function () {
+            window.location.replace($(this).data('target'));
         });
     };
 

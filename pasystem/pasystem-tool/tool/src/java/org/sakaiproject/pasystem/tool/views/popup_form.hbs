@@ -18,6 +18,7 @@
         <input class="form-control datepicker" type="text" name="start_time" id="start_time" data-init-date="{{popup.startTime}}"/>
         <span class="input-group-btn">
           <button class="btn btn-default invoke-datepicker-btn" type="button"><span class="glyphicon glyphicon-calendar"></span></button>
+          <button class="btn btn-default clear-datepicker-btn" type="button"><span class="glyphicon glyphicon-remove"></span></button>
         </span>
       </div>
     </div>
@@ -29,6 +30,7 @@
         <input class="form-control datepicker" type="text" name="end_time" id="end_time" data-init-date="{{popup.endTime}}"/>
         <span class="input-group-btn">
           <button class="btn btn-default invoke-datepicker-btn" type="button"><span class="glyphicon glyphicon-calendar"></span></button>
+          <button class="btn btn-default clear-datepicker-btn" type="button"><span class="glyphicon glyphicon-remove"></span></button>
         </span>
       </div>
     </div>
@@ -53,6 +55,6 @@
 
   <div class="col-sm-offset-2 col-sm-10">
     <input class="btn btn-primary" type="submit" name="create" value="Save Popup">
-    <input class="btn btn-default" type="button" name="cancel" value="Cancel">
+    <input class="btn btn-default pasystem-cancel-btn" data-target="{{baseURL}}" type="button" name="cancel" value="Cancel">
   </div>
 </form>

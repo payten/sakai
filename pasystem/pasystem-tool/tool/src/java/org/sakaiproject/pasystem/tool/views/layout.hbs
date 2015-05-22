@@ -16,7 +16,7 @@
                 {{#each flash}}
                     <ul class="alert alert-{{@key}}">
                         {{#each this}}
-                            <li>{{this}}</li>
+                            <li>{{t null this}}</li>
                         {{/each}}
                     </ul>
                 {{/each}}
@@ -25,7 +25,7 @@
             {{#if errors}}
                 <ul class="alert alert-danger">
                     {{#each errors}}
-                        <li> {{this.field}} - {{this.errorCode}}</li>
+                        <li> {{this.field}} - {{t null this.errorCode}}</li>
                     {{/each}}
                 </ul>
             {{/if}}

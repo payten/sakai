@@ -93,6 +93,7 @@ public class PASystemServlet extends HttpServlet {
             Template template = handlebars.compile("org/sakaiproject/pasystem/tool/views/layout");
             Map<String, Object> context = new HashMap<String, Object>();
 
+            context.put("baseURL", toolBaseURL);
             context.put("layout", true);
             context.put("skinRepo", ServerConfigurationService.getString("skin.repo", ""));
             context.put("randomSakaiHeadStuff", request.getAttribute("sakai.html.head"));

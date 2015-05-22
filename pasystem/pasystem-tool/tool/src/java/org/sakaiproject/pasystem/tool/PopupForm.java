@@ -60,8 +60,9 @@ class PopupForm {
     public static PopupForm fromRequest(String uuid, HttpServletRequest request) {
         String descriptor = request.getParameter("descriptor");
         boolean isOpenCampaign = "open-campaign".equals(request.getParameter("open-campaign"));
-        long startTime = parseTime(request.getParameter("start_time_selected_datetime"));
-        long endTime = parseTime(request.getParameter("end_time_selected_datetime"));
+
+        long startTime = "".equals(request.getParameter("start_time")) ? 0 : parseTime(request.getParameter("start_time_selected_datetime"));
+        long endTime = "".equals(request.getParameter("end_time")) ? 0 : parseTime(request.getParameter("end_time_selected_datetime"));
 
         List<String> assignToUsers = new ArrayList<String>();
         if (request.getParameter("distribution") != null) {
@@ -81,7 +82,7 @@ class PopupForm {
     public boolean hasValidEndTime() { return endTime >= 0; }
 
     public boolean startTimeBeforeEndTime() {
-        if (startTime < 0 || endTime < 0) {
+        if (startTime <= 0 || endTime <= 0) {
             return true;
         } else {
             return (startTime <= endTime);

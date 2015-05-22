@@ -44,7 +44,7 @@ public class Popup {
 
     public boolean isActive() {
         long now = System.currentTimeMillis();
-        return (uuid != null) && startTime <= now && now <= endTime;
+        return (uuid != null) && startTime <= now && (endTime == 0 || now <= endTime);
     }
 
     public String getTemplate() {
