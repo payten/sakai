@@ -11,6 +11,8 @@
 
 {{# if popup}}
 <script>
-  new PASystemPopup("{{popupUuid}}, {{sakai_csrf_token}}");
+  if (pasystem) {
+    new PASystemPopup("{{popupUuid}}, {{sakai_csrf_token}}");
+  }
 </script>
 {{/if}}

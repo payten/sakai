@@ -12,7 +12,7 @@
   </li>
 </script>
 <script>
-  var pasystem = pasystem || {};
-
-  pasystem['banners'] = new PASystemBannerAlerts({{{bannerJSON}}});
+  if (pasystem) {
+    pasystem['banners'] = new PASystemBannerAlerts({{{bannerJSON}}});
+  }
 </script>

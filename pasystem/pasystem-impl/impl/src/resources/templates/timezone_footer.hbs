@@ -5,5 +5,7 @@
 </script>
 
 <script>
- new PASystemTimezoneChecker();
+  if (pasystem) {
+    new PASystemTimezoneChecker().checkTimezone();
+  }
 </script>
