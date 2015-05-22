@@ -29,6 +29,7 @@
 }
 .pasystem-banner-alert-toggle-list-item {
   float: left;
+  margin-left: 120px; /* stay out of the way of the #roleSwitch link */
 }
 .pasystem-banner-alert-toggle {
   -webkit-transition: background-color 0.2s, color 0.2s;
