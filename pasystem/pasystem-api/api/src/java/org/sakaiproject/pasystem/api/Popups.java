@@ -27,4 +27,6 @@ public interface Popups {
     public List<String> getAssignees(String uuid);
 
     public boolean deleteCampaign(final String uuid);
+
+    public void acknowledge(String uuid, String userEid, String acknowledgementType);
 }

@@ -186,7 +186,7 @@ PASystemPopup.prototype.acknowledge = function(acknowledgement) {
   if (this.uuid !== 'preview') {
     $.ajax({
       method: 'POST',
-      url: '/pasystem-tool/popups/acknowledge',
+      url: '/direct/pasystem/popupAcknowledge',
       data: {
         uuid: this.uuid,
         acknowledgement: acknowledgement,

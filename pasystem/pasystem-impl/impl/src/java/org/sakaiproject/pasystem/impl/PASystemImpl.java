@@ -198,7 +198,7 @@ class PASystemImpl implements PASystem {
 
         Map<String, Object> context = new HashMap<String, Object>();
 
-        if (session.getAttribute(POPUP_SCREEN_SHOWN) != null) {
+        if (session.getAttribute(POPUP_SCREEN_SHOWN) == null) {
             Popup popup = new PopupForUser(currentUser).getPopup();
             if (popup.isActive()) {
                 context.put("popupTemplate", popup.getTemplate());

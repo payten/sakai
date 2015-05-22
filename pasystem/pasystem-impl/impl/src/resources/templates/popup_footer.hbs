@@ -9,10 +9,10 @@
 </div>
 </script>
 
-{{# if popup}}
+{{#if popup}}
 <script>
   if (pasystem) {
-    new PASystemPopup("{{popupUuid}}, {{sakai_csrf_token}}");
+    new PASystemPopup("{{popupUuid}}", "{{sakai_csrf_token}}");
   }
 </script>
 {{/if}}

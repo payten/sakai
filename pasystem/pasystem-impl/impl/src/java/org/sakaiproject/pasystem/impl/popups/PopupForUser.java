@@ -62,7 +62,7 @@ public class PopupForUser {
 
                       // And currently active
                       " popup.start_time <= ? AND " +
-                      " popup.end_time > ? AND " +
+                      " ((popup.end_time = 0) OR (popup.end_time > ?)) AND " +
 
                       // And either hasn't been dismissed yet
                       " (dismissed.state is NULL OR" +

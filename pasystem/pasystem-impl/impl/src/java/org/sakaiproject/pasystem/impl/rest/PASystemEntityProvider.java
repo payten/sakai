@@ -21,9 +21,18 @@ import org.sakaiproject.site.cover.SiteService;
 import org.sakaiproject.time.cover.TimeService;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.cover.UserDirectoryService;
+import org.sakaiproject.pasystem.api.PASystem;
+import org.sakaiproject.component.cover.ComponentManager;
+import org.sakaiproject.tool.cover.SessionManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class PASystemEntityProvider implements EntityProvider, AutoRegisterEntityProvider, ActionsExecutable, Outputable, Describeable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PASystemEntityProvider.class);
+
 
     @Override
     public String[] getHandledOutputFormats() {
@@ -33,6 +42,37 @@ public class PASystemEntityProvider implements EntityProvider, AutoRegisterEntit
     @Override
     public String getEntityPrefix() {
         return "pasystem";
+    }
+
+    @EntityCustomAction(action = "popupAcknowledge", viewKey = EntityView.VIEW_NEW)
+    public String popupAcknowledge(EntityView view, Map<String, Object> params) {
+        JSONObject result = new JSONObject();
+
+        result.put("status", "ERROR");
+
+        Object sessionToken = SessionManager.getCurrentSession().getAttribute("sakai.csrf.token");
+
+        if (sessionToken == null || !((String)sessionToken).equals(params.get("sakai_csrf_token"))) {
+            LOG.warn("CSRF token validation failed");
+            return result.toJSONString();
+        }
+
+        User currentUser = UserDirectoryService.getCurrentUser();
+        String uuid = (String)params.get("uuid");
+        String acknowledgement = (String)params.get("acknowledgement");
+        String eid = currentUser.getEid();
+
+        if (uuid == null || acknowledgement == null || eid == null) {
+            LOG.warn("Parameter mismatch: {}", params);
+            return result.toJSONString();
+        }
+            
+
+        PASystem paSystem = (PASystem) ComponentManager.get(PASystem.class);
+        paSystem.getPopups().acknowledge(uuid, eid, acknowledgement);
+        result.put("status", "SUCCESS");
+
+        return result.toJSONString();
     }
 
 
@@ -54,6 +94,7 @@ public class PASystemEntityProvider implements EntityProvider, AutoRegisterEntit
 
         return result.toJSONString();
     }
+
 
 
     class TimezoneChecker {
