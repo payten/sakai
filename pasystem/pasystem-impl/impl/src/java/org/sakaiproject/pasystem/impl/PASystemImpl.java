@@ -4,45 +4,39 @@ import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.Template;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Locale;
 import org.flywaydb.core.Flyway;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.sakaiproject.authz.cover.FunctionManager;
-import org.sakaiproject.user.cover.PreferencesService;
 import org.sakaiproject.component.cover.ServerConfigurationService;
-import org.sakaiproject.pasystem.api.Banner;
-import org.sakaiproject.pasystem.api.Banners;
-import org.sakaiproject.pasystem.api.I18n;
-import org.sakaiproject.pasystem.api.PASystem;
-import org.sakaiproject.pasystem.api.Popup;
-import org.sakaiproject.pasystem.api.Popups;
+import org.sakaiproject.pasystem.api.*;
 import org.sakaiproject.pasystem.impl.banners.BannerStorage;
 import org.sakaiproject.pasystem.impl.common.JSONI18n;
-import org.sakaiproject.pasystem.impl.popups.PopupStorage;
 import org.sakaiproject.pasystem.impl.popups.PopupForUser;
+import org.sakaiproject.pasystem.impl.popups.PopupStorage;
 import org.sakaiproject.portal.util.PortalUtils;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.cover.SessionManager;
 import org.sakaiproject.user.api.User;
+import org.sakaiproject.user.cover.PreferencesService;
 import org.sakaiproject.user.cover.UserDirectoryService;
-import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 class PASystemImpl implements PASystem {
 
     private static final Logger LOG = LoggerFactory.getLogger(PASystemImpl.class);
 
-    private final String POPUP_SCREEN_SHOWN = "pasystem.popup.screen.shown";
+    private static final String POPUP_SCREEN_SHOWN = "pasystem.popup.screen.shown";
 
-    private ConcurrentHashMap<String, I18n> i18nStore;
+    private Map<String, I18n> i18nStore;
 
     public void init() {
         if (ServerConfigurationService.getBoolean("auto.ddl", false) || ServerConfigurationService.getBoolean("pasystem.auto.ddl", false)) {
@@ -54,33 +48,34 @@ class PASystemImpl implements PASystem {
         i18nStore = new ConcurrentHashMap<String, I18n>(1);
     }
 
-    public void destroy() {}
+    public void destroy() {
+    }
 
     public String getFooter() {
-      StringBuilder result = new StringBuilder();
+        StringBuilder result = new StringBuilder();
 
-      Locale userLocale = PreferencesService.getLocale(SessionManager.getCurrentSessionUserId());
-      I18n i18n = getI18n(this.getClass().getClassLoader(), "i18n", userLocale);
-      Handlebars handlebars = loadHandleBars(i18n);
+        Locale userLocale = PreferencesService.getLocale(SessionManager.getCurrentSessionUserId());
+        I18n i18n = getI18n(this.getClass().getClassLoader(), "i18n", userLocale);
+        Handlebars handlebars = loadHandleBars(i18n);
 
-      try {
-        Template template = handlebars.compile("templates/shared_footer");
+        try {
+            Template template = handlebars.compile("templates/shared_footer");
 
-        Map<String, String> context = new HashMap<String, String>();
+            Map<String, String> context = new HashMap<String, String>();
 
-        context.put("portalCDNQuery", PortalUtils.getCDNQuery());
+            context.put("portalCDNQuery", PortalUtils.getCDNQuery());
 
-        result.append(template.apply(context));
-      } catch (IOException e) {
-        // Log.warn("something clever")
-        return "";
-      }
+            result.append(template.apply(context));
+        } catch (IOException e) {
+            LOG.warn("IOException while getting footer", e);
+            return "";
+        }
 
-      result.append(getBannersFooter(handlebars));
-      result.append(getPopupsFooter(handlebars));
-      result.append(getTimezoneCheckFooter(handlebars));
+        result.append(getBannersFooter(handlebars));
+        result.append(getPopupsFooter(handlebars));
+        result.append(getTimezoneCheckFooter(handlebars));
 
-      return result.toString();
+        return result.toString();
     }
 
 
@@ -112,16 +107,17 @@ class PASystemImpl implements PASystem {
 
 
     private Handlebars loadHandleBars(final I18n i18n) {
-      Handlebars handlebars = new Handlebars();
+        Handlebars handlebars = new Handlebars();
 
-      handlebars.registerHelper("t", new Helper<Object>() {
-              public CharSequence apply(final Object context, final Options options) {
-                  String key = options.param(0);
-                  return i18n.t(key);
-              }
-          });
+        handlebars.registerHelper("t", new Helper<Object>() {
+            @Override
+            public CharSequence apply(final Object context, final Options options) {
+                String key = options.param(0);
+                return i18n.t(key);
+            }
+        });
 
-      return handlebars;
+        return handlebars;
     }
 
 
@@ -132,27 +128,29 @@ class PASystemImpl implements PASystem {
         // thread has an unpredictable classloader state so we provide our own.
 
         Thread migrationRunner = new Thread() {
-                public void run() {
-                    Flyway flyway = new Flyway();
+            public void run() {
+                Flyway flyway = new Flyway();
 
-                    flyway.setLocations("db/migration/" + vendor);
-                    flyway.setBaselineOnMigrate(true);
-                    flyway.setTable("pasystem_schema_version");
+                flyway.setLocations("db/migration/" + vendor);
+                flyway.setBaselineOnMigrate(true);
+                flyway.setTable("pasystem_schema_version");
 
-                    flyway.setDataSource(ServerConfigurationService.getString("url@javax.sql.BaseDataSource"),
-                                         ServerConfigurationService.getString("username@javax.sql.BaseDataSource"),
-                                         ServerConfigurationService.getString("password@javax.sql.BaseDataSource"));
+                flyway.setDataSource(ServerConfigurationService.getString("url@javax.sql.BaseDataSource"),
+                        ServerConfigurationService.getString("username@javax.sql.BaseDataSource"),
+                        ServerConfigurationService.getString("password@javax.sql.BaseDataSource"));
 
-                    flyway.migrate();
-                }
-            };
+                flyway.migrate();
+            }
+        };
 
         migrationRunner.setContextClassLoader(PASystemImpl.class.getClassLoader());
         migrationRunner.start();
 
         try {
             migrationRunner.join();
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+            LOG.warn("Interruption during DB migration", e);
+        }
     }
 
 
@@ -166,15 +164,15 @@ class PASystemImpl implements PASystem {
 
             return template.apply(context);
         } catch (IOException e) {
-            // Log.warn("something clever")
+            LOG.warn("IOException while getting banners footer", e);
             return "";
         }
     }
-  
+
 
     private String getActiveBannersJSON() {
         JSONArray alerts = new JSONArray();
-        String serverId = ServerConfigurationService.getString("serverId","localhost");
+        String serverId = ServerConfigurationService.getString("serverId", "localhost");
 
         for (Banner alert : getBanners().getActiveAlertsForServer(serverId)) {
             JSONObject alertData = new JSONObject();
@@ -217,7 +215,7 @@ class PASystemImpl implements PASystem {
             Template template = handlebars.compile("templates/popup_footer");
             return template.apply(context);
         } catch (IOException e) {
-            LOG.warn("Popup footer failed", e);
+            LOG.warn("IOException while getting popups footer", e);
             return "";
         }
     }

@@ -1,33 +1,30 @@
 package org.sakaiproject.pasystem.tool;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.sakaiproject.pasystem.api.Banner;
 import org.sakaiproject.pasystem.api.PASystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
+import java.util.Optional;
+
 
 public class BannersHandler extends BaseHandler implements Handler {
 
-    private PASystem paSystem;
-
     private static final Logger LOG = LoggerFactory.getLogger(BannersHandler.class);
+    private PASystem paSystem;
 
     public BannersHandler(PASystem pasystem) {
         this.paSystem = pasystem;
     }
 
+    @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, Map<String, Object> context) {
         if (request.getPathInfo().contains("/edit")) {
             if (isGet(request)) {
-              handleEdit(extractId(request), context);
+                handleEdit(extractId(request), context);
             } else if (isPost(request)) {
                 handleCreateOrUpdate(request, context, CrudMode.UPDATE);
             }
@@ -41,7 +38,7 @@ public class BannersHandler extends BaseHandler implements Handler {
             if (isGet(request)) {
                 sendRedirect("");
             } else if (isPost(request)) {
-                handleDelete(extractId(request), context);
+                handleDelete(extractId(request));
             }
         } else {
             sendRedirect("");
@@ -49,7 +46,7 @@ public class BannersHandler extends BaseHandler implements Handler {
     }
 
 
-    private void handleDelete(String uuid, Map<String, Object> context) {
+    private void handleDelete(String uuid) {
         paSystem.getBanners().deleteBanner(uuid);
 
         flash("info", "banner_deleted");
@@ -63,7 +60,7 @@ public class BannersHandler extends BaseHandler implements Handler {
         Optional<Banner> banner = paSystem.getBanners().getForId(uuid);
 
         if (banner.isPresent()) {
-            showEditForm(BannerForm.fromBanner(banner.get(), paSystem), context, CrudMode.UPDATE);
+            showEditForm(BannerForm.fromBanner(banner.get()), context, CrudMode.UPDATE);
         } else {
             LOG.warn("No banner found for UUID: " + uuid);
             sendRedirect("");
@@ -84,16 +81,16 @@ public class BannersHandler extends BaseHandler implements Handler {
         long endTime = bannerForm.getEndTime();
 
         if (!bannerForm.hasValidStartTime()) {
-            add_error("start_time", "invalid_time");
+            addError("start_time", "invalid_time");
         }
 
         if (!bannerForm.hasValidEndTime()) {
-            add_error("end_time", "invalid_time");
+            addError("end_time", "invalid_time");
         }
 
         if (!bannerForm.startTimeBeforeEndTime()) {
-            add_error("start_time", "start_time_after_end_time");
-            add_error("end_time", "start_time_after_end_time");
+            addError("start_time", "start_time_after_end_time");
+            addError("end_time", "start_time_after_end_time");
         }
 
 
@@ -105,20 +102,20 @@ public class BannersHandler extends BaseHandler implements Handler {
 
         if (CrudMode.CREATE.equals(mode)) {
             paSystem.getBanners().createBanner(bannerForm.getMessage(),
-                                               bannerForm.getHosts(),
-                                               bannerForm.isDismissible(),
-                                               bannerForm.isActive(),
-                                               startTime,
-                                               endTime);
+                    bannerForm.getHosts(),
+                    bannerForm.isDismissible(),
+                    bannerForm.isActive(),
+                    startTime,
+                    endTime);
             flash("info", "banner_created");
         } else {
             paSystem.getBanners().updateBanner(bannerForm.getUuid(),
-                                               bannerForm.getMessage(),
-                                               bannerForm.getHosts(),
-                                               bannerForm.isDismissible(),
-                                               bannerForm.isActive(),
-                                               startTime,
-                                               endTime);
+                    bannerForm.getMessage(),
+                    bannerForm.getHosts(),
+                    bannerForm.isDismissible(),
+                    bannerForm.isActive(),
+                    startTime,
+                    endTime);
             flash("info", "banner_updated");
         }
 

@@ -2,16 +2,15 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
+  <bean id="org.sakaiproject.pasystem.api.PASystem"
+        class="org.sakaiproject.pasystem.impl.PASystemImpl"
+        init-method="init"
+        destroy-method="destroy"
+        singleton="true">
+  </bean>
 
-	<bean id="org.sakaiproject.pasystem.api.PASystem"
-			class="org.sakaiproject.pasystem.impl.PASystemImpl"
-                        init-method="init"
-                        destroy-method="destroy"
-			singleton="true">
-	</bean>
-
-	<bean parent="org.sakaiproject.entitybroker.entityprovider.AbstractEntityProvider" 
-	      class="org.sakaiproject.pasystem.impl.rest.PASystemEntityProvider">
-	</bean>
+  <bean parent="org.sakaiproject.entitybroker.entityprovider.AbstractEntityProvider" 
+        class="org.sakaiproject.pasystem.impl.rest.PASystemEntityProvider">
+  </bean>
 
 </beans>

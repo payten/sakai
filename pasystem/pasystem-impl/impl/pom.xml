@@ -25,7 +25,7 @@
   <build>
     <resources>
       <resource>
-	<directory>${basedir}/src/resources</directory>
+        <directory>${basedir}/src/resources</directory>
       </resource>
     </resources>
   </build>

@@ -1,17 +1,17 @@
 package org.sakaiproject.pasystem.tool;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.sakaiproject.pasystem.api.PASystem;
 import org.sakaiproject.pasystem.api.Popup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.Optional;
 
 
 public class PopupsHandler extends BaseHandler implements Handler {
@@ -49,25 +49,25 @@ public class PopupsHandler extends BaseHandler implements Handler {
             if (isGet(request)) {
                 sendRedirect("");
             } else if (isPost(request)) {
-                handleDelete(extractId(request), context);
+                handleDelete(extractId(request));
             }
-        } else if (request.getPathInfo().contains("/preview")) {
-            if (isGet(request)) {
-                String uuid = extractId(request);
+        } else if (request.getPathInfo().contains("/preview") && isGet(request)) {
+            String uuid = extractId(request);
 
-                context.put("layout", false);
-                try {
-                    String content = paSystem.getPopups().getPopupContent(uuid);
+            context.put("layout", false);
+            try {
+                String content = paSystem.getPopups().getPopupContent(uuid);
 
-                    if (content.isEmpty()) {
-                        // Don't let the portal buffering hijack our response.
-                        content = "     ";
-                    }
-
-                    response.getWriter().write(content);
-                } catch (IOException e) {
-                    LOG.warn("Write failed while previewing popup", e);
+                if (content.isEmpty()) {
+                    // Don't let the portal buffering hijack our response.
+                    // Include enough content to count as having returned a
+                    // body.
+                    content = "     ";
                 }
+
+                response.getWriter().write(content);
+            } catch (IOException e) {
+                LOG.warn("Write failed while previewing popup", e);
             }
         }
     }
@@ -91,22 +91,22 @@ public class PopupsHandler extends BaseHandler implements Handler {
         PopupForm popupForm = PopupForm.fromRequest(uuid, request);
 
         if (!popupForm.hasValidStartTime()) {
-            add_error("start_time", "invalid_time");
+            addError("start_time", "invalid_time");
         }
 
         if (!popupForm.hasValidEndTime()) {
-            add_error("end_time", "invalid_time");
+            addError("end_time", "invalid_time");
         }
 
         if (!popupForm.startTimeBeforeEndTime()) {
-            add_error("start_time", "start_time_after_end_time");
-            add_error("end_time", "start_time_after_end_time");
+            addError("start_time", "start_time_after_end_time");
+            addError("end_time", "start_time_after_end_time");
         }
 
         Optional<InputStream> templateInputStream = fileUploadInputStream(request, "template");
 
         if (CrudMode.CREATE.equals(mode) && !templateInputStream.isPresent()) {
-            add_error("template", "template_was_missing");
+            addError("template", "template_was_missing");
         }
 
         if (hasErrors()) {
@@ -117,14 +117,14 @@ public class PopupsHandler extends BaseHandler implements Handler {
 
         if (CrudMode.CREATE.equals(mode)) {
             paSystem.getPopups().createCampaign(popupForm.toPopup(),
-                                                templateInputStream.get(),
-                                                Optional.of(popupForm.getAssignToUsers()));
+                    templateInputStream.get(),
+                    Optional.of(popupForm.getAssignToUsers()));
             flash("info", "popup_created");
         } else {
             paSystem.getPopups().updateCampaign(popupForm.getUuid(),
-                                                popupForm.toPopup(),
-                                                templateInputStream,
-                                                popupForm.isOpenCampaign() ? Optional.empty() : Optional.of(popupForm.getAssignToUsers()));
+                    popupForm.toPopup(),
+                    templateInputStream,
+                    popupForm.isOpenCampaign() ? Optional.empty() : Optional.of(popupForm.getAssignToUsers()));
             flash("info", "popup_updated");
         }
 
@@ -140,7 +140,8 @@ public class PopupsHandler extends BaseHandler implements Handler {
                 try {
                     return Optional.of(templateItem.getInputStream());
                 } catch (IOException e) {
-                    add_error("template", "template_upload_failed", e.toString());
+                    LOG.warn("Failure while handling template upload", e);
+                    addError("template", "template_upload_failed", e.toString());
                 }
             }
         }
@@ -156,7 +157,7 @@ public class PopupsHandler extends BaseHandler implements Handler {
     }
 
 
-    private void handleDelete(String uuid, Map<String, Object> context) {
+    private void handleDelete(String uuid) {
         paSystem.getPopups().deleteCampaign(uuid);
 
         flash("info", "popup_deleted");

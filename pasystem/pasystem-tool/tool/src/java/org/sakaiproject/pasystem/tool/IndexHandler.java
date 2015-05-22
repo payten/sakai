@@ -1,12 +1,11 @@
 package org.sakaiproject.pasystem.tool;
 
-import java.util.Map;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.pasystem.api.PASystem;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 
 public class IndexHandler extends BaseHandler {

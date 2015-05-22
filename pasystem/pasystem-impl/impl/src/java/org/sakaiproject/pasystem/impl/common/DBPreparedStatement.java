@@ -69,7 +69,7 @@ public class DBPreparedStatement {
 
     public DBResults executeQuery() throws SQLException {
         return new DBResults(preparedStatement.executeQuery(),
-                             preparedStatement);
+                preparedStatement);
     }
 
 

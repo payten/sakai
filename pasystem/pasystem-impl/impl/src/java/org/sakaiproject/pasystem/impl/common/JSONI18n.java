@@ -1,18 +1,15 @@
 package org.sakaiproject.pasystem.impl.common;
 
-import java.io.InputStreamReader;
-import java.io.InputStream;
-import java.io.IOException;
-import java.util.Locale;
-import java.util.Properties;
-import org.sakaiproject.user.cover.PreferencesService;
-import org.sakaiproject.tool.cover.SessionManager;
-
-import org.sakaiproject.pasystem.api.I18n;
-
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.json.simple.JSONObject;
+import org.sakaiproject.pasystem.api.I18n;
+import org.sakaiproject.pasystem.api.I18nException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Locale;
 
 public class JSONI18n implements I18n {
 
@@ -32,24 +29,24 @@ public class JSONI18n implements I18n {
         }
 
         if (stream == null) {
-            throw new RuntimeException("Missing default I18n file: " + resourceBase + "/default.json");
+            throw new I18nException("Missing default I18n file: " + resourceBase + "/default.json");
         }
 
 
         try {
             JSONParser parser = new JSONParser();
-            translations = (JSONObject)parser.parse(new InputStreamReader(stream));
-        } catch (IOException|ParseException e) {
-            throw new RuntimeException(e);
+            translations = (JSONObject) parser.parse(new InputStreamReader(stream));
+        } catch (IOException | ParseException e) {
+            throw new I18nException("Failure when reading I18n stream", e);
         }
     }
 
 
     public String t(String key) {
-        String result = (String)translations.get(key);
+        String result = (String) translations.get(key);
 
         if (result == null) {
-            throw new RuntimeException("Missing translation for key: " + key);
+            throw new I18nException("Missing translation for key: " + key);
         }
 
         return result;
