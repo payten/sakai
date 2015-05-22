@@ -118,14 +118,12 @@ public class PopupsHandler extends BaseHandler implements Handler {
         if (CrudMode.CREATE.equals(mode)) {
             paSystem.getPopups().createCampaign(popupForm.toPopup(),
                                                 templateInputStream.get(),
-                                                popupForm.isOpenCampaign(),
                                                 Optional.of(popupForm.getAssignToUsers()));
             flash("info", "popup_created");
         } else {
             paSystem.getPopups().updateCampaign(popupForm.getUuid(),
                                                 popupForm.toPopup(),
                                                 templateInputStream,
-                                                popupForm.isOpenCampaign(),
                                                 popupForm.isOpenCampaign() ? Optional.empty() : Optional.of(popupForm.getAssignToUsers()));
             flash("info", "popup_updated");
         }

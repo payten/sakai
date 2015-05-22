@@ -9,22 +9,20 @@ public interface Popups {
 
     public String createCampaign(Popup popup,
                                  InputStream templateContent,
-                                 boolean isOpenCampaign,
                                  Optional<List<String>> assignToUsers);
 
-    public boolean updateCampaign(String uuid,
+    public boolean updateCampaign(final String uuid,
                                   Popup popup,
                                   Optional<InputStream> templateInput,
-                                  boolean isOpenCampaign,
                                   Optional<List<String>> assignToUsers);
 
     public List<Popup> getAll();
 
-    public String getPopupContent(String uuid);
+    public String getPopupContent(final String uuid);
 
-    public Optional<Popup> getForId(String uuid);
+    public Optional<Popup> getForId(final String uuid);
 
-    public List<String> getAssignees(String uuid);
+    public List<String> getAssignees(final String uuid);
 
     public boolean deleteCampaign(final String uuid);
 

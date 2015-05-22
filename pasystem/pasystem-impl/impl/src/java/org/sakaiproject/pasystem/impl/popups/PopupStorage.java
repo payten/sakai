@@ -26,7 +26,6 @@ public class PopupStorage implements Popups {
 
     public String createCampaign(Popup popup,
                                  InputStream templateInput,
-                                 boolean isOpenCampaign,
                                  Optional<List<String>> assignToUsers) {
         return DB.transaction
             ("Popup creation",
@@ -39,7 +38,7 @@ public class PopupStorage implements Popups {
                          .param(popup.getDescriptor())
                          .param(popup.getStartTime())
                          .param(popup.getEndTime())
-                         .param(isOpenCampaign ? 1 : 0)
+                         .param(popup.isOpenCampaign() ? 1 : 0)
                          .executeUpdate();
 
                      setPopupContent(db, uuid, templateInput);
@@ -55,7 +54,6 @@ public class PopupStorage implements Popups {
 
     public boolean updateCampaign(String uuid, Popup popup,
                                   Optional<InputStream> templateInput,
-                                  boolean isOpenCampaign,
                                   Optional<List<String>> assignToUsers) {
         return DB.transaction
             ("Update an existing popup campaign",
@@ -66,7 +64,7 @@ public class PopupStorage implements Popups {
                          .param(popup.getDescriptor())
                          .param(popup.getStartTime())
                          .param(popup.getEndTime())
-                         .param(isOpenCampaign ? 1 : 0)
+                         .param(popup.isOpenCampaign() ? 1 : 0)
                          .param(uuid)
                          .executeUpdate() == 0) {
                          LOG.warn("Failed to update popup with UUID: {}", uuid);
@@ -112,7 +110,7 @@ public class PopupStorage implements Popups {
     }
 
 
-    public String getPopupContent(String uuid) {
+    public String getPopupContent(final String uuid) {
         return DB.transaction
             ("Get the content for a popup",
              new DBAction<String>() {
