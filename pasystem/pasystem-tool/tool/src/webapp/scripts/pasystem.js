@@ -5,7 +5,6 @@ function PASystemBannerAlerts(json) {
   this.json = json;
   this.setupAlertBannerToggle();
   this.renderBannerAlerts();
-  this.setupEvents();
 }
 
 PASystemBannerAlerts.prototype.getBannerAlerts = function() {
@@ -24,7 +23,7 @@ PASystemBannerAlerts.prototype.setupAlertBannerToggle = function() {
   self.$toggle.hide();
   $("#loginLinks").prepend(self.$toggle);
 
-  self.$toggle.on("click", function(event) {
+  self.$toggle.click(function(event) {
     event.preventDefault();
 
     self.showAllAlerts();
@@ -100,6 +99,12 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
         }
         $alert.hide();
         self.$container.append($alert);
+
+        $alert.find(".pasystem-banner-alert-close").click(function() {
+          self.handleBannerAlertClose($(this).closest(".pasystem-banner-alert"));
+          return false;
+        });
+
     }
 
     if (self.hasAlertBeenDismissed(alertId)) {
@@ -127,16 +132,6 @@ PASystemBannerAlerts.prototype.addBannerAlert = function(id, message, dismissibl
   });
 
   this.renderBannerAlerts();
-};
-
-
-PASystemBannerAlerts.prototype.setupEvents = function() {
-  var self = this;
-
-  $(document).on("click", ".pasystem-banner-alert-close", function() {
-    self.handleBannerAlertClose($(this).closest(".pasystem-banner-alert"));
-    return false;
-  });
 };
 
 
@@ -168,12 +163,12 @@ PASystemPopup.prototype.showPopup = function() {
                      self.acknowledge(acknowledgement);
                    },
                    afterContent : function (event) {
-                     $('#popup-acknowledged-button').on('click', function () {
+                     $('#popup-acknowledged-button').click(function () {
                        self.permanentlyAcknowledged = true;
                        $.featherlight.current().close();
                      });
 
-                     $('#popup-later-button').on('click', function () {
+                     $('#popup-later-button').click(function () {
                        self.permanentlyAcknowledged = false;
                        $.featherlight.current().close();
                      });
