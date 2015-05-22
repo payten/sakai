@@ -46,6 +46,8 @@
   background-image: url(../images/warning.png);
   background-repeat: no-repeat;
   background-position: 5px center;
+}
+
 .pasystem-banner-alert-toggle:hover {
   -webkit-transition: background-color 0.2s, color 0.2s;
   -moz-transition: background-color 0.2s, color 0.2s;
