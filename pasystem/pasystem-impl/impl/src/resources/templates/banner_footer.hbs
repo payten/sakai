@@ -12,9 +12,7 @@
   </li>
 </script>
 <script>
-  if (!sakai.hasOwnProperty('pasystem')) {
-    sakai['pasystem'] = {};
-  }
+  var pasystem = pasystem || {};
 
-  sakai.pasystem['banners'] = new PASystemBannerAlerts({{{bannerJSON}}});
+  pasystem['banners'] = new PASystemBannerAlerts({{{bannerJSON}}});
 </script>
