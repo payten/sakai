@@ -53,7 +53,8 @@ public class PopupStorage implements Popups {
     }
 
 
-    public boolean updateCampaign(String uuid, Popup popup,
+    public boolean updateCampaign(String uuid,
+                                  Popup popup,
                                   Optional<InputStream> templateInput,
                                   Optional<List<String>> assignToUsers) {
         return DB.transaction

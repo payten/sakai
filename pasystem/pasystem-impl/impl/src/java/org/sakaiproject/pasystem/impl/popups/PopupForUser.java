@@ -111,56 +111,7 @@ public class PopupForUser {
     }
 
 
-    public void acknowledge(String campaign, String acknowledgement) {
-        if (user == null) {
-            return;
-        }
-
-        final String mappedAcknowledgement = "permanent".equals(acknowledgement) ? "permanent" : "temporary";
-
-        try {
-            DB.transaction
-                    ("Acknowledge campaign for user",
-                            new DBAction<Void>() {
-                                public Void call(DBConnection db) throws SQLException {
-                                    deleteExistingEntry(db, campaign);
-                                    insertNewEntry(db, campaign, mappedAcknowledgement);
-                                    db.commit();
-
-                                    return null;
-                                }
-                            }
-                    );
-        } catch (Exception e) {
-            LOG.error("Error acknowledging popup", e);
-        }
-    }
-
-
     private int getTemporaryTimeoutMilliseconds() {
         return ServerConfigurationService.getInt("popup.temporary-timeout-ms", (24 * 60 * 60 * 1000));
-    }
-
-
-    private boolean deleteExistingEntry(DBConnection db, String campaign) throws SQLException {
-        int updatedRows = db.run("DELETE FROM PASYSTEM_POPUP_DISMISSED where lower(user_eid) = ? AND campaign = ?")
-                .param(eid)
-                .param(campaign)
-                .executeUpdate();
-
-        return updatedRows > 0;
-    }
-
-
-    private boolean insertNewEntry(DBConnection db, String campaign, String acknowledgement) throws SQLException {
-        long now = System.currentTimeMillis();
-        int updatedRows = db.run("INSERT INTO PASYSTEM_POPUP_DISMISSED (user_eid, campaign, state, dismiss_time) VALUES (?, ?, ?, ?)")
-                .param(eid)
-                .param(campaign)
-                .param(acknowledgement)
-                .param(now)
-                .executeUpdate();
-
-        return updatedRows > 0;
     }
 }
