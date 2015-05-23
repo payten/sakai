@@ -1,22 +1,10 @@
 package org.sakaiproject.pasystem.tool;
 
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Value;
 
-@ToString
+@Value
 public class Error {
-
-    @Getter
-    private String field;
-    @Getter
-    private String errorCode;
-    @Getter
-    private String[] values;
-
-    public Error(String field, String errorCode, String[] values) {
-        this.field = field;
-        this.errorCode = errorCode;
-        this.values = values;
-    }
-
+    private final String field;
+    private final String errorCode;
+    private final String[] values;
 }
