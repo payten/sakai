@@ -1,6 +1,7 @@
 package org.sakaiproject.pasystem.tool;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,16 +34,6 @@ abstract class BaseHandler implements Handler {
         return redirectURI;
     }
 
-    protected String extractId(HttpServletRequest request) {
-        String[] bits = request.getPathInfo().split("/");
-
-        if (bits.length < 2) {
-            addError("uuid", "uuid_missing", request.getPathInfo());
-            return "";
-        } else {
-            return bits[bits.length - 2];
-        }
-    }
 
     protected void addError(String field, String errorCode, String... values) {
         if (errors == null) {
@@ -86,12 +77,6 @@ abstract class BaseHandler implements Handler {
 
     public String toString() {
         return this.getClass().toString();
-    }
-
-
-    enum CrudMode {
-        CREATE,
-        UPDATE
     }
 }
 
