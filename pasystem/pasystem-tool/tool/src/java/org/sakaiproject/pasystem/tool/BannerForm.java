@@ -1,24 +1,16 @@
 package org.sakaiproject.pasystem.tool;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.sakaiproject.pasystem.api.Banner;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 
 @Data
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-class BannerForm {
+class BannerForm extends BaseForm {
 
-    private String uuid;
     private String message;
     private String hosts;
-    private long startTime;
-    private long endTime;
     private boolean isActive;
     private boolean isDismissible;
 
@@ -36,19 +28,6 @@ class BannerForm {
     }
 
 
-    private static long parseTime(String timeString) {
-        if (timeString == null || "".equals(timeString)) {
-            return 0;
-        }
-
-        try {
-            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX").parse(timeString).getTime();
-        } catch (ParseException e) {
-            return -1;
-        }
-    }
-
-
     public static BannerForm fromRequest(String uuid, HttpServletRequest request) {
         String message = request.getParameter("message");
         String hosts = request.getParameter("hosts");
@@ -63,20 +42,14 @@ class BannerForm {
     }
 
 
-    public boolean hasValidStartTime() {
-        return startTime >= 0;
-    }
-
-    public boolean hasValidEndTime() {
-        return endTime >= 0;
-    }
-
-    public boolean startTimeBeforeEndTime() {
-        if (startTime <= 0 || endTime <= 0) {
-            return true;
-        } else {
-            return startTime <= endTime;
-        }
+    private BannerForm(String uuid, String message, String hosts, long startTime, long endTime, boolean isActive, boolean isDismissable) {
+        this.uuid = uuid;
+        this.message = message;
+        this.hosts = hosts;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.isActive = isActive;
+        this.isDismissible = isDismissible;
     }
 }
 

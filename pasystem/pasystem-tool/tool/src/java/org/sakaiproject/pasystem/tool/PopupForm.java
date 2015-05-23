@@ -1,29 +1,21 @@
+
 package org.sakaiproject.pasystem.tool;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.sakaiproject.pasystem.api.PASystem;
 import org.sakaiproject.pasystem.api.Popup;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 
 @Data
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-class PopupForm {
+class PopupForm extends BaseForm {
 
-    private String uuid;
     private String descriptor;
-    private long startTime;
-    private long endTime;
     private boolean isOpenCampaign;
     private List<String> assignToUsers;
-    private String templateFile;
 
 
     public static PopupForm fromPopup(Popup existingPopup, PASystem paSystem) {
@@ -34,21 +26,9 @@ class PopupForm {
                 existingPopup.getStartTime(),
                 existingPopup.getEndTime(),
                 existingPopup.isOpenCampaign(),
-                assignees,
-                null);
+                assignees);
     }
 
-    private static long parseTime(String timeString) {
-        if (timeString == null || "".equals(timeString)) {
-            return 0;
-        }
-
-        try {
-            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX").parse(timeString).getTime();
-        } catch (ParseException e) {
-            return -1;
-        }
-    }
 
     public static PopupForm fromRequest(String uuid, HttpServletRequest request) {
         String descriptor = request.getParameter("descriptor");
@@ -57,36 +37,32 @@ class PopupForm {
         long startTime = "".equals(request.getParameter("start_time")) ? 0 : parseTime(request.getParameter("start_time_selected_datetime"));
         long endTime = "".equals(request.getParameter("end_time")) ? 0 : parseTime(request.getParameter("end_time_selected_datetime"));
 
-        List<String> assignToUsers = new ArrayList<String>();
+        List<String> assignees = new ArrayList<String>();
         if (request.getParameter("distribution") != null) {
             for (String user : request.getParameter("distribution").split("[\r\n]+")) {
                 if (!user.isEmpty()) {
-                    assignToUsers.add(user);
+                    assignees.add(user);
                 }
             }
         }
 
-        return new PopupForm(uuid, descriptor, startTime, endTime, isOpenCampaign, assignToUsers, null);
+        return new PopupForm(uuid, descriptor, startTime, endTime, isOpenCampaign, assignees);
     }
+
 
     public Popup toPopup() {
         return Popup.create(descriptor, startTime, endTime, isOpenCampaign);
     }
 
-    public boolean hasValidStartTime() {
-        return startTime >= 0;
+
+    private PopupForm(String uuid, String descriptor, long startTime, long endTime, boolean isOpenCampaign, List<String> assignees) {
+        this.uuid = uuid;
+        this.descriptor = descriptor;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.isOpenCampaign = isOpenCampaign;
+        this.assignToUsers = assignees;
     }
 
-    public boolean hasValidEndTime() {
-        return endTime >= 0;
-    }
-
-    public boolean startTimeBeforeEndTime() {
-        if (startTime <= 0 || endTime <= 0) {
-            return true;
-        } else {
-            return startTime <= endTime;
-        }
-    }
 }
 
