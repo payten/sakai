@@ -15,6 +15,16 @@ class BannerForm extends BaseForm {
     private boolean isDismissible;
 
 
+    private BannerForm(String uuid, String message, String hosts, long startTime, long endTime, boolean isActive, boolean isDismissable) {
+        this.uuid = uuid;
+        this.message = message;
+        this.hosts = hosts;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.isActive = isActive;
+        this.isDismissible = isDismissible;
+    }
+
     public static BannerForm fromBanner(Banner existingBanner) {
         String uuid = existingBanner.getUuid();
 
@@ -27,7 +37,6 @@ class BannerForm extends BaseForm {
                 existingBanner.isDismissible());
     }
 
-
     public static BannerForm fromRequest(String uuid, HttpServletRequest request) {
         String message = request.getParameter("message");
         String hosts = request.getParameter("hosts");
@@ -39,17 +48,6 @@ class BannerForm extends BaseForm {
         boolean isDismissible = "on".equals(request.getParameter("dismissible"));
 
         return new BannerForm(uuid, message, hosts, startTime, endTime, isActive, isDismissible);
-    }
-
-
-    private BannerForm(String uuid, String message, String hosts, long startTime, long endTime, boolean isActive, boolean isDismissable) {
-        this.uuid = uuid;
-        this.message = message;
-        this.hosts = hosts;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.isActive = isActive;
-        this.isDismissible = isDismissible;
     }
 }
 
