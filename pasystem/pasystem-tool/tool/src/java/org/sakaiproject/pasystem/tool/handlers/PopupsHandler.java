@@ -1,6 +1,5 @@
 package org.sakaiproject.pasystem.tool.handlers;
 
-import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.sakaiproject.pasystem.api.PASystem;
 import org.sakaiproject.pasystem.api.Popup;
 import org.slf4j.Logger;
@@ -25,6 +24,7 @@ public class PopupsHandler extends CrudHandler {
         this.paSystem = pasystem;
     }
 
+
     public void handle(HttpServletRequest request, HttpServletResponse response, Map<String, Object> context) {
         if (request.getPathInfo().contains("/preview") && isGet(request)) {
             handlePreview(request, response, context);
@@ -44,7 +44,6 @@ public class PopupsHandler extends CrudHandler {
             flash("danger", "No popup found for UUID: " + uuid);
             sendRedirect("");
         }
-
     }
 
 
@@ -84,32 +83,16 @@ public class PopupsHandler extends CrudHandler {
 
     protected void handleCreateOrUpdate(HttpServletRequest request, Map<String, Object> context, CrudMode mode) {
         String uuid = extractId(request);
+
         PopupForm popupForm = PopupForm.fromRequest(uuid, request);
-
-        if (!popupForm.hasValidStartTime()) {
-            addError("start_time", "invalid_time");
-        }
-
-        if (!popupForm.hasValidEndTime()) {
-            addError("end_time", "invalid_time");
-        }
-
-        if (!popupForm.startTimeBeforeEndTime()) {
-            addError("start_time", "start_time_after_end_time");
-            addError("end_time", "start_time_after_end_time");
-        }
-
-        Optional<InputStream> templateInputStream = fileUploadInputStream(request, "template");
-
-        if (CrudMode.CREATE.equals(mode) && !templateInputStream.isPresent()) {
-            addError("template", "template_was_missing");
-        }
+        popupForm.validate(this, mode);
 
         if (hasErrors()) {
             showEditForm(popupForm, context, mode);
             return;
         }
 
+        Optional<InputStream> templateInputStream = popupForm.getTemplateStream();
 
         if (CrudMode.CREATE.equals(mode)) {
             paSystem.getPopups().createCampaign(popupForm.toPopup(),
@@ -125,24 +108,6 @@ public class PopupsHandler extends CrudHandler {
         }
 
         sendRedirect("");
-    }
-
-
-    private Optional<InputStream> fileUploadInputStream(HttpServletRequest request, String attributeName) {
-        if (request.getAttribute(attributeName) != null) {
-            DiskFileItem templateItem = (DiskFileItem) request.getAttribute(attributeName);
-
-            if (templateItem.getSize() > 0) {
-                try {
-                    return Optional.of(templateItem.getInputStream());
-                } catch (IOException e) {
-                    LOG.warn("Failure while handling template upload", e);
-                    addError("template", "template_upload_failed", e.toString());
-                }
-            }
-        }
-
-        return Optional.empty();
     }
 
 

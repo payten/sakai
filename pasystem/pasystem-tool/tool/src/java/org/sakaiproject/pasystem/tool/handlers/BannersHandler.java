@@ -55,28 +55,15 @@ public class BannersHandler extends CrudHandler {
         String uuid = extractId(request);
         BannerForm bannerForm = BannerForm.fromRequest(uuid, request);
 
-        long startTime = bannerForm.getStartTime();
-        long endTime = bannerForm.getEndTime();
-
-        if (!bannerForm.hasValidStartTime()) {
-            addError("start_time", "invalid_time");
-        }
-
-        if (!bannerForm.hasValidEndTime()) {
-            addError("end_time", "invalid_time");
-        }
-
-        if (!bannerForm.startTimeBeforeEndTime()) {
-            addError("start_time", "start_time_after_end_time");
-            addError("end_time", "start_time_after_end_time");
-        }
-
+        bannerForm.validate(this);
 
         if (hasErrors()) {
             showEditForm(bannerForm, context, mode);
             return;
         }
 
+        long startTime = bannerForm.getStartTime();
+        long endTime = bannerForm.getEndTime();
 
         if (CrudMode.CREATE.equals(mode)) {
             paSystem.getBanners().createBanner(bannerForm.getMessage(),

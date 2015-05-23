@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 
-abstract class BaseHandler implements Handler {
+abstract class BaseHandler implements Handler, ErrorReporter {
 
     private List<Error> errors;
     private Map<String, List<String>> flashMessages;
@@ -33,8 +33,7 @@ abstract class BaseHandler implements Handler {
         return redirectURI;
     }
 
-
-    protected void addError(String field, String errorCode, String... values) {
+    public void addError(String field, String errorCode, String... values) {
         if (errors == null) {
             errors = new ArrayList<Error>();
         }
