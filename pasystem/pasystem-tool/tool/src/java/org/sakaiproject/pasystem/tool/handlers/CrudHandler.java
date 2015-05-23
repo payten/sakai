@@ -43,13 +43,13 @@ public abstract class CrudHandler extends BaseHandler {
     }
 
 
-    abstract protected void handleDelete(HttpServletRequest request);
+    protected abstract void handleDelete(HttpServletRequest request);
 
-    abstract protected void showNewForm(Map<String, Object> context);
+    protected abstract void showNewForm(Map<String, Object> context);
 
-    abstract protected void handleCreateOrUpdate(HttpServletRequest request, Map<String, Object> context, CrudMode mode);
+    protected abstract void handleCreateOrUpdate(HttpServletRequest request, Map<String, Object> context, CrudMode mode);
 
-    abstract protected void handleEdit(HttpServletRequest request, Map<String, Object> context);
+    protected abstract void handleEdit(HttpServletRequest request, Map<String, Object> context);
 
 
     public enum CrudMode {

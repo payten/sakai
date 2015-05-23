@@ -23,7 +23,6 @@ import org.sakaiproject.pasystem.api.I18n;
 import org.sakaiproject.pasystem.api.PASystem;
 import org.sakaiproject.pasystem.api.PASystemException;
 import org.sakaiproject.pasystem.tool.handlers.BannersHandler;
-import org.sakaiproject.pasystem.tool.handlers.Error;
 import org.sakaiproject.pasystem.tool.handlers.Handler;
 import org.sakaiproject.pasystem.tool.handlers.IndexHandler;
 import org.sakaiproject.pasystem.tool.handlers.PopupsHandler;
