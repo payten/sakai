@@ -1,4 +1,4 @@
-package org.sakaiproject.pasystem.tool;
+package org.sakaiproject.pasystem.tool.handlers;
 
 import lombok.Value;
 

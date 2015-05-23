@@ -1,4 +1,4 @@
-package org.sakaiproject.pasystem.tool;
+package org.sakaiproject.pasystem.tool.forms;
 
 import lombok.Data;
 import org.sakaiproject.pasystem.api.PASystem;
@@ -10,7 +10,7 @@ import java.util.List;
 
 
 @Data
-class PopupForm extends BaseForm {
+public class PopupForm extends BaseForm {
 
     private String descriptor;
     private boolean isOpenCampaign;

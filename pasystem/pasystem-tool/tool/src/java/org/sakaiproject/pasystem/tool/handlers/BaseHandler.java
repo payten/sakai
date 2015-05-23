@@ -1,4 +1,4 @@
-package org.sakaiproject.pasystem.tool;
+package org.sakaiproject.pasystem.tool.handlers;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package org.sakaiproject.pasystem.tool;
+package org.sakaiproject.pasystem.tool.forms;
 
 import lombok.Data;
 import org.sakaiproject.pasystem.api.Banner;
@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 
 @Data
-class BannerForm extends BaseForm {
+public class BannerForm extends BaseForm {
 
     private String message;
     private String hosts;

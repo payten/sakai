@@ -1,4 +1,4 @@
-package org.sakaiproject.pasystem.tool;
+package org.sakaiproject.pasystem.tool.handlers;
 
 import org.sakaiproject.pasystem.api.Banner;
 import org.sakaiproject.pasystem.api.PASystem;
@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.Optional;
+
+import org.sakaiproject.pasystem.tool.forms.BannerForm;
 
 
 public class BannersHandler extends CrudHandler {
