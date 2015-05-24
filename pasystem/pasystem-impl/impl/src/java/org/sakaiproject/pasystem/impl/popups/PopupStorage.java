@@ -123,7 +123,7 @@ public class PopupStorage implements Popups {
                                         .param(uuid)
                                         .executeQuery()) {
                                     for (ResultSet result : results) {
-                                        Clob contentClob = result.getClob(1);
+                                        Clob contentClob = result.getClob("template_content");
                                         return contentClob.getSubString(1, (int) contentClob.length());
                                     }
 
@@ -170,7 +170,7 @@ public class PopupStorage implements Popups {
                                         .param(uuid)
                                         .executeQuery()) {
                                     for (ResultSet result : results) {
-                                        users.add(result.getString(1));
+                                        users.add(result.getString("user_eid"));
                                     }
 
                                     return users;

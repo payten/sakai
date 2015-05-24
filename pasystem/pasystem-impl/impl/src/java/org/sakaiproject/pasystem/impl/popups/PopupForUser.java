@@ -86,15 +86,15 @@ public class PopupForUser {
                                             .param(getTemporaryTimeoutMilliseconds())
                                             .executeQuery()) {
                                         for (ResultSet result : results) {
-                                            Clob contentClob = result.getClob(6);
+                                            Clob contentClob = result.getClob("template_content");
                                             String templateContent = contentClob.getSubString(1, (int) contentClob.length());
 
                                             // Got one!
-                                            return Popup.create(result.getString(1),
-                                                    result.getString(2),
-                                                    result.getLong(3),
-                                                    result.getLong(4),
-                                                    result.getInt(5) == 1,
+                                            return Popup.create(result.getString("uuid"),
+                                                    result.getString("descriptor"),
+                                                    result.getLong("start_time"),
+                                                    result.getLong("end_time"),
+                                                    result.getInt("open_campaign") == 1,
                                                     templateContent);
                                         }
 
