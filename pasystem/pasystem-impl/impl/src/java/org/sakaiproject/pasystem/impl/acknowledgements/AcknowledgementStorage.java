@@ -1,22 +1,10 @@
 package org.sakaiproject.pasystem.impl.acknowledgements;
 
-import org.sakaiproject.pasystem.api.Popup;
-import org.sakaiproject.pasystem.api.Popups;
 import org.sakaiproject.pasystem.impl.common.DB;
 import org.sakaiproject.pasystem.impl.common.DBAction;
 import org.sakaiproject.pasystem.impl.common.DBConnection;
-import org.sakaiproject.pasystem.impl.common.DBResults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.sql.Clob;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 
