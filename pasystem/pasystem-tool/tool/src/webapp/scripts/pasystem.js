@@ -3,6 +3,10 @@
  */
 function PASystemBannerAlerts(json) {
   this.json = json;
+
+  var templateString = $("#pasystemBannerAlertsTemplate").html().trim().toString();
+  this.bannerTemplate = TrimPath.parseTemplate(templateString, "pasystemBannerAlertsTemplate");
+
   this.setupAlertBannerToggle();
   this.renderBannerAlerts();
   this.setupEvents();
@@ -83,26 +87,17 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
 
   // ensure all active alerts are rendered
   $.each(self.json, function(i, alert) {
-    var alertId = "bannerAlert_"+alert.id;
-
-    activeAlertIds.push(alertId);
+    activeAlertIds.push(alert.id);
 
     // if alert is not in the DOM.. add it.
-    var $alert = $("#"+alertId);
+    var $alert = $("#"+alert.id);
     if ($alert.length == 0) {
-        $alert = $($("#pasystemBannerAlertsTemplate").html().trim()).attr("id", alertId);
-        $alert.find(".pasystem-banner-alert-message").html(alert.message);
-        if (!alert.dismissible) {
-          $alert.find(".pasystem-banner-alert-close").remove();
-        }
-        if (alert.cssClass) {
-          $alert.addClass(alert.cssClass);
-        }
+        var $alert = $(self.bannerTemplate.process(alert));
         $alert.hide();
         self.$container.append($alert);
     }
 
-    if (self.hasAlertBeenDismissed(alertId)) {
+    if (self.hasAlertBeenDismissed(alert.id)) {
       self.$toggle.show().slideDown();
     } else {
       $alert.slideDown();
@@ -118,12 +113,12 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
   });
 };
 
-PASystemBannerAlerts.prototype.addBannerAlert = function(id, message, dismissible, cssClass) {
+PASystemBannerAlerts.prototype.addBannerAlert = function(id, message, dismissible, type) {
   this.json.push({
     id: id,
     message: message,
     dismissible: dismissible,
-    cssClass: cssClass
+    type: type
   });
 
   this.renderBannerAlerts();
@@ -226,7 +221,7 @@ PASystemTimezoneChecker.prototype.checkTimezone = function() {
       success: function(data) {
         if (data.status == 'MISMATCH' && data.setTimezoneUrl) {
           // Add banner for Timezone check message
-          pasystem.banners.addBannerAlert("tz", self.getTimezoneBannerContent(data), true, "pasystem-timezone-banner-alert");
+          pasystem.banners.addBannerAlert("tz", self.getTimezoneBannerContent(data), true, "timezone");
         } else {
           self.doNotCheckAgainForAWhile();
         }
@@ -244,7 +239,7 @@ PASystemTimezoneChecker.prototype.getTimezoneBannerContent = function(msg) {
     setTimezoneUrl: msg.setTimezoneUrl,
     reportedTimezone: msg.reportedTimezone,
     prefsTimezone: msg.prefsTimezone
-  }));
+  })).html();
 };
 
 

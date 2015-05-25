@@ -16,12 +16,14 @@ public class Banner {
     private long endTime;
     @Getter
     private String hosts;
+    @Getter
+    private String type;
 
     private boolean isActive;
     private boolean isDismissible;
 
 
-    public Banner(String uuid, String message, String hosts, int dismissible, int active, long startTime, long endTime) {
+    public Banner(String uuid, String message, String hosts, int dismissible, int active, long startTime, long endTime, String type) {
         this.uuid = uuid;
         this.message = message;
         this.hosts = hosts;
@@ -29,6 +31,7 @@ public class Banner {
         this.isDismissible = (dismissible == 1);
         this.startTime = startTime;
         this.endTime = endTime;
+        this.type = type;
     }
 
 

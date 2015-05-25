@@ -8,6 +8,7 @@
     <thead>
       <tr>
         <th>{{{t this "Message"}}}</th>
+        <th>{{{t this "Type"}}}</th>
         <th>{{{t this "Active"}}}</th>
         <th>{{{t this "Dismissible"}}}</th>
         <th>{{{t this "From"}}}</th>
@@ -19,6 +20,7 @@
       {{#each banners}}
       <tr>
         <td>{{this.message}}</td>
+        <td>{{{t this "banner_type" this.type}}}</td>
         <td>{{this.active}}</td>
         <td>{{this.dismissible}}</td>
         <td>{{show-time this this.startTime}}</td>

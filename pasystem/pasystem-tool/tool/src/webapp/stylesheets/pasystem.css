@@ -46,9 +46,11 @@
   content: '\f058';
   color: #098a1e;
 }
+.pasystem-banner-alert.pasystem-banner-timezone,
 .pasystem-banner-alert.pasystem-banner-info {
   background-color: #c7e4f4;
 }
+.pasystem-banner-alert.pasystem-banner-timezone:before,
 .pasystem-banner-alert.pasystem-banner-info:before {
   content: '\f05a';
   color: #144bae;

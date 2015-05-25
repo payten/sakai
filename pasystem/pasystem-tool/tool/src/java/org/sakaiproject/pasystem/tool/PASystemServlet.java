@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -227,8 +229,19 @@ public class PASystemServlet extends HttpServlet {
         handlebars.registerHelper("t", new Helper<Object>() {
             @Override
             public CharSequence apply(final Object context, final Options options) {
-                String key = options.param(0);
+                String key = Arrays.stream(options.params).map(Object::toString).collect(Collectors.joining("_"));
                 return i18n.t(key);
+            }
+        });
+
+
+        handlebars.registerHelper("selected", new Helper<Object>() {
+            @Override
+            public CharSequence apply(final Object context, final Options options) {
+                String option = options.param(0);
+                String value = options.param(1);
+
+                return option.equals(value) ? "selected" : "";
             }
         });
 

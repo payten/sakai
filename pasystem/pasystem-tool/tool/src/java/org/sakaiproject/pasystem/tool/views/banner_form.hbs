@@ -1,30 +1,41 @@
 <form class="form-horizontal" method="POST" action="{{{actionURL this 'banners' banner.uuid mode}}}">
   <div class="form-group">
-    <label  class="col-sm-2 control-label" for="message">Message</label>
+    <label  class="col-sm-2 control-label" for="message">{{{t this "Message"}}}</label>
     <div class="col-sm-10">
       <input class="form-control" type="text" name="message" id="message" required value="{{banner.message}}"/>
     </div>
   </div>
   <div class="form-group">
-    <label  class="col-sm-2 control-label" for="message">Hosts</label>
+    <label  class="col-sm-2 control-label" for="message">{{{t this "Type"}}}</label>
+    <div class="col-sm-10">
+      <select class="form-control" type="text" name="type" id="type" required>
+        <option value="warning" {{selected this 'warning' banner.type}}>{{{t this "banner_type_warning"}}}</option>
+        <option value="danger"  {{selected this 'danger' banner.type}}>{{{t this "banner_type_danger"}}}</option>
+        <option value="info"  {{selected this 'info' banner.type}}>{{{t this "banner_type_info"}}}</option>
+        <option value="success"  {{selected this 'success' banner.type}}>{{{t this "banner_type_success"}}}</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label  class="col-sm-2 control-label" for="message">{{{t this "Hosts"}}}</label>
     <div class="col-sm-10">
       <input class="form-control" type="text" name="hosts" id="hosts" value="{{banner.hosts}}" />
     </div>
   </div>
   <div class="form-group">
-    <label class="col-sm-2 control-label" for="active">Active</label>
+    <label class="col-sm-2 control-label" for="active">{{{t this "Active"}}}</label>
     <div class="col-sm-10">
       <input class="form-control" type="checkbox" name="active" id="active" {{#if banner.active}}checked="checked"{{/if}}/>
     </div>
   </div>
   <div class="form-group">
-    <label class="col-sm-2 control-label" for="dismissible">Dismissible</label>
+    <label class="col-sm-2 control-label" for="dismissible">{{{t this "Dismissible"}}}</label>
     <div class="col-sm-10">
       <input class="form-control" type="checkbox" name="dismissible" id="dismissible" {{#if banner.dismissible}}checked="checked"{{/if}}/>
     </div>
   </div>
   <div class="form-group">
-    <label  class="col-sm-2 control-label" for="start_time">Start Time</label>
+    <label  class="col-sm-2 control-label" for="start_time">{{{t this "Start Time"}}}</label>
     <div class="col-sm-10">
       <div class="input-group">
         <input class="form-control datepicker" type="text" name="start_time" id="start_time" data-init-date="{{banner.startTime}}"/>
@@ -36,7 +47,7 @@
     </div>
   </div>
   <div class="form-group">
-    <label  class="col-sm-2 control-label" for="end_time">End Time</label>
+    <label  class="col-sm-2 control-label" for="end_time">{{{t this "End Time"}}}</label>
     <div class="col-sm-10">
       <div class="input-group">
         <input class="form-control datepicker" type="text" name="end_time" id="end_time" data-init-date="{{banner.endTime}}"/>
@@ -49,7 +60,7 @@
   </div>
 
   <div class="col-sm-offset-2 col-sm-10">
-    <input class="btn btn-primary" type="submit" name="save" value="Save Banner">
+    <input class="btn btn-primary" type="submit" name="save" value="{{{t this "Save Banner"}}}">
     <input class="btn btn-default pasystem-cancel-btn" data-target="{{baseURL}}" type="button" name="cancel" value="Cancel">
   </div>
 </form>

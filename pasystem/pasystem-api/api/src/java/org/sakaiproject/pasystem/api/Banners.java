@@ -9,9 +9,9 @@ public interface Banners extends Acknowledger {
 
     public List<Banner> getRelevantAlerts(String serverId, String userEid);
 
-    public String createBanner(String message, String hosts, boolean isDismissible, boolean isActive, long startTime, long endTime);
+    public String createBanner(String message, String hosts, boolean isDismissible, boolean isActive, long startTime, long endTime, String type);
 
-    public void updateBanner(String uuid, String message, String hosts, boolean isDismissible, boolean isActive, long startTime, long endTime);
+    public void updateBanner(String uuid, String message, String hosts, boolean isDismissible, boolean isActive, long startTime, long endTime, String type);
 
     public void deleteBanner(String uuid);
 

@@ -71,7 +71,8 @@ public class BannersHandler extends CrudHandler {
                     bannerForm.isDismissible(),
                     bannerForm.isActive(),
                     startTime,
-                    endTime);
+                    endTime,
+                    bannerForm.getType());
             flash("info", "banner_created");
         } else {
             paSystem.getBanners().updateBanner(bannerForm.getUuid(),
@@ -80,7 +81,8 @@ public class BannersHandler extends CrudHandler {
                     bannerForm.isDismissible(),
                     bannerForm.isActive(),
                     startTime,
-                    endTime);
+                    endTime,
+                    bannerForm.getType());
             flash("info", "banner_updated");
         }
 
