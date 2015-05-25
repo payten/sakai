@@ -170,8 +170,8 @@ public class BannerStorage implements Banners, Acknowledger {
                                 .param(new Integer(isActive ? 1 : 0))
                                 .param(startTime)
                                 .param(endTime)
-                                .param(uuid)
                                 .param(type)
+                                .param(uuid)
                                 .executeUpdate();
 
                         db.commit();
