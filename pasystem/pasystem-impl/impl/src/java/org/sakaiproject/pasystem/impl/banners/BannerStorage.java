@@ -1,7 +1,9 @@
 package org.sakaiproject.pasystem.impl.banners;
 
+import org.sakaiproject.pasystem.api.Acknowledger;
 import org.sakaiproject.pasystem.api.Banner;
 import org.sakaiproject.pasystem.api.Banners;
+import org.sakaiproject.pasystem.impl.acknowledgements.AcknowledgementStorage;
 import org.sakaiproject.pasystem.impl.common.DB;
 import org.sakaiproject.pasystem.impl.common.DBAction;
 import org.sakaiproject.pasystem.impl.common.DBConnection;
@@ -17,7 +19,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-public class BannerStorage implements Banners {
+
+public class BannerStorage implements Banners, Acknowledger {
 
     private static final Logger LOG = LoggerFactory.getLogger(BannerStorage.class);
 
@@ -158,6 +161,10 @@ public class BannerStorage implements Banners {
                 "Update banner with uuid " + uuid,
                 new DBAction<Void>() {
                     public Void call(DBConnection db) throws SQLException {
+                        db.run("DELETE FROM PASYSTEM_BANNER_DISMISSED WHERE uuid = ?")
+                            .param(uuid)
+                            .executeUpdate();
+
                         db.run("DELETE FROM PASYSTEM_BANNER_ALERT WHERE uuid = ?")
                                 .param(uuid)
                                 .executeUpdate();
@@ -189,4 +196,8 @@ public class BannerStorage implements Banners {
         );
     }
 
+
+    public void acknowledge(final String uuid, final String userEid, final String acknowledgementType) {
+        new AcknowledgementStorage(AcknowledgementStorage.NotificationType.BANNER).acknowledge(uuid, userEid, acknowledgementType);
+    }
 }

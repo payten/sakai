@@ -12,6 +12,7 @@ import org.sakaiproject.entitybroker.entityprovider.capabilities.AutoRegisterEnt
 import org.sakaiproject.entitybroker.entityprovider.capabilities.Describeable;
 import org.sakaiproject.entitybroker.entityprovider.capabilities.Outputable;
 import org.sakaiproject.entitybroker.entityprovider.extension.Formats;
+import org.sakaiproject.pasystem.api.Acknowledger;
 import org.sakaiproject.pasystem.api.PASystem;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.ToolConfiguration;
@@ -46,6 +47,19 @@ public class PASystemEntityProvider implements EntityProvider, AutoRegisterEntit
 
     @EntityCustomAction(action = "popupAcknowledge", viewKey = EntityView.VIEW_NEW)
     public String popupAcknowledge(EntityView view, Map<String, Object> params) {
+        PASystem paSystem = (PASystem) ComponentManager.get(PASystem.class);
+        return doAcknowledge(paSystem.getPopups(), params);
+    }
+
+
+    @EntityCustomAction(action = "bannerAcknowledge", viewKey = EntityView.VIEW_NEW)
+    public String bannerAcknowledge(EntityView view, Map<String, Object> params) {
+        PASystem paSystem = (PASystem) ComponentManager.get(PASystem.class);
+        return doAcknowledge(paSystem.getBanners(), params);
+    }
+
+
+    private String doAcknowledge(Acknowledger acknowledger, Map<String, Object> params) {
         JSONObject result = new JSONObject();
 
         result.put("status", "ERROR");
@@ -68,12 +82,12 @@ public class PASystemEntityProvider implements EntityProvider, AutoRegisterEntit
         }
 
 
-        PASystem paSystem = (PASystem) ComponentManager.get(PASystem.class);
-        paSystem.getPopups().acknowledge(uuid, eid, acknowledgement);
+        acknowledger.acknowledge(uuid, eid, acknowledgement);
         result.put("status", "SUCCESS");
 
         return result.toJSONString();
     }
+
 
     @EntityCustomAction(action = "checkTimeZone", viewKey = EntityView.VIEW_LIST)
     public String checkTimeZone(EntityView view, Map<String, Object> params) {

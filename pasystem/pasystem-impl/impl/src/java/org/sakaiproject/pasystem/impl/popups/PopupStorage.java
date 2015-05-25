@@ -1,7 +1,9 @@
 package org.sakaiproject.pasystem.impl.popups;
 
+import org.sakaiproject.pasystem.api.Acknowledger;
 import org.sakaiproject.pasystem.api.Popup;
 import org.sakaiproject.pasystem.api.Popups;
+import org.sakaiproject.pasystem.impl.acknowledgements.AcknowledgementStorage;
 import org.sakaiproject.pasystem.impl.common.DB;
 import org.sakaiproject.pasystem.impl.common.DBAction;
 import org.sakaiproject.pasystem.impl.common.DBConnection;
@@ -20,7 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-public class PopupStorage implements Popups {
+public class PopupStorage implements Popups, Acknowledger {
 
     private static final Logger LOG = LoggerFactory.getLogger(PopupStorage.class);
 
@@ -248,23 +250,6 @@ public class PopupStorage implements Popups {
 
 
     public void acknowledge(final String uuid, final String userEid, final String acknowledgementType) {
-        DB.transaction
-                ("Acknowledge a popup on behalf of a user",
-                        new DBAction<Void>() {
-                            public Void call(DBConnection db) throws SQLException {
-                                String state = ("temporary".equals(acknowledgementType)) ? "temporary" : "permanent";
-
-                                db.run("INSERT INTO PASYSTEM_POPUP_DISMISSED (uuid, user_eid, state, dismiss_time) values (?, ?, ?, ?)")
-                                        .param(uuid)
-                                        .param(userEid)
-                                        .param(state)
-                                        .param(System.currentTimeMillis())
-                                        .executeUpdate();
-
-                                db.commit();
-                                return null;
-                            }
-                        }
-                );
+        new AcknowledgementStorage(AcknowledgementStorage.NotificationType.POPUP).acknowledge(uuid, userEid, acknowledgementType);
     }
 }

@@ -1,10 +1,11 @@
 package org.sakaiproject.pasystem.api;
 
+import org.sakaiproject.pasystem.api.Acknowledger;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
-public interface Popups {
+public interface Popups extends Acknowledger {
 
     public String createCampaign(Popup popup,
                                  InputStream templateContent,
@@ -24,6 +25,4 @@ public interface Popups {
     public List<String> getAssignees(final String uuid);
 
     public boolean deleteCampaign(final String uuid);
-
-    public void acknowledge(String uuid, String userEid, String acknowledgementType);
 }
