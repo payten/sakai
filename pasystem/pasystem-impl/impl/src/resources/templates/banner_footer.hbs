@@ -13,6 +13,6 @@
 </script>
 <script>
   if (pasystem) {
-    pasystem['banners'] = new PASystemBannerAlerts({{{bannerJSON}}});
+    pasystem['banners'] = new PASystemBannerAlerts({{{bannerJSON}}}, "{{sakai_csrf_token}}");
   }
 </script>

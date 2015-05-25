@@ -4,7 +4,6 @@
 // Work around the fact that several pages pull in very old versions
 // of JQuery.
 if (window.jQuery && jQuery.fn.jquery.indexOf('1.9.') == 0) {
-  document.write('\x3Cscript src="/library/js/jquery/cookie/jquery.cookie.js{{portalCDNQuery}}">\x3C/script>');
   document.write('\x3Cscript src="/pasystem-tool/scripts/pasystem.js{{portalCDNQuery}}">\x3C/script>');
   document.write('\x3Cscript type="text/javascript" src="/pasystem-tool/scripts/featherlight.min.js{{portalCDNQuery}}">\x3C/script>');
 
