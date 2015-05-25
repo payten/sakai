@@ -99,7 +99,7 @@ public class BannerStorage implements Banners, Acknowledger {
                                 List<Banner> alerts = new ArrayList<Banner>();
                                 try (DBResults results = db.run(sql)
                                         .param((userEid == null) ? "" : userEid.toLowerCase())
-                                        .param(userEid.toLowerCase())
+                                        .param((userEid == null) ? "" : userEid.toLowerCase())
                                         .param(System.currentTimeMillis())
                                         .param(getTemporaryTimeoutMilliseconds())
                                         .executeQuery()) {

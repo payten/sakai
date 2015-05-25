@@ -216,6 +216,7 @@ PASystemTimezoneChecker.prototype.checkTimezone = function() {
     $.ajax({
       url: '/direct/pasystem/checkTimeZone',
       data: {timezone: self.tz.name()},
+      cache: false,
       type: "GET",
       dataType: 'json',
       success: function(data) {
