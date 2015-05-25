@@ -112,6 +112,6 @@ public class PopupForUser {
 
 
     private int getTemporaryTimeoutMilliseconds() {
-        return ServerConfigurationService.getInt("popup.temporary-timeout-ms", (24 * 60 * 60 * 1000));
+        return ServerConfigurationService.getInt("pasystem.popup.temporary-timeout-ms", (24 * 60 * 60 * 1000));
     }
 }

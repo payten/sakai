@@ -174,7 +174,9 @@ class PASystemImpl implements PASystem {
         JSONArray alerts = new JSONArray();
         String serverId = ServerConfigurationService.getString("serverId", "localhost");
 
-        for (Banner alert : getBanners().getActiveAlertsForServer(serverId)) {
+        User currentUser = UserDirectoryService.getCurrentUser();
+
+        for (Banner alert : getBanners().getRelevantAlerts(serverId, currentUser.getEid())) {
             JSONObject alertData = new JSONObject();
             alertData.put("id", alert.getUuid());
             alertData.put("message", alert.getMessage());

@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface Banners extends Acknowledger {
 
-    public List<Banner> getActiveAlertsForServer(String serverId);
+    public List<Banner> getRelevantAlerts(String serverId, String userEid);
 
     public String createBanner(String message, String hosts, boolean isDismissible, boolean isActive, long startTime, long endTime);
 
