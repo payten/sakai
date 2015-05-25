@@ -1,5 +1,1 @@
-ALTER TABLE
-   PASYSTEM_BANNER_ALERT
-ADD (
-  type varchar2(255) DEFAULT 'warning';
-);
+ALTER TABLE PASYSTEM_BANNER_ALERT ADD (banner_type varchar2(255) DEFAULT 'warning');

@@ -40,7 +40,7 @@ public class BannerStorage implements Banners, Acknowledger {
                                                 result.getInt("active"),
                                                 result.getLong("start_time"),
                                                 result.getLong("end_time"),
-                                                result.getString("type")));
+                                                result.getString("banner_type")));
                                     }
 
                                     return banners;
@@ -67,7 +67,7 @@ public class BannerStorage implements Banners, Acknowledger {
                                                 result.getInt("active"),
                                                 result.getLong("start_time"),
                                                 result.getLong("end_time"),
-                                                result.getString("type")));
+                                                result.getString("banner_type")));
                                     }
 
                                     return Optional.empty();
@@ -111,7 +111,7 @@ public class BannerStorage implements Banners, Acknowledger {
                                                 result.getInt("active"),
                                                 result.getLong("start_time"),
                                                 result.getLong("end_time"),
-                                                result.getString("type"));
+                                                result.getString("banner_type"));
 
                                         if (alert.isActiveForHost(serverId)) {
                                             alerts.add(alert);
@@ -138,7 +138,7 @@ public class BannerStorage implements Banners, Acknowledger {
                     public String call(DBConnection db) throws SQLException {
                         String id = UUID.randomUUID().toString();
 
-                        db.run("INSERT INTO PASYSTEM_BANNER_ALERT (uuid, message, hosts, dismissible, active, start_time, end_time, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+                        db.run("INSERT INTO PASYSTEM_BANNER_ALERT (uuid, message, hosts, dismissible, active, start_time, end_time, banner_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
                                 .param(id)
                                 .param(message)
                                 .param(hosts)
@@ -163,7 +163,7 @@ public class BannerStorage implements Banners, Acknowledger {
                 "Update banner with uuid " + uuid,
                 new DBAction<Void>() {
                     public Void call(DBConnection db) throws SQLException {
-                        db.run("UPDATE PASYSTEM_BANNER_ALERT SET message = ?, hosts = ?, dismissible = ?, active = ?, start_time = ?, end_time = ?, type = ? WHERE uuid = ?")
+                        db.run("UPDATE PASYSTEM_BANNER_ALERT SET message = ?, hosts = ?, dismissible = ?, active = ?, start_time = ?, end_time = ?, banner_type = ? WHERE uuid = ?")
                                 .param(message)
                                 .param(hosts)
                                 .param(new Integer(isDismissible ? 1 : 0))
