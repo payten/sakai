@@ -7,5 +7,5 @@ CREATE TABLE pasystem_banner_dismissed (
   CONSTRAINT banner_dismissed_unique UNIQUE (user_eid, state, uuid)
 );
 
-CREATE INDEX banner_dismissed_lower_user_eid on pasystem_banner_dismissed (lower(user_eid));
+CREATE INDEX banner_dismissed_lcase_eid on pasystem_banner_dismissed (lower(user_eid));
 CREATE INDEX banner_dismissed_state on pasystem_banner_dismissed (state);
