@@ -1,31 +1,69 @@
+@font-face {
+  font-family: 'pasystem-icons';
+  src:url('../fonts/pasystem-icons.eot?-wa2nby');
+  src:url('../fonts/pasystem-icons.eot?#iefix-wa2nby') format('embedded-opentype'),
+    url('../fonts/pasystem-icons.woff?-wa2nby') format('woff'),
+    url('../fonts/pasystem-icons.ttf?-wa2nby') format('truetype'),
+    url('../fonts/pasystem-icons.svg?-wa2nby#pasystem-icons') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .pasystem-banner-alert {
   background-color: #f7e084;
   color: #000;
   padding: 10px 0;
   position: relative;
-  background-color: rgba(247, 224, 132, 0.9);
-  border: 1px solid rgba(165, 138, 29, 0.1);
+  box-shadow: 0 -1px 2px 0 #CCC;
+  box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 .pasystem-banner-alert:before {
-  background-image: url(../images/warning.png);
-  background-repeat: no-repeat;
-  content: ' ';
-  width: 20px;
-  height: 20px;
+  font-family: 'pasystem-icons';
   float: left;
   margin: 0 10px;
+}
+.pasystem-banner-alert,
+.pasystem-banner-alert.pasystem-banner-warning {
+  background-color: #f7e084;
+  border: 1px solid rgba(165, 138, 29, 0.1);
+}
+.pasystem-banner-alert:before,
+.pasystem-banner-alert.pasystem-banner-warning:before {
+  content: '\f071';
+  color: #a9860c;
+}
+.pasystem-banner-alert.pasystem-banner-danger {
+  background-color: #f1d3d3;
+}
+.pasystem-banner-alert.pasystem-banner-danger:before {
+  content: '\f06a';
+  color: #b30e0a;
+}
+.pasystem-banner-alert.pasystem-banner-success {
+  background-color: #d4edc9;
+}
+.pasystem-banner-alert.pasystem-banner-success:before {
+  content: '\f058';
+  color: #098a1e;
+}
+.pasystem-banner-alert.pasystem-banner-info {
+  background-color: #c7e4f4;
+}
+.pasystem-banner-alert.pasystem-banner-info:before {
+  content: '\f05a';
+  color: #144bae;
 }
 .pasystem-banner-alert .pasystem-banner-alert-close {
   position: absolute;
   top: 50%;
   right: 10px;
   text-decoration: none;
-  background-image: url(../images/dismiss.png);
-  background-repeat: no-repeat;
-  content: ' ';
-  width: 20px;
-  height: 20px;
   margin-top: -10px;
+  color: #666;
+}
+.pasystem-banner-alert .pasystem-banner-alert-close:before {
+  font-family: 'pasystem-icons';
+  content: '\f00d';
 }
 .pasystem-banner-alert-toggle-list-item {
   float: left;
@@ -41,12 +79,14 @@
   background-color: #f7e084;
   color: #000 !important;
   text-align: center;
-  padding: 6px 8px 6px 30px;
+  padding: 6px 8px;
   border-radius: 3px;
   text-decoration: none;
-  background-image: url(../images/warning.png);
-  background-repeat: no-repeat;
-  background-position: 5px center;
+}
+
+.pasystem-banner-alert-toggle:before {
+  font-family: 'pasystem-icons';
+  content: '\f071';
 }
 
 .pasystem-banner-alert-toggle:hover {
