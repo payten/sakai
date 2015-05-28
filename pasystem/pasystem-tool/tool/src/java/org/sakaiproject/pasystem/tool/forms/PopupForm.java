@@ -5,6 +5,7 @@ import java.io.IOException;
 import lombok.Data;
 import org.sakaiproject.pasystem.api.PASystem;
 import org.sakaiproject.pasystem.api.Popup;
+import org.sakaiproject.pasystem.api.TemplateStream;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,10 +102,11 @@ public class PopupForm extends BaseForm {
     }
 
 
-    public Optional<InputStream> getTemplateStream() {
+    public Optional<TemplateStream> getTemplateStream() {
         try {
             if (templateItem.isPresent() && templateItem.get().getSize() > 0) {
-                return Optional.of(templateItem.get().getInputStream());
+                return Optional.of(new TemplateStream(templateItem.get().getInputStream(),
+                                                      templateItem.get().getSize()));
             }
         } catch (IOException e) {
             LOG.error("IOException while fetching template stream", e);

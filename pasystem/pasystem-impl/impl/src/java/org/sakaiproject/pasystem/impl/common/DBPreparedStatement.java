@@ -57,6 +57,26 @@ public class DBPreparedStatement {
         }
     }
 
+
+    public DBPreparedStatement param(Reader reader, long length) throws SQLException {
+        try {
+            int param = paramCount();
+            try {
+                preparedStatement.setCharacterStream(param, reader, length);
+            } catch (java.lang.AbstractMethodError e) {
+                // Older JDBC versions don't support the method with a long
+                // argument.  Use an int instead.
+                preparedStatement.setCharacterStream(param, reader, (int)length);
+            }
+
+            return this;
+        } catch (SQLException e) {
+            cleanup();
+            throw e;
+        }
+    }
+
+
     public int executeUpdate() throws SQLException {
         try {
             dbConnection.markAsDirty();

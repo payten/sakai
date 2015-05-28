@@ -2,6 +2,7 @@ package org.sakaiproject.pasystem.tool.handlers;
 
 import org.sakaiproject.pasystem.api.PASystem;
 import org.sakaiproject.pasystem.api.Popup;
+import org.sakaiproject.pasystem.api.TemplateStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,17 +93,17 @@ public class PopupsHandler extends CrudHandler {
             return;
         }
 
-        Optional<InputStream> templateInputStream = popupForm.getTemplateStream();
+        Optional<TemplateStream> templateStream = popupForm.getTemplateStream();
 
         if (CrudMode.CREATE.equals(mode)) {
             paSystem.getPopups().createCampaign(popupForm.toPopup(),
-                    templateInputStream.get(),
+                    templateStream.get(),
                     Optional.of(popupForm.getAssignToUsers()));
             flash("info", "popup_created");
         } else {
             paSystem.getPopups().updateCampaign(popupForm.getUuid(),
                     popupForm.toPopup(),
-                    templateInputStream,
+                    templateStream,
                     popupForm.isOpenCampaign() ? Optional.empty() : Optional.of(popupForm.getAssignToUsers()));
             flash("info", "popup_updated");
         }
