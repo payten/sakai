@@ -19,6 +19,8 @@ public interface Banners extends Acknowledger {
 
     public List<Banner> getAll();
 
+    public void clearTemporaryDismissedForUser(String userEid);
+
     public Optional<Banner> getForId(String uuid);
 }
     

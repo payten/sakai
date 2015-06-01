@@ -255,4 +255,9 @@ public class PopupStorage implements Popups, Acknowledger {
     public void acknowledge(final String uuid, final String userEid, final String acknowledgementType) {
         new AcknowledgementStorage(AcknowledgementStorage.NotificationType.POPUP).acknowledge(uuid, userEid, acknowledgementType);
     }
+
+    public void acknowledge(final String uuid, final String userEid) {
+        acknowledge(uuid, userEid, Acknowledger.TEMPORARY);
+    }
+
 }

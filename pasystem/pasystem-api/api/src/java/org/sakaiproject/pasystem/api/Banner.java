@@ -21,7 +21,7 @@ public class Banner implements Comparable<Banner> {
     private boolean isActive;
 
     @Getter
-    private boolean hasBeenDismissed;
+    private boolean isDismissed;
 
 
     enum BannerType {
@@ -35,15 +35,15 @@ public class Banner implements Comparable<Banner> {
     }
 
 
-    public Banner(String uuid, String message, String hosts, int active, long startTime, long endTime, String type, boolean hasBeenDismissed) {
+    public Banner(String uuid, String message, String hosts, int active, long startTime, long endTime, String type, boolean isDismissed) {
         this.uuid = uuid;
         this.message = message;
         this.hosts = hosts;
         this.isActive = (active == 1);
         this.startTime = startTime;
         this.endTime = endTime;
-        this.type = BannerType.valueOf(type);
-        this.hasBeenDismissed = hasBeenDismissed;
+        this.type = BannerType.valueOf(type.toUpperCase());
+        this.isDismissed = isDismissed;
     }
 
 
@@ -52,8 +52,21 @@ public class Banner implements Comparable<Banner> {
     }
 
 
+    public String calculateAcknowledgementType() {
+        if (type.equals(BannerType.MEDIUM)) {
+            return Acknowledger.TEMPORARY;
+        } else {
+            return Acknowledger.PERMANENT;
+        }
+    }
+
     public int compareTo(Banner other) {
-        return type.ordinal() - BannerType.valueOf(other.getType()).ordinal();
+        return getSeverityScore() - other.getSeverityScore();
+    }
+
+
+    public int getSeverityScore() {
+        return type.ordinal();
     }
 
 

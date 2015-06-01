@@ -182,6 +182,7 @@ class PASystemImpl implements PASystem {
             alertData.put("id", alert.getUuid());
             alertData.put("message", alert.getMessage());
             alertData.put("dismissible", alert.isDismissible());
+            alertData.put("dismissed", alert.isDismissed());
             alertData.put("type", alert.getType());
             alerts.add(alertData);
         }

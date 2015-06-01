@@ -1,5 +1,7 @@
 package org.sakaiproject.pasystem.impl.acknowledgements;
 
+import org.sakaiproject.pasystem.api.Acknowledger;
+
 import org.sakaiproject.pasystem.impl.common.DB;
 import org.sakaiproject.pasystem.impl.common.DBAction;
 import org.sakaiproject.pasystem.impl.common.DBConnection;
@@ -27,7 +29,7 @@ public class AcknowledgementStorage {
             ("Acknowledge a notification on behalf of a user",
              new DBAction<Void>() {
                  public Void call(DBConnection db) throws SQLException {
-                     String state = ("temporary".equals(acknowledgementType)) ? "temporary" : "permanent";
+                     String state = (Acknowledger.TEMPORARY.equals(acknowledgementType)) ? Acknowledger.TEMPORARY : Acknowledger.PERMANENT;
 
                      db.run("INSERT INTO " + tableName + " (uuid, user_eid, state, dismiss_time) values (?, ?, ?, ?)")
                          .param(uuid)
@@ -42,4 +44,23 @@ public class AcknowledgementStorage {
              }
             );
     }
+
+
+    public void clearTemporaryDismissedForUser(String userEid) {
+        DB.transaction
+            ("Delete all temporarily dismissed banners for a user",
+             new DBAction<Void>() {
+                 public Void call(DBConnection db) throws SQLException {
+                     db.run("DELETE FROM " + tableName + " WHERE state = ? AND user_eid = ?")
+                         .param(Acknowledger.TEMPORARY)
+                         .param(userEid)
+                         .executeUpdate();
+
+                     db.commit();
+                     return null;
+                 }
+             }
+            );
+    }
+
 }

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
+import org.sakaiproject.pasystem.api.PASystemException;
 
 
 public class BannerStorage implements Banners, Acknowledger {
@@ -88,7 +89,9 @@ public class BannerStorage implements Banners, Acknowledger {
                             " (dismissed.state is NULL OR" +
 
                             // Or was dismissed temporarily
-                            "  (dismissed.state = 'temporary'))");
+                            "  (dismissed.state = 'temporary'))" +
+
+                            " ORDER BY start_time");
 
         return DB.transaction
                 ("Find all active alerts for the server: " + serverId,
@@ -101,7 +104,7 @@ public class BannerStorage implements Banners, Acknowledger {
                                         .executeQuery()) {
                                     for (ResultSet result : results) {
                                         boolean hasBeenDismissed =
-                                            ("temporary".equals(result.getString("dismissed_state")) &&
+                                            (Acknowledger.TEMPORARY.equals(result.getString("dismissed_state")) &&
                                              (System.currentTimeMillis() - result.getLong("dismissed_time")) >= getTemporaryTimeoutMilliseconds());
 
                                         Banner alert = new Banner(result.getString("uuid"),
@@ -223,7 +226,27 @@ public class BannerStorage implements Banners, Acknowledger {
     }
 
 
+    public void acknowledge(final String uuid, final String userEid) {
+        acknowledge(uuid, userEid, calculateAcknowledgementType(uuid));
+    }
+
     public void acknowledge(final String uuid, final String userEid, final String acknowledgementType) {
         new AcknowledgementStorage(AcknowledgementStorage.NotificationType.BANNER).acknowledge(uuid, userEid, acknowledgementType);
+    }
+
+
+    private String calculateAcknowledgementType(String uuid) {
+        Optional<Banner> banner = getForId(uuid);
+
+        if (banner.isPresent()) {
+            return banner.get().calculateAcknowledgementType();
+        } else {
+            throw new PASystemException("No banner found for uuid: " + uuid);
+        }
+    }
+
+
+    public void clearTemporaryDismissedForUser(String userEid) {
+        new AcknowledgementStorage(AcknowledgementStorage.NotificationType.BANNER).clearTemporaryDismissedForUser(userEid);
     }
 }
