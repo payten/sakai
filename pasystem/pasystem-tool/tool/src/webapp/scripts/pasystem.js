@@ -36,7 +36,7 @@ PASystemBannerAlerts.prototype.handleBannerAlertClose = function($alert) {
       document.cookie = "pasystem_timezone_warning_dismissed=true; path=/;";
     } else {
       self.acknowledge(alertId);
-      self.$toggle.slideDown();
+      self.$toggle.show();
     }
   });
 };
@@ -63,9 +63,9 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function(forceShowAllBanners
     self.$container.append($alert);
 
     if (forceShowAllBanners || !self.hasAlertBeenDismissed(alert)) {
-      $alert.slideDown();
+      $alert.show();
     } else {
-      self.$toggle.show().slideDown();
+      self.$toggle.show();
     }
   });
 };
@@ -113,7 +113,6 @@ PASystemBannerAlerts.prototype.acknowledge = function(uuid) {
     url: '/direct/pasystem/bannerAcknowledge',
     data: {
       uuid: uuid,
-      acknowledgement: 'permanent',
       sakai_csrf_token: this.csrf_token
     }
   });
