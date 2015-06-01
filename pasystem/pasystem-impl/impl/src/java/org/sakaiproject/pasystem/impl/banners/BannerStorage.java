@@ -36,7 +36,6 @@ public class BannerStorage implements Banners, Acknowledger {
                                         banners.add(new Banner(result.getString("uuid"),
                                                 result.getString("message"),
                                                 result.getString("hosts"),
-                                                result.getInt("dismissible"),
                                                 result.getInt("active"),
                                                 result.getLong("start_time"),
                                                 result.getLong("end_time"),
@@ -63,7 +62,6 @@ public class BannerStorage implements Banners, Acknowledger {
                                         return Optional.of(new Banner(result.getString("uuid"),
                                                 result.getString("message"),
                                                 result.getString("hosts"),
-                                                result.getInt("dismissible"),
                                                 result.getInt("active"),
                                                 result.getLong("start_time"),
                                                 result.getLong("end_time"),
@@ -79,7 +77,7 @@ public class BannerStorage implements Banners, Acknowledger {
 
 
     public List<Banner> getRelevantAlerts(final String serverId, final String userEid) {
-        final String sql = ("SELECT alert.*" +
+        final String sql = ("SELECT alert.*, dismissed.state as dismissed_state, dismissed.dismiss_time as dismissed_time" +
                             " from PASYSTEM_BANNER_ALERT alert" +
                             " LEFT OUTER JOIN PASYSTEM_BANNER_DISMISSED dismissed on dismissed.uuid = alert.uuid" +
                             "  AND ((? = '') OR lower(dismissed.user_eid) = ?)" +
@@ -88,9 +86,8 @@ public class BannerStorage implements Banners, Acknowledger {
                             // And either hasn't been dismissed yet
                             " (dismissed.state is NULL OR" +
 
-                            // Or was dismissed temporarily, but some time has passed
-                            "  (dismissed.state = 'temporary' AND" +
-                            "   (? - dismissed.dismiss_time) >= ?))");
+                            // Or was dismissed temporarily
+                            "  (dismissed.state = 'temporary'))");
 
         return DB.transaction
                 ("Find all active alerts for the server: " + serverId,
@@ -100,18 +97,21 @@ public class BannerStorage implements Banners, Acknowledger {
                                 try (DBResults results = db.run(sql)
                                         .param((userEid == null) ? "" : userEid.toLowerCase())
                                         .param((userEid == null) ? "" : userEid.toLowerCase())
-                                        .param(System.currentTimeMillis())
-                                        .param(getTemporaryTimeoutMilliseconds())
                                         .executeQuery()) {
                                     for (ResultSet result : results) {
+                                        boolean hasBeenDismissed =
+                                            ("temporary".equals(result.getString("dismissed_state")) &&
+                                             (System.currentTimeMillis() - result.getLong("dismissed_time")) >= getTemporaryTimeoutMilliseconds());
+
+
                                         Banner alert = new Banner(result.getString("uuid"),
                                                 result.getString("message"),
                                                 result.getString("hosts"),
-                                                result.getInt("dismissible"),
                                                 result.getInt("active"),
                                                 result.getLong("start_time"),
                                                 result.getLong("end_time"),
-                                                result.getString("banner_type"));
+                                                result.getString("banner_type"),
+                                                hasBeenDismissed);
 
                                         if (alert.isActiveForHost(serverId)) {
                                             alerts.add(alert);
@@ -130,19 +130,17 @@ public class BannerStorage implements Banners, Acknowledger {
         return ServerConfigurationService.getInt("pasystem.banner.temporary-timeout-ms", (24 * 60 * 60 * 1000));
     }
 
-
-    public String createBanner(String message, String hosts, boolean isDismissible, boolean isActive, long startTime, long endTime, String type) {
+    public String createBanner(String message, String hosts, boolean isActive, long startTime, long endTime, String type) {
         return DB.transaction(
                 "Create an banner",
                 new DBAction<String>() {
                     public String call(DBConnection db) throws SQLException {
                         String id = UUID.randomUUID().toString();
 
-                        db.run("INSERT INTO PASYSTEM_BANNER_ALERT (uuid, message, hosts, dismissible, active, start_time, end_time, banner_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+                        db.run("INSERT INTO PASYSTEM_BANNER_ALERT (uuid, message, hosts, active, start_time, end_time, banner_type) VALUES (?, ?, ?, ?, ?, ?, ?)")
                                 .param(id)
                                 .param(message)
                                 .param(hosts)
-                                .param(new Integer(isDismissible ? 1 : 0))
                                 .param(new Integer(isActive ? 1 : 0))
                                 .param(startTime)
                                 .param(endTime)
@@ -158,15 +156,14 @@ public class BannerStorage implements Banners, Acknowledger {
     }
 
 
-    public void updateBanner(String uuid, String message, String hosts, boolean isDismissible, boolean isActive, long startTime, long endTime, String type) {
+    public void updateBanner(String uuid, String message, String hosts, boolean isActive, long startTime, long endTime, String type) {
         DB.transaction(
                 "Update banner with uuid " + uuid,
                 new DBAction<Void>() {
                     public Void call(DBConnection db) throws SQLException {
-                        db.run("UPDATE PASYSTEM_BANNER_ALERT SET message = ?, hosts = ?, dismissible = ?, active = ?, start_time = ?, end_time = ?, banner_type = ? WHERE uuid = ?")
+                        db.run("UPDATE PASYSTEM_BANNER_ALERT SET message = ?, hosts = ?, active = ?, start_time = ?, end_time = ?, banner_type = ? WHERE uuid = ?")
                                 .param(message)
                                 .param(hosts)
-                                .param(new Integer(isDismissible ? 1 : 0))
                                 .param(new Integer(isActive ? 1 : 0))
                                 .param(startTime)
                                 .param(endTime)

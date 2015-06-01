@@ -39,9 +39,6 @@
   content: '\f06a';
   color: #b30e0a;
 }
-.pasystem-banner-alert.pasystem-banner-success {
-  background-color: #d4edc9;
-}
 .pasystem-banner-alert.pasystem-banner-success:before {
   content: '\f058';
   color: #098a1e;

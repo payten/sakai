@@ -20,18 +20,23 @@ public class Banner {
     private String type;
 
     private boolean isActive;
-    private boolean isDismissible;
+    private boolean hasBeenDismissed;
 
 
-    public Banner(String uuid, String message, String hosts, int dismissible, int active, long startTime, long endTime, String type) {
+    public Banner(String uuid, String message, String hosts, int active, long startTime, long endTime, String type) {
+        this(uuid, message, hosts, active, startTime, endTime, type, false);
+    }
+
+
+    public Banner(String uuid, String message, String hosts, int active, long startTime, long endTime, String type, boolean hasBeenDismissed) {
         this.uuid = uuid;
         this.message = message;
         this.hosts = hosts;
         this.isActive = (active == 1);
-        this.isDismissible = (dismissible == 1);
         this.startTime = startTime;
         this.endTime = endTime;
         this.type = type;
+        this.hasBeenDismissed = hasBeenDismissed;
     }
 
 
@@ -52,7 +57,8 @@ public class Banner {
 
 
     public boolean isDismissible() {
-        return this.isDismissible;
+        // FIXME: Create an enum for this
+        return "high".equals(type);
     }
 
 
