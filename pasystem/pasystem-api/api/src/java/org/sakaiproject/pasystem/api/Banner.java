@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 
-public class Banner {
+public class Banner implements Comparable<Banner> {
     @Getter
     private String uuid;
     @Getter
@@ -16,12 +16,19 @@ public class Banner {
     private long endTime;
     @Getter
     private String hosts;
-    @Getter
-    private String type;
+    private BannerType type;
 
     private boolean isActive;
+
+    @Getter
     private boolean hasBeenDismissed;
 
+
+    enum BannerType {
+        HIGH,
+        MEDIUM,
+        LOW
+    }
 
     public Banner(String uuid, String message, String hosts, int active, long startTime, long endTime, String type) {
         this(uuid, message, hosts, active, startTime, endTime, type, false);
@@ -35,8 +42,18 @@ public class Banner {
         this.isActive = (active == 1);
         this.startTime = startTime;
         this.endTime = endTime;
-        this.type = type;
+        this.type = BannerType.valueOf(type);
         this.hasBeenDismissed = hasBeenDismissed;
+    }
+
+
+    public String getType() {
+        return this.type.toString().toLowerCase();
+    }
+
+
+    public int compareTo(Banner other) {
+        return type.ordinal() - BannerType.valueOf(other.getType()).ordinal();
     }
 
 
@@ -57,8 +74,7 @@ public class Banner {
 
 
     public boolean isDismissible() {
-        // FIXME: Create an enum for this
-        return "high".equals(type);
+        return !BannerType.HIGH.equals(type);
     }
 
 

@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -103,7 +104,6 @@ public class BannerStorage implements Banners, Acknowledger {
                                             ("temporary".equals(result.getString("dismissed_state")) &&
                                              (System.currentTimeMillis() - result.getLong("dismissed_time")) >= getTemporaryTimeoutMilliseconds());
 
-
                                         Banner alert = new Banner(result.getString("uuid"),
                                                 result.getString("message"),
                                                 result.getString("hosts"),
@@ -117,6 +117,8 @@ public class BannerStorage implements Banners, Acknowledger {
                                             alerts.add(alert);
                                         }
                                     }
+
+                                    Collections.sort(alerts);
 
                                     return alerts;
                                 }
