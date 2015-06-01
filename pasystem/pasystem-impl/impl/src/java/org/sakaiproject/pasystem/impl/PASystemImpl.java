@@ -177,14 +177,16 @@ class PASystemImpl implements PASystem {
 
         User currentUser = UserDirectoryService.getCurrentUser();
 
-        for (Banner alert : getBanners().getRelevantAlerts(serverId, currentUser.getEid())) {
-            JSONObject alertData = new JSONObject();
-            alertData.put("id", alert.getUuid());
-            alertData.put("message", alert.getMessage());
-            alertData.put("dismissible", alert.isDismissible());
-            alertData.put("dismissed", alert.isDismissed());
-            alertData.put("type", alert.getType());
-            alerts.add(alertData);
+        if (currentUser != null && currentUser.getEid() != null) {
+            for (Banner alert : getBanners().getRelevantAlerts(serverId, currentUser.getEid())) {
+                JSONObject alertData = new JSONObject();
+                alertData.put("id", alert.getUuid());
+                alertData.put("message", alert.getMessage());
+                alertData.put("dismissible", alert.isDismissible());
+                alertData.put("dismissed", alert.isDismissed());
+                alertData.put("type", alert.getType());
+                alerts.add(alertData);
+            }
         }
 
         return alerts.toJSONString();
