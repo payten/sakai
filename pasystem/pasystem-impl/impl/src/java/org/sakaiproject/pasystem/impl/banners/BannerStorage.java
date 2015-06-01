@@ -105,7 +105,7 @@ public class BannerStorage implements Banners, Acknowledger {
                                     for (ResultSet result : results) {
                                         boolean hasBeenDismissed =
                                             (Acknowledger.TEMPORARY.equals(result.getString("dismissed_state")) &&
-                                             (System.currentTimeMillis() - result.getLong("dismissed_time")) >= getTemporaryTimeoutMilliseconds());
+                                             (System.currentTimeMillis() - result.getLong("dismissed_time")) < getTemporaryTimeoutMilliseconds());
 
                                         Banner alert = new Banner(result.getString("uuid"),
                                                 result.getString("message"),
