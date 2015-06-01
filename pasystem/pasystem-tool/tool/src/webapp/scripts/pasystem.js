@@ -43,7 +43,7 @@ PASystemBannerAlerts.prototype.handleBannerAlertClose = function($alert) {
 
 
 PASystemBannerAlerts.prototype.hasAlertBeenDismissed = function(alert) {
-  return alert.isDismissed;
+  return alert.dismissed;
 };
 
 

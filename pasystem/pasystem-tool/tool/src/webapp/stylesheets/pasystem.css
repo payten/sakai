@@ -24,31 +24,27 @@
   line-height: 24px;
 }
 .pasystem-banner-alert,
-.pasystem-banner-alert.pasystem-banner-warning {
+.pasystem-banner-alert.pasystem-banner-medium {
   background-color: #f7e084;
 }
 .pasystem-banner-alert:before,
-.pasystem-banner-alert.pasystem-banner-warning:before {
+.pasystem-banner-alert.pasystem-banner-medium:before {
   content: '\f071';
   color: #a9860c;
 }
-.pasystem-banner-alert.pasystem-banner-danger {
+.pasystem-banner-alert.pasystem-banner-high {
   background-color: #f1d3d3;
 }
-.pasystem-banner-alert.pasystem-banner-danger:before {
+.pasystem-banner-alert.pasystem-banner-high:before {
   content: '\f06a';
   color: #b30e0a;
 }
-.pasystem-banner-alert.pasystem-banner-success:before {
-  content: '\f058';
-  color: #098a1e;
-}
 .pasystem-banner-alert.pasystem-banner-timezone,
-.pasystem-banner-alert.pasystem-banner-info {
+.pasystem-banner-alert.pasystem-banner-low {
   background-color: #c7e4f4;
 }
 .pasystem-banner-alert.pasystem-banner-timezone:before,
-.pasystem-banner-alert.pasystem-banner-info:before {
+.pasystem-banner-alert.pasystem-banner-low:before {
   content: '\f05a';
   color: #144bae;
 }
