@@ -14,18 +14,18 @@
   color: #000;
   padding: 10px 0;
   position: relative;
-  box-shadow: 0 -1px 2px 0 #CCC;
-  box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(165, 138, 29, 0.1);
 }
 .pasystem-banner-alert:before {
   font-family: 'pasystem-icons';
   float: left;
   margin: 0 10px;
+  font-size: 20px;
+  line-height: 24px;
 }
 .pasystem-banner-alert,
 .pasystem-banner-alert.pasystem-banner-warning {
   background-color: #f7e084;
-  border: 1px solid rgba(165, 138, 29, 0.1);
 }
 .pasystem-banner-alert:before,
 .pasystem-banner-alert.pasystem-banner-warning:before {
@@ -70,16 +70,14 @@
 @media only screen and (max-width: 800px) {
   .pasystem-banner-alerts {
     position: absolute;
-    top: 0;
+    top: 50px;
     right: 0;
     width: 80%;
     max-width: 500px;
-    z-index: 10000;
+    z-index: 1;
   }
   .pasystem-banner-alerts .pasystem-banner-alert {
     margin: 10px;
-    background-color: rgba(247, 224, 132, 0.9);
-    border: 1px solid rgba(165, 138, 29, 0.1);
     border-radius: 5px;
   }
 }
