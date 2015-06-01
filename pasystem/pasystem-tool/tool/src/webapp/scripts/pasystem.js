@@ -8,6 +8,7 @@ function PASystemBannerAlerts(json, csrf_token) {
   var templateString = $("#pasystemBannerAlertsTemplate").html().trim().toString();
   this.bannerTemplate = TrimPath.parseTemplate(templateString, "pasystemBannerAlertsTemplate");
 
+  this.setupAlertBannerToggle();
   this.renderBannerAlerts();
   this.setupEvents();
 }
@@ -18,21 +19,42 @@ PASystemBannerAlerts.prototype.getBannerAlerts = function() {
 };
 
 
+PASystemBannerAlerts.prototype.showAllAlerts = function() {
+  this.clearAcknowledgements();
+  this.renderBannerAlerts(true);
+};
+
+
 PASystemBannerAlerts.prototype.handleBannerAlertClose = function($alert) {
   var self = this;
 
+  var alertId = $alert.attr("id");
+
   $alert.slideUp(function() {
-    self.acknowledge($alert.attr("id"));
-    $alert.remove();
+    if (alertId == "tz") {
+      // dismiss for the duration of the user's session
+      document.cookie = "pasystem_timezone_warning_dismissed=true; path=/;";
+    } else {
+      self.acknowledge(alertId);
+      self.$toggle.slideDown();
+    }
   });
 };
 
-PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
+
+PASystemBannerAlerts.prototype.hasAlertBeenDismissed = function(alert) {
+  return alert.isDismissed;
+};
+
+
+PASystemBannerAlerts.prototype.renderBannerAlerts = function(forceShowAllBanners) {
   var self = this;
 
   if (typeof self.$container == "undefined") {
     self.$container = $("<div>").addClass("pasystem-banner-alerts");
     $(document.body).prepend(self.$container);
+  } else {
+    self.$container.empty();
   }
 
   $.each(self.json, function(i, alert) {
@@ -40,7 +62,11 @@ PASystemBannerAlerts.prototype.renderBannerAlerts = function() {
     $alert.hide();
     self.$container.append($alert);
 
-    $alert.slideDown();
+    if (forceShowAllBanners || !self.hasAlertBeenDismissed(alert)) {
+      $alert.slideDown();
+    } else {
+      self.$toggle.show().slideDown();
+    }
   });
 };
 
@@ -66,7 +92,22 @@ PASystemBannerAlerts.prototype.setupEvents = function() {
 };
 
 
+PASystemBannerAlerts.prototype.clearAcknowledgements = function() {
+  var self = this;
+
+  $.ajax({
+    method: 'POST',
+    url: '/direct/pasystem/clearBannerAcknowledgements',
+    data: {
+      sakai_csrf_token: this.csrf_token
+    }
+  });
+};
+
+
 PASystemBannerAlerts.prototype.acknowledge = function(uuid) {
+  var self = this;
+
   $.ajax({
     method: 'POST',
     url: '/direct/pasystem/bannerAcknowledge',
@@ -77,6 +118,26 @@ PASystemBannerAlerts.prototype.acknowledge = function(uuid) {
     }
   });
 };
+
+
+PASystemBannerAlerts.prototype.setupAlertBannerToggle = function() {
+  var self = this;
+
+  self.$toggle = $($("#pasystemBannerAlertsToggleTemplate").html().trim());
+  self.$toggle.hide();
+  $("#loginLinks").prepend(self.$toggle);
+
+  self.$toggle.on("click", function(event) {
+    event.preventDefault();
+
+    self.showAllAlerts();
+    self.$toggle.slideUp();
+
+    return false;
+  });
+};
+
+
 /************************************************************************************
  * PASystemPopup - for handle popup things!
  */

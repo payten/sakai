@@ -64,6 +64,39 @@
   font-family: 'pasystem-icons';
   content: '\f00d';
 }
+.pasystem-banner-alert-toggle {
+  -webkit-transition: background-color 0.2s, color 0.2s;
+  -moz-transition: background-color 0.2s, color 0.2s;
+  -ms-transition: background-color 0.2s, color 0.2s;
+  -o-transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
+
+  background-color: #f7e084;
+  color: #000 !important;
+  text-align: center;
+  padding: 6px 8px;
+  border-radius: 3px;
+  text-decoration: none;
+}
+.pasystem-banner-alert-toggle-list-item {
+  position: absolute;
+  left: 120px; /* stay out of the way of the #roleSwitch link */
+  top: 13px;
+}
+.pasystem-banner-alert-toggle:before {
+  font-family: 'pasystem-icons';
+  content: '\f071';
+}
+.pasystem-banner-alert-toggle:hover {
+  -webkit-transition: background-color 0.2s, color 0.2s;
+  -moz-transition: background-color 0.2s, color 0.2s;
+  -ms-transition: background-color 0.2s, color 0.2s;
+  -o-transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
+
+  background-color: #F7DB4D;
+  text-decoration: none;
+}
 @media only screen and (max-width: 800px) {
   .pasystem-banner-alerts {
     position: absolute;
@@ -76,6 +109,14 @@
   .pasystem-banner-alerts .pasystem-banner-alert {
     margin: 10px;
     border-radius: 5px;
+  }
+  .pasystem-banner-alert-toggle-list-item {
+    position: fixed;
+    left: 100px;
+    top: 16px;
+  }
+  .pasystem-banner-alert-toggle {
+    padding: 8px;
   }
 }
 
