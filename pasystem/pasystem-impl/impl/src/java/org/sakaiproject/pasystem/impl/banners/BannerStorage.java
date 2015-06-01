@@ -146,7 +146,7 @@ public class BannerStorage implements Banners, Acknowledger {
                                 .param(id)
                                 .param(message)
                                 .param(hosts)
-                                .param(new Integer(isActive ? 1 : 0))
+                                .param(Integer.valueOf(isActive ? 1 : 0))
                                 .param(startTime)
                                 .param(endTime)
                                 .param(type)
@@ -169,7 +169,7 @@ public class BannerStorage implements Banners, Acknowledger {
                         db.run("UPDATE PASYSTEM_BANNER_ALERT SET message = ?, hosts = ?, active = ?, start_time = ?, end_time = ?, banner_type = ? WHERE uuid = ?")
                                 .param(message)
                                 .param(hosts)
-                                .param(new Integer(isActive ? 1 : 0))
+                                .param(Integer.valueOf(isActive ? 1 : 0))
                                 .param(startTime)
                                 .param(endTime)
                                 .param(type)
@@ -213,7 +213,7 @@ public class BannerStorage implements Banners, Acknowledger {
                 new DBAction<Void>() {
                     public Void call(DBConnection db) throws SQLException {
                         db.run("UPDATE PASYSTEM_BANNER_ALERT SET (active) VALUES (?) WHERE uuid = ?")
-                                .param(new Integer(isActive ? 1 : 0))
+                                .param(Integer.valueOf(isActive ? 1 : 0))
                                 .param(uuid)
                                 .executeUpdate();
 

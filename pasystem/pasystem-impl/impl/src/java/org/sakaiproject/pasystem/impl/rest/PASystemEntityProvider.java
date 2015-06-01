@@ -159,7 +159,7 @@ public class PASystemEntityProvider implements EntityProvider, AutoRegisterEntit
         this.developerHelperService = developerHelperService;
     }
 
-    class TimezoneChecker {
+    static class TimezoneChecker {
 
         public String getTimezoneToolUrlForUser() {
             User thisUser = UserDirectoryService.getCurrentUser();

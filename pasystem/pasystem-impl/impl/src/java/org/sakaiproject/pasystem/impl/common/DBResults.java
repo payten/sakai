@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 
 public class DBResults implements Iterable<ResultSet>, Iterator<ResultSet>, AutoCloseable {
@@ -40,7 +41,7 @@ public class DBResults implements Iterable<ResultSet>, Iterator<ResultSet>, Auto
 
     public ResultSet next() {
         if (!hasRowReady) {
-            throw new DBException("Read past end of results");
+            throw new NoSuchElementException("Read past end of results");
         }
 
         hasRowReady = false;
