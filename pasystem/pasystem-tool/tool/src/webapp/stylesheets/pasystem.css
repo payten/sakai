@@ -76,7 +76,7 @@
 }
 .pasystem-banner-alert-toggle-list-item {
   position: absolute;
-  left: 120px; /* stay out of the way of the #roleSwitch link */
+  left: 10px; /* javascript will move if #roleSwitch link is present */
   top: 13px;
 }
 .pasystem-banner-alert-toggle:before {

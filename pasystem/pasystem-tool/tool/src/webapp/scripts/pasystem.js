@@ -126,6 +126,11 @@ PASystemBannerAlerts.prototype.setupAlertBannerToggle = function() {
   self.$toggle.hide();
   $("#loginLinks").prepend(self.$toggle);
 
+  if ($("#roleSwitch").length > 0) {
+    var offset = 20 + $("#roleSwitch").width() + $("#roleSwitch").offset().left - self.$toggle.parent().offset().left;
+    self.$toggle.css("left", offset + "px");
+  }
+
   self.$toggle.on("click", function(event) {
     event.preventDefault();
 
