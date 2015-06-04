@@ -42,4 +42,10 @@
   "uuid_missing": "The requested record could not be found",
   "template_was_missing": "Could not find a template for the selected popup screen",
   "template_upload_failed": "Template file failed to upload",
+  "Template": "Template",
+  "Distribution": "Distribution",
+  "distribution_everyone": "Show this campaign to everyone",
+  "distribution_selected_users": "Show this campaign to selected users",
+  "Save Popup": "Save Popup",
+  "Cancel": "Cancel"
 }
