@@ -623,10 +623,16 @@
 				      <input type="hidden" rsf:id="csrf4" />
                                         <input type="hidden" rsf:id="multipleChoiceId" />
                                         <span rsf:id="multipleChoiceSelect:"></span>
-                                        <div rsf:id="multipleChoiceAnswer:" class="multipleChoiceAnswer">
-                                            <input type="radio" rsf:id="multipleChoiceAnswerRadio" name="multipleChoiceAnswerRadio" />
-                                            <label rsf:id="multipleChoiceAnswerText" />
-                                        </div>
+                                        <ul class="multipleChoiceAnswers">
+                                          <li rsf:id="multipleChoiceAnswer:" class="multipleChoiceAnswer">
+                                              <input type="radio" rsf:id="multipleChoiceAnswerRadio" name="multipleChoiceAnswerRadio" />
+                                              <label rsf:id="multipleChoiceAnswerText" />
+                                              <div rsf:id="questionPollResult:" class="questionPollResult">
+                                                <span rsf:id="questionPollResultBar" class="questionPollResultBar"></span>
+                                                <span rsf:id="questionPollResultLabel" class="questionPollResultLabel"></span>
+                                              </div>
+                                          </li>
+                                        </ul>
                                         
                                         <input class="question-submit" type="submit" value="Answer!" rsf:id="answerMultipleChoice" />
                                     </form>
@@ -641,20 +647,13 @@
                                         <input class="bold question-submit" type="submit" value="Answer!" rsf:id="answerShortanswer" />
                                     </form>
                                 </div>
-                                
-                                <div rsf:id="questionStatusText" class="questionStatusText"></div>
-                                
-                                <div style="display:none" rsf:id="questionPollData:" class="questionPollData">
-                                    <span rsf:id="questionPollText" class="questionPollText"></span>
-                                    <span rsf:id="questionPollNumber" class="questionPollNumber"></span>
-                                </div>
-                                <div rsf:id="questionPollGraph" class="questionPollGraph"></div>
+
+                                <p rsf:id="questionCorrectAnswerMessage" class="questionCorrectAnswerMessage"></p>
+                                <p rsf:id="questionStatusText" class="questionStatusText"></p>
                             </div>
                             <div class="questionDivControl">
                                 <a href="#" class="usebutton gradingPaneLink" rsf:id="questionGradingPaneLink" ></a>
-                                <a href="#" class="usebutton showPollGraph" rsf:id="showPollGraph" onclick="return false;"></a>
-                                <span style="display:none" rsf:id="msg=simplepage.show-poll" class="show-poll"></span>
-                                <span style="display:none" rsf:id="msg=simplepage.hide-poll" class="hide-poll"></span>
+                                <div rsf:id="questionInstructorMessage" class="questionInstructorMessage"></div>
                             </div>
 
                         </div>
@@ -668,6 +667,7 @@
                             <span rsf:id="questionMultipleChoiceAnswerCorrect" class="questionMultipleChoiceAnswerCorrect"></span>
                         </div>
                         <span style="display:none" rsf:id="questionShowPoll" class="questionShowPoll"></span>
+                        <span style="display:none" rsf:id="questionShowCorrectAnswers" class="questionShowCorrectAnswers"></span>
                         <span style="display:none" rsf:id="questionGrade" class="questionGrade"></span>
                         <span style="display:none" rsf:id="questionMaxPoints" class="questionMaxPoints"></span>
                         <span style="display:none" rsf:id="questionGradebookTitle" class="questionGradebookTitle"></span>
@@ -1692,7 +1692,7 @@ c                        <input class="bold" type="submit" id="mm-add-item" rsf:
                                     <input type="hidden" rsf:id="question-answer-full-shortanswer" id="question-answer-full-shortanswer" />
                             
                                     <div id="shortanswers">
-                                        <div id="copyableShortanswerDiv">
+                                        <div id="copyableShortanswerDiv" class="question-answer">
                                             <label for="question-showans-alt"><span rsf:id="msg=simplepage.question-possible-answer" class="offscreen"></span></label>                                          
                                             <input type="text" name="question-showans-alt" class="question-shortanswer-answer" />
                                             <a href="#" onclick="deleteAnswer($(this)); return false;" style="display:none" class="deleteAnswerLink"><img src="$context/images/delete.png" rsf:id="question-shortans-del"></img></a>
@@ -1707,16 +1707,32 @@ c                        <input class="bold" type="submit" id="mm-add-item" rsf:
                                 <fieldset>
                                     <legend><h4 rsf:id="msg=simplepage.answers"></h4></legend>
                                     <div id="multipleChoiceAnswers">
-                                        <div id="copyableMultipleChoiceAnswerDiv">
-                                            <input type="hidden" rsf:id="question-multiplechoice-answer-complete" class="question-multiplechoice-answer-complete" />
-                                            <input type="hidden" rsf:id="question-multiplechoice-answer-id" class="question-multiplechoice-answer-id" />
-                                            <label for="question-multiplechoice-answer-correct"><span rsf:id="msg=simplepage.question-correct-answer" class="offscreen"></span></label>
-                                            <input type="checkbox" name="question-multiplechoice-answer-correct" rsf:id="question-multiplechoice-answer-correct"  class="question-multiplechoice-answer-correct" />
-                                            <label for="question-multiplechoice-answer"><span rsf:id="msg=simplepage.question-possible-answer" class="offscreen"></span></label>
-                                            <input type="text" rsf:id="question-multiplechoice-answer" name="question-multiplechoice-answer" class="question-multiplechoice-answer" />
-                                            <a href="#" onclick="deleteAnswer($(this)); return false;" style="display:none" class="deleteAnswerLink"><img src="$context/images/delete.png" rsf:id="question-mc-del"></img></a>
-                                        </div>
-                                        <div id="extraMultipleChoiceAnswers"></div>
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th rsf:id="msg=simplepage.answers.multiplechoicecorrectcolumn" class="question-multiplechoice-correct-column"></th>
+                                                    <th rsf:id="msg=simplepage.answers.multiplechoiceanswercolumn" class="question-multiplechoice-answer-column"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr id="copyableMultipleChoiceAnswerDiv" class="question-answer">
+                                                    <td class="question-multiplechoice-answer-counter"></td>
+                                                    <td>
+                                                        <input type="hidden" rsf:id="question-multiplechoice-answer-complete" class="question-multiplechoice-answer-complete" />
+                                                        <input type="hidden" rsf:id="question-multiplechoice-answer-id" class="question-multiplechoice-answer-id" />
+                                                        <label for="question-multiplechoice-answer-correct"><span rsf:id="msg=simplepage.question-correct-answer" class="offscreen"></span></label>
+                                                        <input type="checkbox" name="question-multiplechoice-answer-correct" rsf:id="question-multiplechoice-answer-correct"  class="question-multiplechoice-answer-correct" />
+                                                    </td>
+                                                    <td>
+                                                        <label for="question-multiplechoice-answer"><span rsf:id="msg=simplepage.question-possible-answer" class="offscreen"></span></label>
+                                                        <input type="text" rsf:id="question-multiplechoice-answer" name="question-multiplechoice-answer" class="question-multiplechoice-answer" />
+                                                        <a href="#" onclick="deleteAnswer($(this)); return false;" style="display:none" class="deleteAnswerLink"><img src="$context/images/delete.png" rsf:id="question-mc-del"></img></a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                            <tbody id="extraMultipleChoiceAnswers"></tbody>
+                                        </table>
                                     </div>
                                     <button onclick="addMultipleChoiceAnswer(); return false;" rsf:id="msg=simplepage.addAnswer"/>
                                 </fieldset>
@@ -1737,6 +1753,10 @@ c                        <input class="bold" type="submit" id="mm-add-item" rsf:
                             <p class="shorttext indnt2">
                                 <label for="question-max"><span rsf:id="msg=simplepage.question-max"></span></label>
                                 <input type="text" name="question-max" id="question-max" rsf:id="question-max" />
+                            </p>
+                            <p class="checkbox">
+                                <input type="checkbox" name="question-show-correct-answers" id="question-show-correct-answers" rsf:id="question-show-correct-answers" />
+                                <label for="question-show-correct-answers"><span rsf:id="msg=simplepage.question-show-correct-answers"></span></label>
                             </p>
                             <div class="longtext">
                             <label for="question-correct-text"><span rsf:id="msg=simplepage.correct-text"></span></label><br />
