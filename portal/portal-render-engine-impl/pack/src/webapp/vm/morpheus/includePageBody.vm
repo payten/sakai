@@ -21,9 +21,10 @@
     <main id="$pageWrapperClass" class="Mrphs-mainContent" role="main">
     ## Added Site name to the Nav for Mobile menus
     #foreach ( $site in $tabsSites.tabsSites )
-
+	
         #if (${site.isCurrentSite})
 
+	#set($currentSite = ${site})
             <h2 title="${site.fullTitle}" class="Mrphs-toolsNav__title--current-site">${site.siteTitle}</h2>
 
         #end ## END of IF (${site.isCurrentSite})
@@ -55,15 +56,30 @@
                         #if (${tool.hasRenderResult})
 
 
+							<script>
+								function addBreadCrumb(label, url, active) {
+									var $breadcrumb = $("#breadcrumb");
+									var $crumbInner = (url == null)? $("<span>") : $("<a>").attr("href", "url");
+									$crumbInner.html(label);
+									var $crumb = $("<li>").wrapInner($crumbInner);
+									if (active) $crumb.addClass("active");
+									$breadcrumb.append($crumb);
+								}
+							</script>
                             <nav class="Mrphs-toolTitleNav Mrphs-container--toolTitleNav">
-
+								<ul id="breadcrumb" class="breadcrumb">
+									<li>
+										<a href="${currentSite.siteUrl}">
+											${currentSite.siteTitle}
+										</a>
+									</li>
+									<li>
                                 #if (${tool.toolShowResetButton})
 
                                     #if ($!{tool.toolInline})
 
                                         <h2 class="Mrphs-toolTitleNav__title">
                                             <a href="${tool.toolResetActionUrl}" title="${rloader.sit_reset}: ${tool.toolRenderResult.getTitle()}">
-                                                <span class="Mrphs-toolTitleNav__link Mrphs-toolTitleNav__link--reset"></span>
                                                 <span class="Mrphs-toolTitleNav__text">${tool.toolRenderResult.getTitle()}</span>
                                             </a>
 					    <span class="Mrphs-toolTitleNav__addLeft"></span>
@@ -73,7 +89,6 @@
 
                                         <h2 class="Mrphs-toolTitleNav__title">
                                             <a class="Mrphs-toolTitleNav__link--inline" href="${tool.toolResetActionUrl}" target="${tool.toolPlacementIDJS}" title="${rloader.sit_reset}: ${tool.toolRenderResult.getTitle()}">
-                                                <span class="Mrphs-toolTitleNav__link Mrphs-toolTitleNav__link--reset"></span>
                                                 <span class="Mrphs-toolTitleNav__text">${tool.toolRenderResult.getTitle()}</span>
                                             </a>
 					    <span class="Mrphs-toolTitleNav__addLeft"></span>
@@ -123,7 +138,8 @@
                                     #end ## END of IF (${tool.toolJSR168Help})
 
                                 #end ## END of IF (${tool.toolShowHelpButton})
-
+									</li>
+								</ul>
                             </nav> ## END nav.Mrphs-toolTitleNav.Mrphs-container.Mrphs-container--toolTitleNav
 
                         #else
@@ -134,7 +150,6 @@
 
                                     <h2 class="Mrphs-toolTitleNav__title">
                                         <a href="${tool.toolResetActionUrl}" target="${tool.toolPlacementIDJS}" title="${sitReset}: ${tool.toolTitle}">
-                                            <span class="Mrphs-toolTitleNav__link Mrphs-toolTitleNav__link--reset"></span>
                                             ${tool.toolTitle}
                                         </a>
                                     </h2>

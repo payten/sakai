@@ -5,4 +5,6 @@
 #header_append('<script type="text/javascript">includeLatestJQuery("assignment_chef_header");</script>')
 #header_append('<script type="text/javascript" src="/sakai-assignment-tool/js/assignments.js"></script>')
 
+#header_append('<script>$(function() { addBreadCrumb("$!view", null, true); });</script>')
+
 #chef_start()
