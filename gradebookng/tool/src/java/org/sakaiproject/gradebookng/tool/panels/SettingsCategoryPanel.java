@@ -99,6 +99,7 @@ public class SettingsCategoryPanel extends Panel {
 			}
 			
 		};
+		categoriesWrap.add(new AttributeModifier("class", String.format("gb-category-option-%d", this.model.getObject().getGradebookInformation().getCategoryType())));
 		categoriesWrap.setOutputMarkupPlaceholderTag(true);
 
 		//enable drop highest
@@ -186,6 +187,8 @@ public class SettingsCategoryPanel extends Panel {
 				dropHighestContainer.setVisible(categoriesAndWeightSelected);
 				dropLowestContainer.setVisible(categoriesAndWeightSelected);
 				keepHighestContainer.setVisible(categoriesAndWeightSelected);
+
+				categoriesWrap.add(new AttributeModifier("class", String.format("gb-category-option-%d", model.getObject().getGradebookInformation().getCategoryType())));
 
 				target.add(categoriesWrap);
 			}

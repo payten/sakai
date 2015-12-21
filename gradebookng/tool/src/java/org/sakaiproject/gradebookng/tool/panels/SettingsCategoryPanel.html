@@ -14,47 +14,63 @@
 		</div>
 		<div id="settingsCategories" class="panel-collapse collapse" role="tabpanel" aria-labelledby="settingsCategoriesHeader">
 			<div class="panel-body">
-				<div wicket:id="categoryType">
-					<div class="radio"><label><input wicket:id="none" type="radio"/><wicket:message key="settingspage.categories.none" /></label></div>
-					<div class="radio"><label><input wicket:id="categoriesOnly" type="radio"/><wicket:message key="settingspage.categories.categoriesonly" /></label></div>
-					<div class="radio"><label><input wicket:id="categoriesAndWeighting" type="radio"/><wicket:message key="settingspage.categories.categoriesweighting" /></label></div>
+				<div wicket:id="categoryType" class="gb-category-settings-options">
+					<div class="radio"><label><input wicket:id="none" type="radio" data-class="gb-settings-no-categories"/><wicket:message key="settingspage.categories.none" /></label></div>
+					<div class="radio"><label><input wicket:id="categoriesOnly" type="radio" data-class="gb-category-option-2"/><wicket:message key="settingspage.categories.categoriesonly" /></label></div>
+					<div class="radio"><label><input wicket:id="categoriesAndWeighting" type="radio" data-class="gb-category-option-3"/><wicket:message key="settingspage.categories.categoriesweighting" /></label></div>
 				</div>
 
-				<div wicket:id="categoriesWrap">
+				<div wicket:id="categoriesWrap" id="categoriesWrap">
 					<div>
 						<div class="checkbox" wicket:id="dropHighestContainer"><label><input wicket:id="dropHighest" type="checkbox"/><wicket:message key="settingspage.categories.drophighest" /></label></div>
 						<div class="checkbox" wicket:id="dropLowestContainer"><label><input wicket:id="dropLowest" type="checkbox"/><wicket:message key="settingspage.categories.droplowest" /></label></div>
 						<div class="checkbox" wicket:id="keepHighestContainer"><label><input wicket:id="keepHighest" type="checkbox"/><wicket:message key="settingspage.categories.keephighest" /></label></div>
 					</div>
 
-					<table class="table table-striped table-bordered table-hover">
+					<table class="table table-striped table-bordered table-hover gb-category-settings-table">
 						<thead>
 						<tr>
-							<th><wicket:message key="settingspage.categories.categorycolhead" /></th>
-							<th><wicket:message key="settingspage.categories.weightcolhead" /></th>
-							<th><wicket:message key="settingspage.categories.extracreditcolhead" /></th>
-							<th><wicket:message key="settingspage.categories.itemscolhead" /></th>
-							<th><wicket:message key="settingspage.categories.drophighestcolhead" /></th>
-							<th><wicket:message key="settingspage.categories.droplowestcolhead" /></th>
-							<th><wicket:message key="settingspage.categories.keephighestcolhead" /></th>
-							<th><wicket:message key="settingspage.categories.removecolhead" /></th>
+							<th class="gb-category-option-2 gb-category-option-3">
+								<wicket:message key="settingspage.categories.categorycolhead" />
+							</th>
+							<th class="gb-category-option-3">
+								<wicket:message key="settingspage.categories.weightcolhead" />
+							</th>
+							<th class="gb-category-option-2 gb-category-option-3">
+								<wicket:message key="settingspage.categories.extracreditcolhead" />
+							</th>
+							<th class="gb-category-option-2 gb-category-option-3">
+								<wicket:message key="settingspage.categories.itemscolhead" />
+							</th>
+							<th class="gb-category-option-3">
+								<wicket:message key="settingspage.categories.drophighestcolhead" />
+							</th>
+							<th class="gb-category-option-3">
+								<wicket:message key="settingspage.categories.droplowestcolhead" />
+							</th>
+							<th class="gb-category-option-3">
+								<wicket:message key="settingspage.categories.keephighestcolhead" />
+							</th>
+							<th class="gb-category-option-2 gb-category-option-3">
+								<wicket:message key="settingspage.categories.removecolhead" />
+							</th>
 						</tr>
 						</thead>
 						<tbody>
-						<tr wicket:id="categoriesView">
+						<tr wicket:id="categoriesView" class="gb-category">
 							<td><input wicket:id="name" type="text" class="form-control" /></td>
-							<td><input wicket:id="weight" type="text" size="5" class="form-control" /></td>
+							<td class="gb-category-option-3"><input wicket:id="weight" type="text" size="5" class="form-control" /></td>
 							<td><input wicket:id="extraCredit" type="checkbox" class="form-control" /></td>
 							<td><span wicket:id="numItems">0 items(s)</span></td>
-							<td><input wicket:id="categoryDropHighest" type="text" size="5" class="form-control" /></td>
-							<td><input wicket:id="categoryDropLowest" type="text" size="5" class="form-control" /></td>
-							<td><input wicket:id="categoryKeepHighest" type="text" size="5" class="form-control" /></td>
+							<td class="gb-category-option-3"><input wicket:id="categoryDropHighest" type="text" size="5" class="form-control" /></td>
+							<td class="gb-category-option-3"><input wicket:id="categoryDropLowest" type="text" size="5" class="form-control" /></td>
+							<td class="gb-category-option-3"><input wicket:id="categoryKeepHighest" type="text" size="5" class="form-control" /></td>
 							<td><button wicket:id="remove" class="btn btn-link"><wicket:message key="button.remove" /></button></td>
 						</tr>
 						<tr class="active">
-							<td><span class="pull-right"><wicket:message key="settingspage.categories.total" /></span></td>
-							<td><span wicket:id="runningTotal">100%</span></td>
-							<td colspan="6"></td>
+							<td class="gb-category-option-3"><span class="pull-right"><wicket:message key="settingspage.categories.total" /></span></td>
+							<td class="gb-category-option-3"><span wicket:id="runningTotal">100%</span></td>
+							<td class="gb-category-option-3" colspan="6"></td>
 						</tr>
 						</tbody>
 					</table>

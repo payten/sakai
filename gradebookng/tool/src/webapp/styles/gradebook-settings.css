@@ -1,0 +1,13 @@
+/* **************************************************************** *
+ *                    Gradebook Settings styles                     *
+ * **************************************************************** */
+
+#gradebookSettings #categoriesWrap.gb-category-option-3  .gb-category-option-2,
+#gradebookSettings #categoriesWrap.gb-category-option-2  .gb-category-option-3 {
+  display: none;
+}
+
+#gradebookSettings #categoriesWrap.gb-category-option-3  .gb-category-option-3,
+#gradebookSettings #categoriesWrap.gb-category-option-2  .gb-category-option-2 {
+  display: table-cell;
+}
