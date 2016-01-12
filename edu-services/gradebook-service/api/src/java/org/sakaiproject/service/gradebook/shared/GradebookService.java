@@ -799,4 +799,9 @@ public interface GradebookService {
 	 * @return Set of GradeMappings for the gradebook
 	 */
 	Set getGradebookGradeMappings(String gradebookUid);
+
+	/**
+	 * Updates the categorized order of an assignment
+	 */
+	void updateAssignmentCategorizedOrder(final String gradebookUid, final Long categoryId, final Long assignmentId, Integer order);
 }

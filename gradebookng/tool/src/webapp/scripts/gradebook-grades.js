@@ -667,7 +667,7 @@ GradebookSpreadsheet.prototype.setupColumnDragAndDrop = function() {
       var order = $.inArray(sourceModel, self._CATEGORIES_MAP[sourceModel.getCategory()]);
       GradebookAPI.updateCategorizedAssignmentOrder(self.$table.data("siteid"),
                                                     sourceModel.columnKey,
-                                                    sourceModel.getCategory(),
+                                                    sourceModel.getCategoryId(),
                                                     order);
     } else {
       GradebookAPI.updateAssignmentOrder(self.$table.data("siteid"),
@@ -1775,6 +1775,11 @@ GradebookHeaderCell.prototype.getCategory = function() {
 };
 
 
+GradebookHeaderCell.prototype.getCategoryId = function() {
+  return this.$cell.find("[data-category-id]").data("category-id") || null;
+};
+
+
 GradebookHeaderCell.prototype.getCategoryData = function() {
   var category_data = null;
 
@@ -1861,7 +1866,7 @@ GradebookHeaderCell.prototype.hide = function() {
 
 
 GradebookHeaderCell.prototype.getCategorizedOrder = function() {
-  return this.$cell.find("[data-categorized-order]").data("categorized-order");
+  return this.$cell.find("[data-categorized-sort-order]").data("categorized-sort-order");
 }
 
 
@@ -2212,11 +2217,11 @@ GradebookAPI.updateAssignmentOrder = function(siteId, assignmentId, order, onSuc
 };
 
 
-GradebookAPI.updateCategorizedAssignmentOrder = function(siteId, assignmentId, category, order, onSuccess, onError) {
+GradebookAPI.updateCategorizedAssignmentOrder = function(siteId, assignmentId, categoryId, order, onSuccess, onError) {
   GradebookAPI._POST("/direct/gbng/categorized-assignment-order", {
                                                         siteId: siteId,
                                                         assignmentId: assignmentId,
-                                                        category: category,
+                                                        categoryId: categoryId,
                                                         order: order
                                                       })
 };

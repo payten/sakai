@@ -189,9 +189,6 @@ public class GradebookPage extends BasePage {
 
 		Temp.time("buildGradeMatrix", stopwatch.getTime());
 
-		// get assignment order
-		final Map<String, List<Long>> categorizedAssignmentOrder = this.businessService.getCategorizedAssignmentsOrder();
-
 		// get course grade visibility
 		final boolean courseGradeVisible = this.businessService.isCourseGradeVisible(this.currentUserUuid);
 
@@ -307,15 +304,8 @@ public class GradebookPage extends BasePage {
 					final AssignmentColumnHeaderPanel panel = new AssignmentColumnHeaderPanel(componentId,
 							new Model<Assignment>(assignment));
 
-					final String category = assignment.getCategoryName();
-
-					int order = -1;
-					if (categorizedAssignmentOrder.containsKey(category)) {
-						order = categorizedAssignmentOrder.get(category).indexOf(assignment.getId());
-					}
-
-					panel.add(new AttributeModifier("data-category", category));
-					panel.add(new AttributeModifier("data-categorized-order", order));
+					panel.add(new AttributeModifier("data-category", assignment.getCategoryName()));
+					panel.add(new AttributeModifier("data-category-id", assignment.getCategoryId()));
 
 					final StringValue createdAssignmentId = getPageParameters().get(CREATED_ASSIGNMENT_ID_PARAM);
 					if (!createdAssignmentId.isNull() && assignment.getId().equals(createdAssignmentId.toLong())) {
