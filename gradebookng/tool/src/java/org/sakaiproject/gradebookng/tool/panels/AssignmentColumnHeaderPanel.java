@@ -1,5 +1,8 @@
 package org.sakaiproject.gradebookng.tool.panels;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -183,7 +186,7 @@ public class AssignmentColumnHeaderPanel extends Panel {
 				// as we may have had an async reorder on the front end but not had the model data updated,
 				// so we just make sure we get it fresh
 
-				final long assignmentId = getModelObject();
+				final Long assignmentId = getModelObject();
 
 				final GradebookPage gradebookPage = (GradebookPage) getPage();
 				GradebookUiSettings settings = gradebookPage.getUiSettings();
@@ -195,19 +198,15 @@ public class AssignmentColumnHeaderPanel extends Panel {
 
 				if (settings.isCategoriesEnabled()) {
 					try {
-						Integer order = AssignmentColumnHeaderPanel.this.businessService.getAssignment(assignmentId).getCategorizedSortOrder();
-						if (order == null) {
-							// TODO handle this better
-							throw new RuntimeException("assignment doesn't have a categorized order yet");
-						}
+						Integer order = calculateCurrentCategorizedSortOrder(assignmentId);
 						AssignmentColumnHeaderPanel.this.businessService.updateAssignmentCategorizedOrder(assignmentId, (order.intValue() - 1));
 					} catch (final Exception e) {
 						e.printStackTrace();
 						error("error reordering within category");
 					}
 				} else {
-					final int order = AssignmentColumnHeaderPanel.this.businessService.getAssignmentSortOrder(assignmentId);
-					AssignmentColumnHeaderPanel.this.businessService.updateAssignmentOrder(assignmentId, (order - 1));
+					final int order = AssignmentColumnHeaderPanel.this.businessService.getAssignmentSortOrder(assignmentId.longValue());
+					AssignmentColumnHeaderPanel.this.businessService.updateAssignmentOrder(assignmentId.longValue(), (order - 1));
 				}
 
 				setResponsePage(new GradebookPage());
@@ -220,7 +219,7 @@ public class AssignmentColumnHeaderPanel extends Panel {
 			@Override
 			public void onClick() {
 
-				final long assignmentId = getModelObject();
+				final Long assignmentId = getModelObject();
 
 				final GradebookPage gradebookPage = (GradebookPage) getPage();
 				GradebookUiSettings settings = gradebookPage.getUiSettings();
@@ -232,19 +231,15 @@ public class AssignmentColumnHeaderPanel extends Panel {
 
 				if (settings.isCategoriesEnabled()) {
 					try {
-						Integer order = AssignmentColumnHeaderPanel.this.businessService.getAssignment(assignmentId).getCategorizedSortOrder();
-						if (order == null) {
-							// TODO handle this better
-							throw new RuntimeException("assignment doesn't have a categorized order yet");
-						}
+						Integer order = calculateCurrentCategorizedSortOrder(assignmentId);
 						AssignmentColumnHeaderPanel.this.businessService.updateAssignmentCategorizedOrder(assignmentId, (order.intValue() + 1));
 					} catch (final Exception e) {
 						e.printStackTrace();
 						error("error reordering within category");
 					}
 				} else {
-					final int order = AssignmentColumnHeaderPanel.this.businessService.getAssignmentSortOrder(assignmentId);
-					AssignmentColumnHeaderPanel.this.businessService.updateAssignmentOrder(assignmentId, (order + 1));
+					final int order = AssignmentColumnHeaderPanel.this.businessService.getAssignmentSortOrder(assignmentId.longValue());
+					AssignmentColumnHeaderPanel.this.businessService.updateAssignmentOrder(assignmentId.longValue(), (order + 1));
 				}
 
 				setResponsePage(new GradebookPage());
@@ -315,5 +310,31 @@ public class AssignmentColumnHeaderPanel extends Panel {
 
 		add(menu);
 
+	}
+
+
+	/**
+	 * Get the assignment's current sort index within it's category.
+	 * If this value is null in the database, best calculate this index
+	 * from the assignments.
+	 * @param assignmentId the id of the assignment
+	 * @return the current sort index of the assignment within their category
+	 */
+	private Integer calculateCurrentCategorizedSortOrder(Long assignmentId) {
+		final Assignment assignment = AssignmentColumnHeaderPanel.this.businessService.getAssignment(assignmentId.longValue());
+		Integer order = assignment.getCategorizedSortOrder();
+
+		if (order == null) {
+			// if no categorized order for assignment, calculate one based on the default sort order
+			List<Assignment> assignments = AssignmentColumnHeaderPanel.this.businessService.getGradebookAssignments();
+			List<Long> assignmentIdsInCategory = assignments.stream()
+																												.filter(a -> a.getCategoryId() == assignment.getCategoryId())
+																												.map(Assignment::getId)
+																												.collect(Collectors.toList());
+
+			order = assignmentIdsInCategory.indexOf(assignmentId);
+		}
+
+		return order;
 	}
 }
