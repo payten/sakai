@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
+import java.util.Collections;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.wicket.AttributeModifier;
@@ -182,6 +184,11 @@ public class GradebookPage extends BasePage {
 		// the map
 		final List<Assignment> assignments = this.businessService.getGradebookAssignments();
 		Temp.time("getGradebookAssignments", stopwatch.getTime());
+
+		if (settings.isCategoriesEnabled()) {
+			// pre-sort assignments by the categorized sort order
+			Collections.sort(assignments, new CategorizedAssignmentComparator());
+		}
 
 		// get the grade matrix. It should be sorted if we have that info
 		final List<GbStudentGradeInfo> grades = this.businessService.buildGradeMatrix(assignments, settings.getAssignmentSortOrder(),
@@ -600,5 +607,35 @@ public class GradebookPage extends BasePage {
 				JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/gradebook-grade-summary.js?version=%s", version)));
 		response.render(
 				JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/gradebook-update-ungraded.js?version=%s", version)));
+	}
+
+
+	/**
+	 * Comparator class for sorting Assignments in their categorised ordering
+	 */
+	class CategorizedAssignmentComparator implements Comparator<Assignment> {
+		@Override
+		public int compare(Assignment a1, Assignment a2) {
+			// if in the same category, sort by their categorized sort order
+			if (a1.getCategoryId() == a2.getCategoryId()) {
+				// handles null orders by putting them at the end of the list
+				if (a1.getCategorizedSortOrder() == null) {
+					return 1;
+				} else if (a2.getCategorizedSortOrder() == null) {
+					return -1;
+				}
+				return Integer.compare(a1.getCategorizedSortOrder(), a2.getCategorizedSortOrder());
+
+			// otherwise, sort by their category name (A-Z), leaving uncategorized (null) at the end
+			} else {
+				if (a1.getCategoryName() == null) {
+					return 1;
+				} else if (a2.getCategoryName() == null) {
+					return -1;
+				} else {
+					return a1.getCategoryName().compareTo(a2.getCategoryName());
+				}
+			}
+		}
 	}
 }

@@ -131,7 +131,7 @@ public class AssignmentColumnHeaderPanel extends Panel {
 		add(new AttributeModifier("data-category", assignment.getCategoryName()));
 		add(new AttributeModifier("data-sort-order", assignment.getSortOrder()));
 		add(new AttributeModifier("data-categorized-sort-order", assignment.getCategorizedSortOrder()));
-		System.err.println("** assignment.getCategorizedSortOrder(): " + assignment.getCategorizedSortOrder());
+
 		if (assignment.getWeight() != null) {
 			add(new AttributeModifier("data-category-weight", String.format("%s%%", Math.round(assignment.getWeight() * 100))));
 		}
@@ -200,7 +200,7 @@ public class AssignmentColumnHeaderPanel extends Panel {
 							// TODO handle this better
 							throw new RuntimeException("assignment doesn't have a categorized order yet");
 						}
-						AssignmentColumnHeaderPanel.this.businessService.updateCategorizedAssignmentOrder(assignmentId, (order.intValue() - 1));
+						AssignmentColumnHeaderPanel.this.businessService.updateAssignmentCategorizedOrder(assignmentId, (order.intValue() - 1));
 					} catch (final Exception e) {
 						e.printStackTrace();
 						error("error reordering within category");
@@ -237,7 +237,7 @@ public class AssignmentColumnHeaderPanel extends Panel {
 							// TODO handle this better
 							throw new RuntimeException("assignment doesn't have a categorized order yet");
 						}
-						AssignmentColumnHeaderPanel.this.businessService.updateCategorizedAssignmentOrder(assignmentId, (order.intValue() + 1));
+						AssignmentColumnHeaderPanel.this.businessService.updateAssignmentCategorizedOrder(assignmentId, (order.intValue() + 1));
 					} catch (final Exception e) {
 						e.printStackTrace();
 						error("error reordering within category");

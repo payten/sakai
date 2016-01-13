@@ -943,7 +943,7 @@ public class GradebookNgBusinessService {
 			}
 
 			// also update the categorized order
-			this.gradebookService.updateAssignmentCategorizedOrder(gradebook.getUid(), assignment.getCategoryId(), assignmentId, Integer.MAX_VALUE);
+			updateAssignmentCategorizedOrder(gradebook.getUid(), assignment.getCategoryId(), assignmentId, Integer.MAX_VALUE);
 
 			return assignmentId;
 
@@ -988,10 +988,10 @@ public class GradebookNgBusinessService {
 	 * @throws IdUnusedException
 	 * @throws PermissionException
 	 */
-	public void updateCategorizedAssignmentOrder(final long assignmentId, final int order)
+	public void updateAssignmentCategorizedOrder(final long assignmentId, final int order)
 			throws JAXBException, IdUnusedException, PermissionException {
 		final String siteId = getCurrentSiteId();
-		updateCategorizedAssignmentOrder(siteId, assignmentId, order);
+		updateAssignmentCategorizedOrder(siteId, assignmentId, order);
 	}
 
 	/**
@@ -1000,12 +1000,11 @@ public class GradebookNgBusinessService {
 	 * @param siteId the site's id
 	 * @param assignmentId the assignment we are reordering
 	 * @param order the new order
-	 * @throws JAXBException
 	 * @throws IdUnusedException
 	 * @throws PermissionException
 	 */
-	public void updateCategorizedAssignmentOrder(final String siteId, final long assignmentId, final int order)
-			throws JAXBException, IdUnusedException, PermissionException {
+	public void updateAssignmentCategorizedOrder(final String siteId, final long assignmentId, final int order)
+			throws IdUnusedException, PermissionException {
 
 		// validate site
 		try {
@@ -1031,7 +1030,20 @@ public class GradebookNgBusinessService {
 			return;
 		}
 
-		this.gradebookService.updateAssignmentCategorizedOrder(gradebook.getUid(), assignmentToMove.getCategoryId(), assignmentId, new Integer(order));
+		updateAssignmentCategorizedOrder(gradebook.getUid(), assignmentToMove.getCategoryId(), assignmentToMove.getId(), order);
+	}
+
+
+	/**
+	 * Update the categorized order of an assignment via the gradebook service.
+	 *
+	 * @param gradebookId the gradebook's id
+	 * @param categoryId the id for the cataegory in which we are reordering
+	 * @param assignmentId the assignment we are reordering
+	 * @param order the new order
+	 */
+	private void updateAssignmentCategorizedOrder(final String gradebookId, final Long categoryId, final Long assignmentId, final int order) {
+		this.gradebookService.updateAssignmentCategorizedOrder(gradebookId, categoryId, assignmentId, new Integer(order));
 	}
 
 
@@ -1217,7 +1229,7 @@ public class GradebookNgBusinessService {
 		try {
 			this.gradebookService.updateAssignment(gradebook.getUid(), original.getId(), assignment);
 			if (original.getCategoryId() != assignment.getCategoryId()) {
-				this.gradebookService.updateAssignmentCategorizedOrder(gradebook.getUid(), original.getCategoryId(), assignment.getId(), Integer.MAX_VALUE);
+				updateAssignmentCategorizedOrder(gradebook.getUid(), assignment.getCategoryId(), assignment.getId(), Integer.MAX_VALUE);
 			}
 			return true;
 		} catch (final Exception e) {
