@@ -660,6 +660,9 @@
 div.wicket-modal div.w_content_3 {
   border: none; /** don't want border wrapping content inside the modal **/
 }
+.wicket-modal {
+  -webkit-overflow-scrolling: auto; /* allow modal overflow to be scrolled on touch devices */
+}
 div.wicket-mask-dark {
   background-color: #FFF;
   opacity: 0.6;
