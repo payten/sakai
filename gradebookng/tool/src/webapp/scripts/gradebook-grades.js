@@ -384,19 +384,32 @@ GradebookSpreadsheet.prototype.setupFixedTableHeader = function(reset) {
     self.$fixedColumnsHeader.find("th").height($fixedHeader.find(".headers th:first").height());
   }
 
+  // timeout used to delay movement of fixed headers until scroll is finished
+  var moveFixedHeaderTimeout;
+
   function positionFixedHeader() {
+    clearTimeout(moveFixedHeaderTimeout);
+
     if ($(document).scrollTop() + $fixedHeader.height() + 80 > self.$table.offset().top + self.$spreadsheet.height()) {
       // don't change anything as we don't want the fixed header to scroll to below the table
     } else if (self.$table.offset().top < $(document).scrollTop()) {
+      $fixedHeader.hide().css("top","0");;
+
+      function moveFixedHeader() {
+        $fixedHeader.
+          css({
+            top: $(document).scrollTop() - self.$spreadsheet.offset().top + "px",
+            left: "0"
+          }).
+          fadeIn(200);
+      };
+
       if ($fixedHeader.is(":not(:visible)")) {
         setTimeout(function() {
           self.$spreadsheet.trigger("refreshcategorylabels.aspace");
         });
       }
-      $fixedHeader.
-          show().
-          css("top", $(document).scrollTop() - self.$spreadsheet.offset().top + "px").
-          css("left", "0");
+      moveFixedHeaderTimeout = setTimeout(moveFixedHeader, 100);
     } else {
       $fixedHeader.hide();
     }
@@ -484,19 +497,32 @@ GradebookSpreadsheet.prototype.setupFixedColumns = function() {
     }
   );
 
+  // timeout used to delay movement of fixed columns until scroll is finished
+  var moveFixedColumnTimeout, moveFixedColumnHeaderTimeout;
+
   function positionFixedColumn() {
+    clearTimeout(moveFixedColumnTimeout);
+
+    self.$fixedColumns.hide().css("left", "0");
+
     if (self.$spreadsheet[0].scrollLeft > 0) {
-      self.$fixedColumns.
-          show().
-          css("left", self.$spreadsheet[0].scrollLeft + "px").
-          css("top", self.$table.find("tbody:first").position().top);
-    } else {
-      self.$fixedColumns.hide();
+      moveFixedColumnTimeout = setTimeout(function() {
+        self.$fixedColumns.
+          css({
+            left: self.$spreadsheet[0].scrollLeft + "px",
+            top: self.$table.find("tbody:first").position().top
+          })
+          .fadeIn(200);;
+      }, 100);
     }
   };
 
   function positionFixedColumnHeader() {
     var showFixedHeader = false;
+
+    clearTimeout(moveFixedColumnHeaderTimeout);
+    self.$fixedColumnsHeader.hide().css("top", "0").css("left", "0");
+
     var leftOffset = self.$spreadsheet[0].scrollLeft;
     var topOffset = self.$table.offset().top - self.$spreadsheet.offset().top;
 
@@ -519,7 +545,9 @@ GradebookSpreadsheet.prototype.setupFixedColumns = function() {
     }
 
     if (showFixedHeader) {
-      self.$fixedColumnsHeader.show().css("top", topOffset).css("left", leftOffset);
+      moveFixedColumnHeaderTimeout = setTimeout(function() {
+        self.$fixedColumnsHeader.css("left", leftOffset).css("top", topOffset).fadeIn(200);
+      }, 100);
     } else {
       self.$fixedColumnsHeader.hide();
     }
