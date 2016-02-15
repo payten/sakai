@@ -24,6 +24,7 @@ import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.util.FormatHelper;
+import org.sakaiproject.gradebookng.tool.component.GbCourseGradeLabel;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
@@ -186,12 +187,8 @@ public class InstructorGradeSummaryGradesPanel extends Panel {
 		// course grade
 		final Gradebook gradebook = this.businessService.getGradebook();
 
-		final String currentUserUuid = this.businessService.getCurrentUser().getId();
-		if (!this.businessService.isCourseGradeVisible(currentUserUuid)) {
-			add(new Label("courseGrade", new ResourceModel("label.coursegrade.nopermission")));
-		} else {
-			add(new Label("courseGrade", this.gradeInfo.getCourseGrade()));
-		}
+		add(new GbCourseGradeLabel("courseGrade", userId));
+
 		add(new Label("courseGradeNotReleasedFlag", "*") {
 			@Override
 			public boolean isVisible() {

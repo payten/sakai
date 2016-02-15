@@ -23,6 +23,7 @@ import org.sakaiproject.gradebookng.business.GbCategoryType;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
 import org.sakaiproject.gradebookng.business.util.FormatHelper;
+import org.sakaiproject.gradebookng.tool.component.GbCourseGradeLabel;
 import org.sakaiproject.gradebookng.tool.pages.BasePage;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.service.gradebook.shared.Assignment;
@@ -192,30 +193,7 @@ public class StudentGradeSummaryGradesPanel extends Panel {
 			}
 		};
 		add(noAssignments);
-
-		final Gradebook gradebook = this.businessService.getGradebook();
-		if (gradebook.isCourseGradeDisplayed()) {
-
-			// check permission for current user to view course grade
-			// otherwise fetch and render it
-			final String currentUserUuid = this.businessService.getCurrentUser().getId();
-			if (!this.businessService.isCourseGradeVisible(currentUserUuid)) {
-				add(new Label("courseGrade", new ResourceModel("label.coursegrade.nopermission")));
-			} else {
-				final CourseGrade courseGrade = this.businessService.getCourseGrade(userId);
-				if (StringUtils.isBlank(courseGrade.getEnteredGrade()) && StringUtils.isBlank(courseGrade.getMappedGrade())) {
-					add(new Label("courseGrade", new ResourceModel("label.studentsummary.coursegrade.none")));
-				} else if (StringUtils.isNotBlank(courseGrade.getEnteredGrade())) {
-					add(new Label("courseGrade", courseGrade.getEnteredGrade()));
-				} else {
-					add(new Label("courseGrade", new StringResourceModel("label.studentsummary.coursegrade.display", null, new Object[] {
-							courseGrade.getMappedGrade(), FormatHelper.formatStringAsPercentage(courseGrade.getCalculatedGrade()) })));
-				}
-			}
-		} else {
-			add(new Label("courseGrade", getString("label.studentsummary.coursegradenotreleased")));
-		}
-
+		add(new GbCourseGradeLabel("courseGrade", userId));
 		add(new AttributeModifier("data-studentid", userId));
 	}
 
