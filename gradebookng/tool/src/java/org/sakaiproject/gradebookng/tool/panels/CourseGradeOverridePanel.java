@@ -66,6 +66,11 @@ public class CourseGradeOverridePanel extends Panel {
 				(new StringResourceModel("heading.coursegrade", null,
 						new Object[] { studentUser.getDisplayName(), studentUser.getDisplayId() })).getString());
 
+		// heading
+		CourseGradeOverridePanel.this.window.setTitle(
+				(new StringResourceModel("heading.coursegrade", null,
+						new Object[] { user.getDisplayName(), user.getDisplayId() })).getString());
+
 		// form model
 		// we are only dealing with the 'entered grade' so we use this directly
 		final Model<String> formModel = new Model<String>(courseGrade.getEnteredGrade());
