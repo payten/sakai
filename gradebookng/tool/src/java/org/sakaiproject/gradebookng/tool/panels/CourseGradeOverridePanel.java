@@ -55,6 +55,11 @@ public class CourseGradeOverridePanel extends Panel {
 		// get the current course grade for the student
 		final CourseGrade courseGrade = this.businessService.getCourseGrade(studentUuid);
 
+		// heading
+		CourseGradeOverridePanel.this.window.setTitle(
+				(new StringResourceModel("heading.coursegrade", null,
+						new Object[] { user.getDisplayName(), user.getDisplayId() })).getString());
+
 		// form model
 		// we are only dealing with the 'entered grade' so we use this directly
 		final Model<String> formModel = new Model<String>(courseGrade.getEnteredGrade());
@@ -119,11 +124,6 @@ public class CourseGradeOverridePanel extends Panel {
 		form.add(cancel);
 
 		add(form);
-
-		// heading
-		add(new Label("heading",
-				new StringResourceModel("heading.coursegrade", null, new Object[] { user.getDisplayName(), user.getDisplayId() })));
-
 	}
 
 	/**
