@@ -494,6 +494,7 @@ public class GradebookPage extends BasePage {
 				if (settings.isCategoriesEnabled()) {
 					add(new AttributeModifier("class", "on"));
 				}
+				add(new AttributeModifier("aria-pressed", settings.isCategoriesEnabled()));
 			}
 
 			@Override
