@@ -197,7 +197,6 @@ public class GradebookPage extends BasePage {
 
 			@Override
 			public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
-				cellItem.add(new AttributeModifier("tabindex", 0));
 				cellItem.add(new EmptyPanel(componentId));
 			}
 
@@ -219,8 +218,6 @@ public class GradebookPage extends BasePage {
 			@Override
 			public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
 				final GbStudentGradeInfo studentGradeInfo = (GbStudentGradeInfo) rowModel.getObject();
-
-				cellItem.add(new AttributeModifier("tabindex", 0));
 
 				final Map<String, Object> modelData = new HashMap<>();
 				modelData.put("userId", studentGradeInfo.getStudentUuid());
@@ -260,8 +257,6 @@ public class GradebookPage extends BasePage {
 			@Override
 			public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
 				final GbStudentGradeInfo studentGradeInfo = (GbStudentGradeInfo) rowModel.getObject();
-
-				cellItem.add(new AttributeModifier("tabindex", 0));
 
 				// process the course grade
 				String courseGrade;
@@ -324,8 +319,6 @@ public class GradebookPage extends BasePage {
 					modelData.put("gradeInfo", gradeInfo);
 					modelData.put("role", GradebookPage.this.role);
 
-					cellItem.add(new AttributeModifier("tabindex", 0));
-
 					cellItem.add(new GradeItemCellPanel(componentId, Model.ofMap(modelData)));
 
 					cellItem.setOutputMarkupId(true);
@@ -386,7 +379,6 @@ public class GradebookPage extends BasePage {
 						modelData.put("categoryId", category.getId());
 
 						cellItem.add(new CategoryColumnCellPanel(componentId, Model.ofMap(modelData)));
-						cellItem.add(new AttributeModifier("tabindex", 0));
 						cellItem.setOutputMarkupId(true);
 					}
 
