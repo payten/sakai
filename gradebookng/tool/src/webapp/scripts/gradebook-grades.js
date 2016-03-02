@@ -260,16 +260,14 @@ GradebookSpreadsheet.prototype.navigate = function(event, fromCell, direction, e
     }
   }
 
-  //Disable auto-editmode for now until latency issues are investigated.
-  //With a 1-2 latency, the navigation from edit-mode to edit-mode doesn't flow
-  //well when navigating quickly through the cells.
-  //if (enableEditMode && $targetCell && $(fromCell) != $targetCell) {
-  //  var model = self.getCellModel($targetCell);
-  //  if (model.isEditable()) {
-  //    model.enterEditMode();
-  //  }
-  //} else if ($targetCell) {
-  if ($targetCell && $targetCell.is(":visible")) {
+  if (enableEditMode && $targetCell && $targetCell.is(":visible") && $(fromCell) != $targetCell) {
+    var model = self.getCellModel($targetCell);
+    if (model.isEditable()) {
+      model.enterEditMode();
+    } else {
+      $targetCell.focus();
+    }
+  } else if ($targetCell && $targetCell.is(":visible")) {
     $targetCell.focus();
   } else {
     // ensure the table retains focus to facilitate continuation of keyboard navigation
