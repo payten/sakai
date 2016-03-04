@@ -122,10 +122,10 @@ GradebookSpreadsheet.prototype.setupGradeItemCellModels = function() {
 
   self.$table.on("focus", "td, th", function(event) {
     // lazy load model
-    self.getCellModel($(event.target));
+    self.getCellModel($(this));
   });
 
-  self.$table.on("focus", "td :text", function(event) {
+  self.$table.on("focus", "td.gb-grade-item-cell :text", function(event) {
     // lazy load model
     self.getCellModel($(event.target).closest("td"));
   });
@@ -134,6 +134,7 @@ GradebookSpreadsheet.prototype.setupGradeItemCellModels = function() {
     var $cell = $(event.target);
     if (!$cell.data("has-dropdown")) {
       $cell.find("> div:first").append($("#gradeItemCellDropdownMenu").html());
+      $cell.find(".dropdown-toggle").dropdown();
       $cell.data("has-dropdown", true);
     }
   });
@@ -142,9 +143,10 @@ GradebookSpreadsheet.prototype.setupGradeItemCellModels = function() {
     var $cell = $(event.target).closest(".gb-grade-item-cell");
     if (!$cell.data("has-dropdown")) {
       // ensure model
-      self.getCellModel($(event.target).closest("td"));
+      self.getCellModel($cell);
       // append menu
       $cell.find("> div:first").append($("#gradeItemCellDropdownMenu").html());
+      $cell.find(".dropdown-toggle").dropdown();
       $cell.data("has-dropdown", true);
     }
   }, function() {
@@ -198,7 +200,7 @@ GradebookSpreadsheet.prototype.onKeydown = function(event) {
 
   // 0-9 48-57 and keypad 0-9 96-105
   } else if (isEditableCell &&
-      ((event.keyCode >= 48 && event.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105))) {
+      ((event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105))) {
     event.preventDefault();
     self.getCellModel($eventTarget).enterEditMode(event.keyCode);
 
@@ -1652,12 +1654,11 @@ var GradebookAbstractCell = {
     self.$cell = $cell;
     $cell.data("model", this);
     $cell.on("focus", function(event) {
-                 self.onFocus();
+//      if (self.$cell.is(":focus")) {
+        self.gradebookSpreadsheet.ensureCellIsVisible($(event.target));
+        self.gradebookSpreadsheet.highlightRow(self.getRow());
+//      }
                });
-  },
-  onFocus: function() {
-    this.gradebookSpreadsheet.ensureCellIsVisible(this.$cell);
-    this.gradebookSpreadsheet.highlightRow(this.getRow());
   },
   getRow: function() {
     return this.$cell.closest("tr");
@@ -1831,7 +1832,7 @@ GradebookEditableCell.prototype.enterEditMode = function(keyCode) {
     // only buffer 0-9 key strokes
     if (keyCode >= 48 && keyCode <= 57) {
       initialValue = keyCode - 48;
-    } else if(keyCode >= 96 && e.keyCode <= 105) {
+    } else if(keyCode >= 96 && keyCode <= 105) {
       initialValue = keyCode - 96;
     }
   }
