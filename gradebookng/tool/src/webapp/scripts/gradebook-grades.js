@@ -46,6 +46,7 @@ function GradebookSpreadsheet($spreadsheet) {
   // these things are less important, so can push off the
   // critical path of the page load
   this.onReady(function() {
+    mark("start - main onReady");
     self.setupKeyboadNavigation();
       mark("setupKeyboadNavigation");
     self.setupFixedColumns();
@@ -71,12 +72,15 @@ function GradebookSpreadsheet($spreadsheet) {
 
     self.setupNewAssignmentFocus();
                     mark("setupNewAssignmentFocus");
+    mark("end - main onReady");
   });
 
   mark("onReady1");
 
   this.onReady(function() {
+    mark("before setupScrollHandling");
     self.setupScrollHandling();
+    mark("after setupScrollHandling");
   })
 
   mark("onReady2");
@@ -431,10 +435,19 @@ GradebookSpreadsheet.prototype.getHeader = function() {
 GradebookSpreadsheet.prototype.setupFixedTableHeader = function(reset) {
   var self = this;
 
+  console.log("-- setupFixedTableHeader");
+
+  var t = Date.now();
+
+  console.log("1: "+ (Date.now() - t));
+
+
   if (reset) {
     // delete the existing header and initialize a new one
     self.find(".gb-fixed-header-table").remove();
   };
+
+  console.log("2: "+ (Date.now() - t));
 
   var $head = self.$table.find("> thead");
   self.$fixedHeader = $("<table>").
@@ -445,6 +458,8 @@ GradebookSpreadsheet.prototype.setupFixedTableHeader = function(reset) {
 
   var $fixedHeaderHead = $("<thead>");
   self.$fixedHeader.append($fixedHeaderHead);
+
+  console.log("3: "+ (Date.now() - t));
 
   $head.find("> tr").each(function() {
     var $tr = $(this);
@@ -467,12 +482,18 @@ GradebookSpreadsheet.prototype.setupFixedTableHeader = function(reset) {
     }
   });
 
+  console.log("4: "+ (Date.now() - t));
+
   self.$spreadsheet.prepend(self.$fixedHeader);
+
+  console.log("5: "+ (Date.now() - t));
 
   if (reset && self.$fixedColumnsHeader) {
     // ensure the $fixedColumnsHeader and $fixedHeader are the same height
     self.$fixedColumnsHeader.find("> tr.gb-headers > th").height(self.$fixedHeader.find(".headers th:first").height());
   }
+
+  console.log("6: "+ (Date.now() - t));
 
   self.$fixedHeader.find("th").on("mousedown", function(event) {
     event.preventDefault();
@@ -490,13 +511,16 @@ GradebookSpreadsheet.prototype.setupFixedTableHeader = function(reset) {
     }
   });
 
+  console.log("7: "+ (Date.now() - t));
+
   self._fixedThingsAreReady = true;
 };
 
 
 GradebookSpreadsheet.prototype.refreshFixedTableHeader = function() {
+  mark("before - refreshFixedTableHeader");
   this.setupFixedTableHeader(true);
-  mark("refreshFixedTableHeader");
+  mark("after - refreshFixedTableHeader");
 };
 
 
@@ -878,6 +902,8 @@ GradebookSpreadsheet.prototype._cloneCell = function($cell) {
 GradebookSpreadsheet.prototype.enableGroupByCategory = function() {
   var self = this;
 
+ mark("start - enableGroupByCategory");
+
   var currentCategory, newColIndex = 3;
   var $categoriesRow = self.$spreadsheet.find(".gb-categories-row");
 
@@ -944,6 +970,8 @@ GradebookSpreadsheet.prototype.enableGroupByCategory = function() {
       on("scroll refreshcategorylabels.aspace", setupScrollHandlerToUpdateCategoryLabelPosition);
 
     self.$horizontalOverflow.trigger("scroll"); // force redraw of the fixed columns
+
+mark("end - enableGroupByCategory");
   });
 };
 
@@ -1477,9 +1505,18 @@ GradebookSpreadsheet.prototype.enablePopovers = function($target) {
 
 
 GradebookSpreadsheet.prototype.ready = function() {
-  this.$spreadsheet.data("initialized", true).trigger("ready.gradebookng");
+  this.$spreadsheet.data("initialized", true);//.trigger("ready.gradebookng");
+  $.each(GradebookSpreadsheet.prototype._callbacks, function(i, callback) {
+    //setTimeout(function() {
+      mark("-Callback"+i)
+      callback();
+      mark("+Callback"+i)
+    //});
+  });
+  GradebookSpreadsheet.prototype._callbacks = null;
 }
 
+GradebookSpreadsheet.prototype._callbacks = [];
 
 GradebookSpreadsheet.prototype.onReady = function(callback) {
   if (this.$spreadsheet.data("initialized")) {
@@ -1487,7 +1524,9 @@ GradebookSpreadsheet.prototype.onReady = function(callback) {
       callback();
     });
   } else {
-    this.$spreadsheet.on("ready.gradebookng", callback);
+    console.log("registered callback!");
+    GradebookSpreadsheet.prototype._callbacks.push(callback);
+//    this.$spreadsheet.on("ready.gradebookng", callback);
   }
 };
 
@@ -2341,7 +2380,9 @@ GradebookToolbar.prototype.setupToggleGradeItems = function() {
 
   // Reinstate hidden columns
   self.gradebookSpreadsheet.onReady(function() {
+    mark("before: trigger change");
     self.$gradeItemsFilterPanel.find(":input:not(:checked)").trigger("change");
+    mark("after: trigger change");
   });
 };
 
@@ -2349,10 +2390,12 @@ GradebookToolbar.prototype.setupToggleGradeItems = function() {
 GradebookToolbar.prototype.setupToggleCategories = function() {
   var self = this;
   self.gradebookSpreadsheet.onReady(function() {
+      mark("before: enableGroupByCategory");
       if ($("#toggleCategoriesToolbarItem").hasClass("on")) {
         self.gradebookSpreadsheet.enableGroupByCategory();
           mark("enableGroupByCategory");
       }
+      mark("after: enableGroupByCategory");
   });
 };
 
