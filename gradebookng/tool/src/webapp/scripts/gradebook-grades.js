@@ -130,32 +130,26 @@ GradebookSpreadsheet.prototype.setupGradeItemCellModels = function() {
     self.getCellModel($(event.target).closest("td"));
   });
 
-/*  self.$table.find("> tbody > tr").each(function(rowIdx, row) {
-    var $row = $(row);
-    var studentUuid = $row.find(".gb-student-cell").data("studentuuid");
-    $row.data("studentuuid", studentUuid);
+  self.$table.on("focus", "td.gb-grade-item-cell", function(event) {
+    var $cell = $(event.target);
+    if (!$cell.data("has-dropdown")) {
+      $cell.find("> div:first").append($("#gradeItemCellDropdownMenu").html());
+      $cell.data("has-dropdown", true);
+    }
+  });
 
-    self._GRADE_CELLS[studentUuid] = {};
-
-    $row.find("> th, > td").each(function(cellIndex, cell) {
-      var $cell = $(cell);
-      var cellIndex = $cell.index();
-
-      var cellModel;
-
-      if (self.isCellEditable($cell)) {
-        cellModel = new GradebookEditableCell($cell, tmpHeaderByIndex[cellIndex], self);
-
-        self._GRADE_CELLS[studentUuid][cellModel.header.columnKey] = cellModel;
-      } else if (self.isCellForExternalItem($cell) || self.isCellForCategoryScore($cell)) {
-        cellModel = new GradebookBasicCell($cell, tmpHeaderByIndex[cellIndex], self);
-
-        self._GRADE_CELLS[studentUuid][cellModel.header.columnKey] = cellModel;
-      } else {
-        cellModel = new GradebookBasicCell($cell, tmpHeaderByIndex[cellIndex], self);
-      }
-    });
-  });*/
+  self.$table.find(".gb-grade-item-cell, .gb-grade-item-cell :text").hover(function(event) {
+    var $cell = $(event.target).closest(".gb-grade-item-cell");
+    if (!$cell.data("has-dropdown")) {
+      // ensure model
+      self.getCellModel($(event.target).closest("td"));
+      // append menu
+      $cell.find("> div:first").append($("#gradeItemCellDropdownMenu").html());
+      $cell.data("has-dropdown", true);
+    }
+  }, function() {
+    
+  })
 };
 
 
@@ -1716,7 +1710,24 @@ GradebookEditableCell.prototype.setupEditableCell = function($cell) {
   this.$cell.data("wicket_label_initialized", true);
 
   this.setupInput();
+  this.setupMenu();
 };
+
+
+GradebookEditableCell.prototype.setupMenu = function() {
+  var self = this;
+  self.$cell.on("click", ".gb-view-log", function() {
+    self.$input.trigger("viewlog.sakai");
+    self.$cell.find(".dropdown-toggle").dropdown('toggle');
+    return false;
+  })
+  self.$cell.on("click", ".gb-edit-comments", function() {
+    self.$input.trigger("editcomment.sakai");
+    self.$cell.find(".dropdown-toggle").dropdown('toggle');
+    return false;
+  });
+};
+
 
 
 GradebookEditableCell.prototype.isEditable = function() {

@@ -177,6 +177,13 @@
   position: absolute;
   bottom: 2px;
   right: 1px;
+  display: none;
+}
+#gradebookGrades td:focus .btn-group,
+#gradebookGrades td:hover .btn-group,
+#gradebookGrades td.gb-cell-editing .btn-group,
+#gradebookGrades .gb-highlighted-row .btn-group {
+  display: block;
 }
 #gradebookGrades table td,
 #gradebookGrades table .gb-headers th {
