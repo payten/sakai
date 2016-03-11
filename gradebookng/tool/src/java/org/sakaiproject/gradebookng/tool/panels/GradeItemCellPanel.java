@@ -1,9 +1,6 @@
 package org.sakaiproject.gradebookng.tool.panels;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -36,6 +33,8 @@ import org.sakaiproject.gradebookng.business.util.FormatHelper;
 import org.sakaiproject.gradebookng.tool.model.GbModalWindow;
 import org.sakaiproject.gradebookng.tool.model.ScoreChangedEvent;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * The panel for the cell of a grade item
@@ -122,8 +121,8 @@ public class GradeItemCellPanel extends Panel {
 		// RENDER
 		if (isExternal || !this.gradeable) {
 
-			add(new Label("readonlyGrade", Model.of(this.formattedGrade)));
-			add(new Label("editableGrade") {
+			add(new Label("r", Model.of(this.formattedGrade)));
+			add(new Label("w") {
 				@Override
 				public boolean isVisible() {
 					return false;
@@ -143,7 +142,7 @@ public class GradeItemCellPanel extends Panel {
 			}
 
 		} else {
-			add(new Label("readonlyGrade") {
+			add(new Label("r") {
 				@Override
 				public boolean isVisible() {
 					return false;
@@ -152,7 +151,7 @@ public class GradeItemCellPanel extends Panel {
 
 			getParentCellFor(this).add(AttributeModifier.remove("class")); // remove the CSS class
 
-			this.gradeCell = new TextField<String>("editableGrade", Model.of(this.formattedGrade)) {
+			this.gradeCell = new TextField<String>("w", Model.of(this.formattedGrade)) {
 
 				private static final long serialVersionUID = 1L;
 
@@ -176,6 +175,8 @@ public class GradeItemCellPanel extends Panel {
 					}
 
 					GradeItemCellPanel.this.showMenu = true;
+
+					add(AttributeModifier.remove("name"));
 				}
 			};
 
@@ -190,8 +191,9 @@ public class GradeItemCellPanel extends Panel {
 				}
 
 				@Override
-				protected void onUpdate(final AjaxRequestTarget target) {
-					final String rawGrade = GradeItemCellPanel.this.gradeCell.getValue();
+				protected void onUpdate(AjaxRequestTarget target) {
+					HttpServletRequest request = ((HttpServletRequest) getRequest().getContainerRequest());
+					final String rawGrade = request.getParameter("score");
 
 					clearNotifications();
 
@@ -212,6 +214,7 @@ public class GradeItemCellPanel extends Panel {
 						switch (result) {
 							case OK:
 								markSuccessful(GradeItemCellPanel.this.gradeCell);
+								GradeItemCellPanel.this.gradeCell.setDefaultModelObject(newGrade);
 								this.originalGrade = newGrade;
 								refreshCourseGradeAndCategoryAverages(target);
 								break;

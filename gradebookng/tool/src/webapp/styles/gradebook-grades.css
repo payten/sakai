@@ -289,7 +289,7 @@
   color: #777;
   font-style: italic;
 }
-#gradebookGrades .gb-readonly-grade {
+#gradebookGrades tbody td i {
   line-height: 1em;
   display: block;
   padding-top: 10px;

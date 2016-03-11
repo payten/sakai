@@ -1621,7 +1621,7 @@ function GradebookEditableCell($cell, header, gradebookSpreadsheet) {
 GradebookEditableCell.prototype = Object.create(GradebookAbstractCell);
 
 GradebookEditableCell.prototype.setupEditableCell = function($cell) {
-  this.$input = $cell.find("input.gb-editable-grade:first");
+  this.$input = $cell.find(":text:first");
 
   this.setupCell($cell);
 
@@ -1725,6 +1725,9 @@ GradebookEditableCell.prototype.setupInput = function() {
       self.$input.trigger("scorechange.sakai");
     }
   }
+
+  self.$input.attr("type", "text");
+  self.$input.attr("tabindex", "-1");
 
   self.$input.off("focus", prepareForEdit).on("focus", prepareForEdit);
   self.$input.off("blur", completeEditing).on("blur", completeEditing);
@@ -2435,6 +2438,7 @@ GradebookWicketEventProxy = {
     handlePrecondition: $.noop,
     handleBeforeSend: function(cellId, attrs, jqXHR, settings) {
       var model = sakai.gradebookng.spreadsheet.getCellModelForWicketParams(attrs.ep);
+      settings.data += "&score="+model.$input.val();
       model.handleBeforeSave && model.handleBeforeSave();
     },
     handleSuccess: $.noop,
