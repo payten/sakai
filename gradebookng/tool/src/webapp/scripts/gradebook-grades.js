@@ -92,7 +92,7 @@ GradebookSpreadsheet.prototype.setupGradeItemCellModels = function() {
     self.getCellModel($(this));
   });
 
-  self.$table.on("focus", "td.gb-grade-item-cell :text", function(event) {
+  self.$table.on("focus", "tbody td :text", function(event) {
     // lazy load model
     self.getCellModel($(event.target).closest("td"));
   });
@@ -114,16 +114,16 @@ GradebookSpreadsheet.prototype.setupGradeItemCellModels = function() {
     $cell.data("has-dropdown", true);
   };
 
-  self.$table.on("focus", "td.gb-grade-item-cell", function(event) {
-    var $cell = $(event.target).closest(".gb-grade-item-cell");
+  self.$table.on("focus", "tbody td:not(.gb-row-selector,.gb-student-cell,.gb-course-grade,.gb-category-item-column-cell)", function(event) {
+    var $cell = $(event.target).closest("td");
     if (!$cell.data("has-dropdown")) {
       setupContextMenu($cell);
     }
     return true;
   });
 
-  self.$table.find(".gb-grade-item-cell, .gb-grade-item-cell :text").hover(function(event) {
-    var $cell = $(event.target).closest(".gb-grade-item-cell");
+  self.$table.find("tbody td:not(.gb-row-selector,.gb-student-cell,.gb-course-grade,.gb-category-item-column-cell), tbody td:not(.gb-row-selector,.gb-student-cell,.gb-course-grade,.gb-category-item-column-cell) :text").hover(function(event) {
+    var $cell = $(event.target).closest("td");
     if (!$cell.data("has-dropdown")) {
       setupContextMenu($cell);
     }
@@ -313,7 +313,7 @@ GradebookSpreadsheet.prototype.ensureCellIsVisible = function($cell) {
 
 
 GradebookSpreadsheet.prototype.isCellEditable = function($cell) {
-  return $cell.hasClass("gb-grade-item-cell");
+  return $cell.find(":text").length > 0;
 };
 
 
@@ -337,8 +337,13 @@ GradebookSpreadsheet.prototype.getCellModelForStudentAndAssignment = function(st
   }
 
   if (!this._GRADE_CELLS[studentUuid].hasOwnProperty(assignmentId)) {
-    var $cell = this.$table.find("> tbody td[data-studentuuid='"+studentUuid+"'][data-assignmentid='"+assignmentId+"']:first");
     var $header = this.$table.find("> thead > tr:last [data-assignmentid='"+assignmentId+"']:first").closest("th");
+    var $row = this.$table.find("> tbody .gb-student-cell[data-studentuuid='"+studentUuid+"']:first").closest("tr");
+    var $column = this.$table.find("> thead .gb-grade-item-column-cell [data-assignmentid='"+assignmentId+"']:first").closest("th");
+    var $cell = this.$table.find("tbody > tr:eq("+$row.index()+")").find("> *:eq("+$column.index()+")");
+
+    $cell.data("studentUuid", studentUuid);
+    $cell.data("assignmentId", assignmentId);
 
     if (this.isCellEditable($cell)) {
       cellModel = new GradebookEditableCell($cell, this.getCellModel($header), this);
@@ -361,6 +366,11 @@ GradebookSpreadsheet.prototype.getCellModel = function($cell) {
 
   if ($cell.data("studentuuid") && $cell.data("assignmentid")) {
     return this.getCellModelForStudentAndAssignment($cell.data("studentuuid"), $cell.data("assignmentid"));
+  } else if ($cell.is("td:not(.gb-row-selector,.gb-student-cell,.gb-course-grade,.gb-category-item-column-cell)")) {
+    var studentUuid = $cell.closest("tr").find(".gb-student-cell:first").data("studentuuid");
+    var headerModel = this.getCellModel(this.$table.find("> thead > tr:last > th:eq(" + $cell.index() + ")"));
+    var assignmentId = headerModel.columnKey;
+    return this.getCellModelForStudentAndAssignment(studentUuid, assignmentId);
   }
 
   var headerModel = this.getCellModel(this.$table.find("> thead > tr:last > th:eq(" + $cell.index() + ")"));

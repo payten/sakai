@@ -277,7 +277,7 @@
   color: #999;
 }
 /* Table Cells */
-#gradebookGrades .gb-grade-item-cell,
+#gradebookGrades td,
 #gradebookGrades .gb-external-item-cell,
 #gradebookGrades .gb-readonly-item-cell,
 #gradebookGrades td.gb-category-item-column-cell {
@@ -294,25 +294,25 @@
   display: block;
   padding-top: 10px;
 }
-#gradebookGrades .gb-grade-item-cell > span {
+#gradebookGrades td > span {
   display: block;
 }
-#gradebookGrades .gb-grade-item-cell {
+#gradebookGrades td {
   text-align:center;
 }
-#gradebookGrades .gb-grade-item-cell input {
+#gradebookGrades td input {
   text-align: center;
   line-height: 1em;
   display: inline;
   border-color: transparent;
   background-color: transparent;
 }
-#gradebookGrades .gb-grade-item-cell input:focus {
+#gradebookGrades td input:focus {
   background-color: #FFF;
   width: 40px;
   text-align: right;
 }
-#gradebookGrades .gb-grade-item-cell .gb-out-of {
+#gradebookGrades td .gb-out-of {
   display: inline;
   padding-left: 6px;
   font-size: 0.9em;
@@ -334,7 +334,7 @@
 #gradebookGrades .gb-course-grade {
   text-align: center;
 }
-#gradebookGrades .gb-grade-item-cell > div,
+#gradebookGrades td > div,
 #gradebookGrades .gb-course-grade > div,
 #gradebookGrades .gb-category-item-column-cell > div {
   line-height: 2.6em;
@@ -366,7 +366,8 @@
   text-shadow: none;
   position: absolute;
   top: 50%;
-  margin-top: -4px;
+  margin-top: -16px;
+  left: 0;
 }
 #gradebookGrades .gb-row-selector:hover:before {
   color: #FFF;

@@ -139,7 +139,7 @@ public class GradeItemCellPanel extends Panel {
 				getParentCellFor(this).add(new AttributeModifier("class", "gb-readonly-item-cell"));
 				this.notifications.add(GradeCellNotification.READONLY);
 			} else {
-				getParentCellFor(this).add(new AttributeModifier("class", "gb-grade-item-cell"));
+				getParentCellFor(this).add(AttributeModifier.remove("class")); // remove the CSS class
 			}
 
 		} else {
@@ -149,6 +149,9 @@ public class GradeItemCellPanel extends Panel {
 					return false;
 				}
 			});
+
+			getParentCellFor(this).add(AttributeModifier.remove("class")); // remove the CSS class
+
 			this.gradeCell = new TextField<String>("editableGrade", Model.of(this.formattedGrade)) {
 
 				private static final long serialVersionUID = 1L;
@@ -159,9 +162,6 @@ public class GradeItemCellPanel extends Panel {
 					super.onInitialize();
 
 					final Component parentCell = getParentCellFor(this);
-					parentCell.add(new AttributeModifier("data-assignmentid", assignmentId));
-					parentCell.add(new AttributeModifier("data-studentuuid", studentUuid));
-					parentCell.add(new AttributeModifier("class", "gb-grade-item-cell"));
 					parentCell.setOutputMarkupId(true);
 
 					// check if grade is over limit and mark the cell with the warning class
@@ -354,7 +354,9 @@ public class GradeItemCellPanel extends Panel {
 
 		// always add these
 		getParent().add(new AttributeModifier("role", "gridcell"));
-		getParent().add(new AttributeModifier("aria-readonly", Boolean.toString(isExternal || !this.gradeable)));
+		if (isExternal || !this.gradeable) {
+			getParent().add(new AttributeModifier("aria-readonly", "true"));
+		}
 
 		refreshNotifications();
 	}
