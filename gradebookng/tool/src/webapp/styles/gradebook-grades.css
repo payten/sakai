@@ -279,12 +279,12 @@
 /* Table Cells */
 #gradebookGrades td,
 #gradebookGrades .gb-external-item-cell,
-#gradebookGrades .gb-readonly-item-cell,
+#gradebookGrades .gb-r,
 #gradebookGrades td.gb-category-item-column-cell {
   text-align: center;
   white-space: nowrap;
 }
-#gradebookGrades .gb-readonly-item-cell,
+#gradebookGrades .gb-r,
 #gradebookGrades .gb-external-item-cell {
   color: #777;
   font-style: italic;
@@ -813,7 +813,9 @@ ul.feedbackPanel li span {
   top: 50%;
   margin-top: -0.55em;
 }
-.gb-cell-notification {
+.gb-f-w,
+.gb-f-e,
+.gb-f-ec {
   position: absolute;
   left: 20px;
   font-size: 1.4em;
@@ -823,48 +825,48 @@ ul.feedbackPanel li span {
   top: 50%;
   margin-top: -0.55em;
 }
-.grade-save-error {
-	background-color: #ffbbbb !important;
+.gb-f-e {
+  background-color: #ffbbbb !important;
 }
-.gb-cell-notification-error:before {
+.gb-f-e:before {
   font-family: "gradebook-icons";
   content: "\f06a";
   color: rgb(204,0,0);
 }
-.grade-save-warning {
+.gb-f-w {
   background-color: #fcf8e3 !important;
 }
-.gb-cell-notification-warning:before {
+.gb-f-w:before {
   font-family: "gradebook-icons";
   content: "\f071";
   color: rgb(200,144,0);
 }
-.gb-readonly-item-cell .gb-cell-notification-warning,
-.gb-external-item-cell .gb-cell-notification-warning {
+.gb-r .gb-f-w,
+.gb-external-item-cell .gb-f-w {
   opacity: 0.2;
   font-style: normal;
 }
-.gb-readonly-item-cell .gb-cell-notification-warning:before,
-.gb-external-item-cell .gb-cell-notification-warning:before {
+.gb-r .gb-f-w:before,
+.gb-external-item-cell .gb-f-w:before {
   color: #CCC;
   content: '\f023';
 }
-.gb-readonly-item-cell:focus .gb-cell-notification-warning,
-.gb-readonly-item-cell .gb-cell-notification-warning:focus,
-.gb-external-item-cell:focus .gb-cell-notification-warning,
-.gb-external-item-cell .gb-cell-notification-warning:focus {
+.gb-r:focus .gb-f-w,
+.gb-r .gb-f-w:focus,
+.gb-external-item-cell:focus .gb-f-w,
+.gb-external-item-cell .gb-f-w:focus {
   display:block;
   opacity: 1;
 }
 .grade-save-over-limit {
   background-color: #fcf8e3 !important;
 }
-.gb-cell-notification-over-limit:before {
+.gb-f-ec:before {
   font-family: "gradebook-icons";
   content: '\f0fe';
   color: rgb(200,144,0);
 }
-.gb-cell-notification-comment {
+.gb-f-c {
   position: absolute;
   right: 4px;
   top: 0;
@@ -872,19 +874,21 @@ ul.feedbackPanel li span {
   color: #CCC;
   line-height: 18px;
 }
-.gb-cell-notification-comment:before {
+.gb-f-c:before {
   font-family: "gradebook-icons";
   content: '\f075';
   font-size: 1em;
   font-style: normal;
 }
-.gb-cell-out-of-date .gb-cell-notification {
+.gb-cell-out-of-date .gb-f-w,
+.gb-cell-out-of-date .gb-f-e,
+.gb-cell-out-of-date .gb-f-ec {
   display: none;
 }
 .gb-cell-out-of-date .gb-cell-notification.gb-cell-notification-out-of-date {
   display: block;
 }
-.grade-save-error .gb-cell-notification-error {
+.grade-save-error .gb-f-e {
   display: block !important;
 }
 .grade-save-error .gb-cell-notification.gb-cell-notification-out-of-date {

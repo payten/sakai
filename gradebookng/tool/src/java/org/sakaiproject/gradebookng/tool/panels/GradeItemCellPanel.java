@@ -226,6 +226,7 @@ public class GradeItemCellPanel extends Panel {
 								markOverLimit(GradeItemCellPanel.this.gradeCell);
 								refreshCourseGradeAndCategoryAverages(target);
 								this.originalGrade = newGrade;
+								GradeItemCellPanel.this.gradeCell.setDefaultModelObject(newGrade);
 								break;
 							case NO_CHANGE:
 								handleNoChange(GradeItemCellPanel.this.gradeCell);
@@ -359,6 +360,9 @@ public class GradeItemCellPanel extends Panel {
 		getParent().add(new AttributeModifier("role", "gridcell"));
 		if (isExternal || !this.gradeable) {
 			getParent().add(new AttributeModifier("aria-readonly", "true"));
+			getParent().add(new AttributeModifier("class", "gb-r"));
+		} else {
+			getParent().add(new AttributeModifier("class", "gb-w"));
 		}
 
 		refreshNotifications();
@@ -463,10 +467,10 @@ public class GradeItemCellPanel extends Panel {
 	}
 
 	private void refreshNotifications() {
-		final WebMarkupContainer commentNotification = new WebMarkupContainer("commentNotification");
-		final WebMarkupContainer warningNotification = new WebMarkupContainer("warningNotification");
-		final WebMarkupContainer errorNotification = new WebMarkupContainer("errorNotification");
-		final WebMarkupContainer overLimitNotification = new WebMarkupContainer("overLimitNotification");
+		final WebMarkupContainer commentNotification = new WebMarkupContainer("cFlag");
+		final WebMarkupContainer warningNotification = new WebMarkupContainer("wFlag");
+		final WebMarkupContainer errorNotification = new WebMarkupContainer("eFlag");
+		final WebMarkupContainer overLimitNotification = new WebMarkupContainer("ecFlag");
 
 		warningNotification.setVisible(false);
 		errorNotification.setVisible(false);
@@ -505,15 +509,22 @@ public class GradeItemCellPanel extends Panel {
 
 	private void addPopover(final Component component, final List<GradeCellNotification> notifications) {
 		this.modelData.put("gradeable", this.gradeable);
-		final GradeItemCellPopoverPanel popover = new GradeItemCellPopoverPanel("popover", Model.ofMap(this.modelData), notifications);
-		final String popoverString = ComponentRenderer.renderComponent(popover).toString();
+		component.add(new AjaxEventBehavior("loadpopover.sakai") {
+			@Override
+			protected void onEvent(AjaxRequestTarget target) {
+				final GradeItemCellPopoverPanel popover = new GradeItemCellPopoverPanel("popover", Model.ofMap(GradeItemCellPanel.this.modelData), notifications);
+				final String popoverString = ComponentRenderer.renderComponent(popover).toString();
 
-		component.add(new AttributeModifier("data-toggle", "popover"));
-		component.add(new AttributeModifier("data-trigger", "manual"));
-		component.add(new AttributeModifier("data-placement", "bottom"));
-		component.add(new AttributeModifier("data-html", "true"));
-		component.add(new AttributeModifier("data-container", "#gradebookGrades"));
-		component.add(new AttributeModifier("data-content", popoverString));
-		component.add(new AttributeModifier("tabindex", "0"));
+				component.add(new AttributeModifier("data-toggle", "popover"));
+				component.add(new AttributeModifier("data-trigger", "manual"));
+				component.add(new AttributeModifier("data-placement", "bottom"));
+				component.add(new AttributeModifier("data-html", "true"));
+				component.add(new AttributeModifier("data-container", "#gradebookGrades"));
+				component.add(new AttributeModifier("data-content", popoverString));
+				component.add(new AttributeModifier("tabindex", "0"));
+
+				target.add(component);
+			}
+		});
 	}
 }
