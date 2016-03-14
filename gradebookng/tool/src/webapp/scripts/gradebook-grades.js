@@ -1578,6 +1578,9 @@ var GradebookAbstractCell = {
       self.gradebookSpreadsheet.ensureCellIsVisible($(event.target));
       self.gradebookSpreadsheet.highlightRow(self.getRow());
     });
+    setTimeout(function() {
+      self.loadPopoverContent();
+    });
   },
   getRow: function() {
     return this.$cell.closest("tr");
@@ -1587,6 +1590,9 @@ var GradebookAbstractCell = {
   },
   hide: function() {
     this.$cell.hide();
+  },
+  loadPopoverContent: function() {
+    this.$cell.find("[class*='gb-f-']").trigger("loadpopover.sakai");
   }
 };
 
@@ -1615,6 +1621,7 @@ function GradebookEditableCell($cell, header, gradebookSpreadsheet) {
   this.$spreadsheet = gradebookSpreadsheet.$spreadsheet;
 
   this.setupEditableCell($cell);
+  this.loadPopoverContent();
 };
 
 

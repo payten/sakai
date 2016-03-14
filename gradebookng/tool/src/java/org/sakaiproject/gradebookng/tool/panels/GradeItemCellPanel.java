@@ -523,6 +523,10 @@ public class GradeItemCellPanel extends Panel {
 				component.add(new AttributeModifier("data-content", popoverString));
 				component.add(new AttributeModifier("tabindex", "0"));
 
+				target.appendJavaScript(
+						String.format("sakai.gradebookng.spreadsheet.enablePopovers($('#%s'));",
+								getParentCellFor(component).getMarkupId()));
+
 				target.add(component);
 			}
 		});

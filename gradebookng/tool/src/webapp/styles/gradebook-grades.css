@@ -833,7 +833,7 @@ ul.feedbackPanel li span {
   content: "\f06a";
   color: rgb(204,0,0);
 }
-.gb-f-w {
+.grade-save-warning {
   background-color: #fcf8e3 !important;
 }
 .gb-f-w:before {
