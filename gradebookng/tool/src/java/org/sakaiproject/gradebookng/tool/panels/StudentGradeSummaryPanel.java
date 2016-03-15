@@ -43,11 +43,6 @@ public class StudentGradeSummaryPanel extends Panel {
 	public void onInitialize() {
 		super.onInitialize();
 
-		// unpack model
-		// final Map<String, Object> modelData = (Map<String, Object>) getDefaultModelObject();
-		// final String eid = (String) modelData.get("eid");
-		// final String displayName = (String) modelData.get("displayName");
-
 		// done button
 		add(new AjaxLink<Void>("done") {
 			private static final long serialVersionUID = 1L;

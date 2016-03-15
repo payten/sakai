@@ -475,10 +475,10 @@
   background: #FAFAFA;
   font-size: 0.9em;
   overflow: visible;
-  padding: 0 0.4em;
   width: 100%;
   white-space: nowrap; /* don't wrap so it stays on one line */
   height: 40px;
+  line-height: 38px;
 }
 #gradebookGradesToolbar ul {
   list-style: none;
@@ -495,6 +495,7 @@
   display: inline-block;
   vertical-align: middle;
   margin-left: 4px;
+  position: relative;
 }
 #toggleGradeItemsToolbarItem:after {
   font-family: 'gradebook-icons';
@@ -521,16 +522,24 @@
   color: #CA7311;
   font-weight: bold;
 }
+#gradebookGradesToolbar .button_color {
+  margin: 0;
+}
 /* Toolbar - Show/Hide grade items */
 #gradebookGradesToolbar .gb-toggle-grade-items-panel {
   position: absolute;
   border: 1px solid #bdbdbd;
   min-width: 200px;
   min-height: 100px;
-  top: 38px;
+  max-height: 340px;
+  top: 35px;
+  right: 0;
   background-color: #FFF;
   box-shadow: 1px 1px 2px #AAA;
-  z-index: 40;
+  z-index: 200;
+  overflow: auto;
+  padding-right: 14px;
+  line-height: normal;
 } 
 #gradeItemsTogglePanel .hide-me {
   display: none;
@@ -567,7 +576,7 @@
   font-weight: 200;
   color: #999;
 }
-#gradeItemsTogglePanel .gb-item-category-filter-signal {
+#gradeItemsTogglePanel .gb-item-filter-signal {
   height: 1.2em;
   width: 1.2em;
   border: 1px solid #EEE;
@@ -575,6 +584,10 @@
   margin-top: 0.3em;
   position: absolute;
   right: 0;
+}
+#gradeItemsTogglePanel .off .gb-item-filter-signal,
+#gradeItemsTogglePanel .partial .gb-item-filter-signal {
+  background-color: #FFF !important;
 }
 #gradeItemsTogglePanel .gb-item-category-filter,
 #gradeItemsTogglePanel .gb-item-filter,
@@ -598,13 +611,15 @@
   width: 90%;
   width: calc(100% - 20px);
 }
-#gradeItemsTogglePanel .gradebook-filter-partial-signal {
+#gradeItemsTogglePanel .gb-filter-partial-signal {
   display: block;
 
   border-left: 1.2em solid transparent;
   border-right: 0px solid transparent;
   border-bottom: 1.2em solid;
   border-bottom-color: inherit;
+  margin-top: -1px;
+  margin-left: -1px;
 }
 #gradeItemsTogglePanel #showAllGradeItems,
 #gradeItemsTogglePanel #hideAllGradeItems {

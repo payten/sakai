@@ -1115,12 +1115,11 @@ public class GradebookNgBusinessService {
 	 *
 	 * @param assignmentId the assignment we are reordering
 	 * @param order the new order
-	 * @throws JAXBException
 	 * @throws IdUnusedException
 	 * @throws PermissionException
 	 */
 	public void updateAssignmentCategorizedOrder(final long assignmentId, final int order)
-			throws JAXBException, IdUnusedException, PermissionException {
+			throws IdUnusedException, PermissionException {
 		final String siteId = getCurrentSiteId();
 		updateAssignmentCategorizedOrder(siteId, assignmentId, order);
 	}

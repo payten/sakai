@@ -18,40 +18,41 @@
 	<div wicket:id="deleteItemWindow" />
 	<div wicket:id="gradeStatisticsWindow" />
 	<div wicket:id="updateCourseGradeDisplayWindow" />
+	<div wicket:id="sortGradeItemsWindow" />
 
     <div id="gradebookGradesToolbar">
       <ul class="gb-toolbar-left">
         <li>
           <label for="filterByGroup" style="display:none" aria-hidden="true"><wicket:message key="filter.groups" /></label>
-          <select id="filterByGroup" wicket:id="groupFilter">
+          <select id="filterByGroup" wicket:id="groupFilter" class="form-control input-sm">
             <option value="1">Section 1</option>
             <option value="2">Section 2</option>
           </select>
         </li>
         <wicket:enclosure>
-        	<li><span wicket:id="groupFilterOnlyOne" class="gb-group-title" role="status">Section 001</span></li>
+            <li><span wicket:id="groupFilterOnlyOne" class="gb-group-title" role="status">Section 001</span></li>
         </wicket:enclosure>
-        <li><span wicket:id="studentSummary" class="gradebook-student-summary" role="status">Showing 20 of 25 Students</span></li>
+        <li>
+          <label for="studentFilterInput" class="sr-only"><wicket:message key="filter.students"/></label>
+          <input type="text" id="studentFilterInput" class="form-control input-sm" aria-controls="gradeTable" wicket:message="placeholder:filter.students">
+        </li>
       </ul>
       <ul class="gb-toolbar-right">
-        <li><span wicket:id="gradeItemSummary" class="gb-item-summary" role="status" aria-live="polite">Viewing <span class="counts"><strong class="visible">8</strong> out of <strong class="total">8</strong></span> Grade Items</span></li>
         <li>
-          <button wicket:id="toggleGradeItemsToolbarItem" id="toggleGradeItemsToolbarItem" aria-popup="true" aria-controls="gradeItemsTogglePanel">Show/Hide Items</button>
+           <a wicket:id="sortGradeItemsToolbarItem" id="sortGradeItemsToolbarItem" class="button_color" aria-popup="true"><wicket:message key="label.toolbar.sortgradeitems"/></a>
         </li>
         <li>
-          <button wicket:id="toggleCategoriesToolbarItem" id="toggleCategoriesToolbarItem" aria-controls="gradebookGradesTable">Group By Category</button>
+          <a wicket:id="toggleGradeItemsToolbarItem" id="toggleGradeItemsToolbarItem" class="button_color" aria-popup="true" aria-controls="gradeItemsTogglePanel"><wicket:message key="label.toolbar.toggleitems"/></a>
+        </li>
+        <li>
+          <a wicket:id="toggleCategoriesToolbarItem" id="toggleCategoriesToolbarItem" class="button_color" aria-controls="gradebookGradesTable"><wicket:message key="label.toolbar.togglecategories"/></a>
         </li>
       </ul>
     </div>
-    <div id="gradebookGrades">
-      <div id="gradebookHorizontalOverflowWrapper">
-          <div id="gradebookVerticalOverflowWrapper">
-              <table wicket:id="table" id="gradebookGradesTable" class="table-striped table-bordered table-hover" role="grid"></table>
-          </div>
-      </div>
-	  <div wicket:id="noAssignments" class="messageInformation"><wicket:message key="no-assignments.label" /></div>
-	  <div wicket:id="noStudents" class="messageInformation"><wicket:message key="no-students.label" /></div>
-    </div>
+
+    <!-- Here we go... -->
+    <div wicket:id="gradeTable" />
+
   </form>
 
   <div wicket:id="gradeItemsTogglePanel" id="gradeItemsTogglePanel" style="display: none;"/>

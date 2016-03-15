@@ -5,12 +5,23 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
+import lombok.extern.apachecommons.CommonsLog;
+import org.apache.wicket.model.StringResourceModel;
+import org.sakaiproject.gradebookng.business.GbCategoryType;
+import org.sakaiproject.gradebookng.business.GbRole;
+import org.sakaiproject.service.gradebook.shared.CourseGrade;
+import org.sakaiproject.service.gradebook.shared.GradebookInformation;
+import org.sakaiproject.tool.gradebook.Gradebook;
+
 @Slf4j
+@CommonsLog
 public class FormatHelper {
 
 	/**

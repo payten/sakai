@@ -1,0 +1,251 @@
+ /* Fonts */
+ @font-face {
+    font-family:"gradebook-icons";
+    src:url(../fonts/gradebook-icons.eot);
+    src:url(../fonts/gradebook-icons.eot?#iefix) format("embedded-opentype"),url(../fonts/gradebook-icons.woff) format("woff"),url(../fonts/gradebook-icons.ttf) format("truetype"),url(../fonts/gradebook-icons.svg#gradebook-icons) format("svg");
+    font-weight:400;
+    font-style:normal
+}
+
+#gradeTable {
+  font-size: 0.9em;
+}
+#gradeTable td {
+  text-align: center;
+}
+#gradeTable tbody th {
+  text-align: left;
+}
+#gradeTable .handsontableInputHolder {
+  text-align: center;
+}
+
+#gradeTable .handsontableInputHolder .out-of {
+  position: absolute;
+  right: 2px;
+  background-color: #FAFAFA;
+  font-size: 0.8em;
+  top: 2px;
+  border-left: 1px solid #EEE;
+  height: 28px;
+  line-height: 28px;
+}
+#gradeTable .handsontableInput {
+  line-height: 30px;
+}
+
+#gradeTable .handsontable tr > *:nth-child(1){
+  background-color: #F6f6f6;
+  text-align: left;
+}
+#gradeTable .handsontable tr > *:nth-child(2){
+  border-right: 1px solid #BBB;
+  background-color: #F6f6f6;
+}
+#gradeTable .handsontable thead th {
+  border-bottom: 1px solid #BBB;
+}
+
+#gradeTable .handsontable th,
+#gradeTable .handsontable td {
+  border-color: #EAEAEA;
+  padding: 0;
+}
+#gradeTable .handsontable th > .relative,
+#gradeTable .handsontable td > .relative {
+  padding: 0 4px;
+}
+
+#gradeTable .handsontable th {
+  background-color: #F6f6f6;
+  height: 102px;
+}
+
+#gradeTable thead th .relative {
+  height: 100%;
+}
+#gradeTable tbody td .relative {
+  height: 100%;
+  min-height: 30px;
+  height: 30px;
+}
+#gradeTable .handsontable td {
+  white-space: nowrap;
+}
+#gradeTable .gb-title {
+  font-weight: bold;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.2em;
+  display: block;
+  cursor: pointer;
+}
+
+#gradeTable .gb-title:hover:after {
+  font-family: 'gradebook-icons';
+  content: '\f0dc';
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+#gradeTable .gb-title.gb-sorted-asc:after {
+  font-family: 'gradebook-icons';
+  content: '\f0de';
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+#gradeTable .gb-title.gb-sorted-desc:after {
+  font-family: 'gradebook-icons';
+  content: '\f0dd';
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
+#gradeTable .gb-grade-section,
+#gradeTable .gb-due-date,
+#gradeTable .gb-category {
+  text-align: left;
+  font-size: 0.9em;
+  line-height: 1.3em;
+}
+#gradeTable .gb-grade-item-flags {
+  position: absolute;
+  bottom: 0;
+  left: 5px;
+}
+#gradeTable th .btn-group,
+#gradeTable td .btn-group {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+#gradeTable .btn-group > a {
+  line-height: 10px;
+  padding: 0 10px;
+  opacity: 0.2;
+  border-color: #EEE;
+}
+#gradeTable th:hover .btn-group > a,
+#gradeTable td:hover .btn-group > a,
+#gradeTable .highlight .btn-group > a {
+  opacity: 1;
+}
+
+#gradeTable .highlight {
+  color: inherit;
+  font-weight: inherit;
+}
+#gradeTable .currentCol,
+#gradeTable .currentRow {
+  background-color: #FAFAFA;
+}
+#gradeTable th.currentCol,
+#gradeTable th.currentRow,
+#gradeTable .handsontable tr > .currentRow:nth-child(1),
+#gradeTable .handsontable tr > .currentRow:nth-child(2) {
+  background-color: #EEE;
+}
+#gradeTable th.gb-categorized {
+  border-top: 10px solid #F0F0F0;
+}
+#gradeTable .swatch {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  margin-right: 4px;
+  box-shadow: 1px 1px 2px #CCC;
+}
+#gradeTable .gb-uncategorized {
+  text-align: left;
+  color: #999;
+}
+#gradeTable tbody td .gb-value {
+  line-height: 30px;
+}
+#gradeTable tbody td .btn-group {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+}
+#gradeTable .gb-comment-notification {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  line-height: 1em;
+  color: #AAA;
+}
+#gradeTable .gb-comment-notification:before {
+  font-family: "gradebook-icons";
+  content: '\f075';
+}
+
+#gradeTable .gb-notification {
+  position: absolute;
+  left: 10px;
+  top: 5px;
+  font-size: 16px;
+}
+[class*="gb-flag"] {
+  color: #999;
+  font-family: 'gradebook-icons';
+  display: inline-block;
+}
+.gb-flag-not-counted:before {
+  content: '\e600';
+}
+.gb-flag-not-released:before {
+  content: '\e601';
+}
+#gradeTable .gb-extra-credit {
+  background-color: #FCF8E3;
+}
+.gb-flag-extra-credit:before {
+  content: '\f0fe';
+  color: rgb(200,144,0);
+}
+#gradeTable .gb-save-success {
+  background-color: #DFF0D8 !important;
+}
+#gradeTable .gb-save-success .gb-notification:before {
+  font-family: "gradebook-icons";
+  content: "\f05d" !important;
+  color: green;
+}
+#gradeTable .gb-save-error {
+	background-color: #FFBBBB !important;
+}
+#gradeTable .gb-save-error .gb-notification:before {
+  font-family: "gradebook-icons";
+  content: "\f06a" !important;
+  color: rgb(204,0,0) !important;
+}
+#gradeTable .gb-save-invalid {
+  background-color: #FCF8E3 !important;
+}
+#gradeTable .gb-save-invalid .gb-notification:before {
+  font-family: "gradebook-icons";
+  content: "\f071" !important;
+  color: rgb(200,144,0) !important;
+}
+#gradeTable .gb-read-only {
+  color: #777;
+}
+#gradeTable .gb-read-only .gb-notification:before {
+  font-family: "gradebook-icons";
+  content: '\f023';
+  color: #DDD;
+}
+#gradebookTableSummary {
+  background-color: #FAFAFA;
+  padding: 0 5px;
+  font-size: smaller;
+  overflow: hidden;
+}
+#gradebookTableSummary .gb-student-summary-counts .visible,
+#gradebookTableSummary .gb-student-summary-counts .total,
+#gradebookTableSummary .gb-item-summary-counts .visible,
+#gradebookTableSummary .gb-item-summary-counts .total {
+  font-weight: bold;
+}
