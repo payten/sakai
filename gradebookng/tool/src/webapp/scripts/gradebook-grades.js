@@ -111,6 +111,8 @@ GradebookSpreadsheet.prototype.setupGradeItemCellModels = function() {
     tooltip = tooltip.replace("{1}", self.getCellModel($cell).header.$cell.attr("abbr"));
     $dropdown.attr("title", tooltip);
 
+    self.setupMenuEvents($cell);
+
     $cell.data("has-dropdown", true);
   };
 
@@ -129,7 +131,7 @@ GradebookSpreadsheet.prototype.setupGradeItemCellModels = function() {
     }
   }, function() {
     
-  })
+  });
 };
 
 
@@ -1339,6 +1341,47 @@ GradebookSpreadsheet.prototype.setupStudentFilter = function() {
 };
 
 
+GradebookSpreadsheet.prototype.setupMenuEvents = function($target) {
+// close the dropdown if the user navigates away from it
+  $target.find(".btn-group").on("shown.bs.dropdown", function(event) {
+    var $btnGroup = $(event.target);
+
+    function handleDropdownItemBlur(blurEvent) {
+      if ($(blurEvent.relatedTarget).closest(".btn-group.open").length == 0) {
+        // Firefox will only offer a blurEvent.relatedTarget if the item can be focussed
+        // and links will only be included in the tab index if the user's accessibility
+        // configuration has this option enabled (e.g. accessibility.tabfocus option).
+        // Instead, delay hiding the menu (0.5s is enough) to allow any click events to
+        // hit the link before we force close the menu.
+        setTimeout(function() {
+          if ($btnGroup.is(".open")) {
+            $btnGroup.find(".btn.dropdown-toggle").dropdown("toggle");
+          }
+        }, 500);
+      }
+    };
+
+    $btnGroup.find(".btn.dropdown-toggle").on("mousedown", function(mouseDownEvent) {
+      if ($(mouseDownEvent.target).closest(".btn-group.open").length > 0) {
+        mouseDownEvent.stopPropagation();
+        $(mouseDownEvent.target).focus();
+      }
+    })
+
+    $btnGroup.find("ul.dropdown-menu li a").on("mousedown", function(mouseDownEvent) {
+      mouseDownEvent.stopPropagation();
+      $(mouseDownEvent.target).focus();
+    })
+
+    $btnGroup.find(".btn.dropdown-toggle, ul.dropdown-menu li a").on("blur", handleDropdownItemBlur);
+
+    $btnGroup.one("hidden.bs.dropdown", function() {
+      $btnGroup.find(".btn.dropdown-toggle, ul.dropdown-menu li a").off("blur", handleDropdownItemBlur);
+    });
+  });
+};
+
+
 GradebookSpreadsheet.prototype.setupMenusAndPopovers = function() {
   var self = this;
 
@@ -1395,43 +1438,7 @@ GradebookSpreadsheet.prototype.setupMenusAndPopovers = function() {
     $cellToFocus.focus();
   });
 
-  // close the dropdown if the user navigates away from it
-  self.$spreadsheet.find(".btn-group").on("shown.bs.dropdown", function(event) {
-    var $btnGroup = $(event.target);
-
-    function handleDropdownItemBlur(blurEvent) {
-      if ($(blurEvent.relatedTarget).closest(".btn-group.open").length == 0) {
-        // Firefox will only offer a blurEvent.relatedTarget if the item can be focussed
-        // and links will only be included in the tab index if the user's accessibility
-        // configuration has this option enabled (e.g. accessibility.tabfocus option).
-        // Instead, delay hiding the menu (0.5s is enough) to allow any click events to
-        // hit the link before we force close the menu.
-        setTimeout(function() {
-          if ($btnGroup.is(".open")) {
-            $btnGroup.find(".btn.dropdown-toggle").dropdown("toggle");
-          }
-        }, 500);
-      }
-    };
-
-    $btnGroup.find(".btn.dropdown-toggle").on("mousedown", function(mouseDownEvent) {
-      if ($(mouseDownEvent.target).closest(".btn-group.open").length > 0) {
-        mouseDownEvent.stopPropagation();
-        $(mouseDownEvent.target).focus();
-      }
-    })
-
-    $btnGroup.find("ul.dropdown-menu li a").on("mousedown", function(mouseDownEvent) {
-      mouseDownEvent.stopPropagation();
-      $(mouseDownEvent.target).focus();
-    })
-
-    $btnGroup.find(".btn.dropdown-toggle, ul.dropdown-menu li a").on("blur", handleDropdownItemBlur);
-
-    $btnGroup.one("hidden.bs.dropdown", function() {
-      $btnGroup.find(".btn.dropdown-toggle, ul.dropdown-menu li a").off("blur", handleDropdownItemBlur);
-    });
-  });
+  self.setupMenuEvents(self.$spreadsheet);
 };
 
 
