@@ -70,7 +70,7 @@ public class StudentGradeSummaryGradesPanel extends Panel {
 
 		// unpack model
 		final Map<String, Object> modelData = (Map<String, Object>) getDefaultModelObject();
-		final String userId = (String) modelData.get("userId");
+		final String userId = (String) modelData.get("studentUuid");
 
 		final Gradebook gradebook = this.businessService.getGradebook();
 		final CourseGradeFormatter courseGradeFormatter = new CourseGradeFormatter(
