@@ -530,10 +530,13 @@
   border: 1px solid #bdbdbd;
   min-width: 200px;
   min-height: 100px;
+  max-height: 340px;
   top: 38px;
   background-color: #FFF;
   box-shadow: 1px 1px 2px #AAA;
-  z-index: 40;
+  z-index: 200;
+  overflow: auto;
+  padding-right: 14px;
 } 
 #gradeItemsTogglePanel .hide-me {
   display: none;
@@ -570,7 +573,7 @@
   font-weight: 200;
   color: #999;
 }
-#gradeItemsTogglePanel .gb-item-category-filter-signal {
+#gradeItemsTogglePanel .gb-item-filter-signal {
   height: 1.2em;
   width: 1.2em;
   border: 1px solid #EEE;
@@ -578,6 +581,10 @@
   margin-top: 0.3em;
   position: absolute;
   right: 0;
+}
+#gradeItemsTogglePanel .off .gb-item-filter-signal,
+#gradeItemsTogglePanel .partial .gb-item-filter-signal {
+  background-color: #FFF !important;
 }
 #gradeItemsTogglePanel .gb-item-category-filter,
 #gradeItemsTogglePanel .gb-item-filter,
@@ -601,13 +608,15 @@
   width: 90%;
   width: calc(100% - 20px);
 }
-#gradeItemsTogglePanel .gradebook-filter-partial-signal {
+#gradeItemsTogglePanel .gb-filter-partial-signal {
   display: block;
 
   border-left: 1.2em solid transparent;
   border-right: 0px solid transparent;
   border-bottom: 1.2em solid;
   border-bottom-color: inherit;
+  margin-top: -1px;
+  margin-left: -1px;
 }
 #gradeItemsTogglePanel #showAllGradeItems,
 #gradeItemsTogglePanel #hideAllGradeItems {
@@ -624,6 +633,10 @@
 #gradeItemsTogglePanel .gb-item-filter-group:last-child {
   border-bottom: none;
   margin: 0;
+}
+#gradeItemsTogglePanel .gb-item-filter-group .btn-group {
+  float: right;
+  margin-top: 3px;
 }
 #gradeItemsTogglePanel .gb-item-filter-group .btn-group .btn.dropdown-toggle {
   padding: 0 4px;
@@ -1147,4 +1160,22 @@ and (max-device-width : 736px) {
 #gbConnectionTimeoutFeedback:before {
   font-family: "gradebook-icons";
   content: "\f071";
+}
+
+#gradeTable2 td {
+  text-align: center;
+}
+
+.handsontableInputHolder {
+  text-align: center;
+}
+
+.handsontableInputHolder .out-of {
+  position: absolute;
+  right: 2px;
+  background-color: #FAFAFA;
+  font-size: 0.8em;
+  top: 2px;
+  padding: 0.1em 10px;
+  border-left: 1px solid #EEE;
 }
