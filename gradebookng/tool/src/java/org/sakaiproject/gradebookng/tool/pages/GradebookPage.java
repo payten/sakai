@@ -46,6 +46,7 @@ import org.sakaiproject.gradebookng.business.model.GbGroup;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.util.Temp;
 import org.sakaiproject.gradebookng.tool.component.GbHeadersToolbar;
+import org.sakaiproject.gradebookng.tool.component.GbGradeTable;
 import org.sakaiproject.gradebookng.tool.model.GbModalWindow;
 import org.sakaiproject.gradebookng.tool.model.GradebookUiSettings;
 import org.sakaiproject.gradebookng.tool.panels.AddOrEditGradeItemPanel;
@@ -406,6 +407,8 @@ public class GradebookPage extends BasePage {
 		}
 
 		Temp.time("all Columns added", stopwatch.getTime());
+
+		this.form.add(new GbGradeTable("gradeTable", grades, assignments));
 
 		// TODO make this AjaxFallbackDefaultDataTable
 		final DataTable table = new DataTable("table", cols, studentGradeMatrix, 100) {
