@@ -278,14 +278,12 @@
 }
 /* Table Cells */
 #gradebookGrades td,
-#gradebookGrades .gb-external-item-cell,
 #gradebookGrades .gb-r,
 #gradebookGrades td.gb-category-item-column-cell {
   text-align: center;
   white-space: nowrap;
 }
-#gradebookGrades .gb-r,
-#gradebookGrades .gb-external-item-cell {
+#gradebookGrades .gb-r {
   color: #777;
   font-style: italic;
 }
@@ -841,24 +839,20 @@ ul.feedbackPanel li span {
   content: "\f071";
   color: rgb(200,144,0);
 }
-.gb-r .gb-f-w,
-.gb-external-item-cell .gb-f-w {
+.gb-r .gb-f-w {
   opacity: 0.2;
   font-style: normal;
 }
-.gb-r .gb-f-w:before,
-.gb-external-item-cell .gb-f-w:before {
+.gb-r .gb-f-w:before {
   color: #CCC;
   content: '\f023';
 }
 .gb-r:focus .gb-f-w,
-.gb-r .gb-f-w:focus,
-.gb-external-item-cell:focus .gb-f-w,
-.gb-external-item-cell .gb-f-w:focus {
+.gb-r .gb-f-w:focus {
   display:block;
   opacity: 1;
 }
-.grade-save-over-limit {
+.gb-ec {
   background-color: #fcf8e3 !important;
 }
 .gb-f-ec:before {

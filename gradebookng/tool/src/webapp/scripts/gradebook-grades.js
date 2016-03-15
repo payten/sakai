@@ -320,7 +320,7 @@ GradebookSpreadsheet.prototype.isCellEditable = function($cell) {
 
 
 GradebookSpreadsheet.prototype.isCellForExternalItem = function($cell) {
-  return $cell.hasClass("gb-external-item-cell");
+  return $cell.hasClass("gb-r");
 };
 
 

@@ -13,6 +13,7 @@ import org.apache.wicket.ajax.attributes.AjaxCallListener;
 import org.apache.wicket.ajax.attributes.AjaxRequestAttributes;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.core.util.string.ComponentRenderer;
 import org.apache.wicket.event.Broadcast;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -94,6 +95,8 @@ public class GradeItemCellPanel extends Panel {
 	public void onInitialize() {
 		super.onInitialize();
 
+		getParentCellFor(this).add(AttributeModifier.remove("class"));
+
 		// unpack model
 		this.modelData = this.model.getObject();
 		final Long assignmentId = (Long) this.modelData.get("assignmentId");
@@ -132,10 +135,10 @@ public class GradeItemCellPanel extends Panel {
 			this.showMenu = false;
 
 			if (isExternal) {
-				getParentCellFor(this).add(new AttributeModifier("class", "gb-external-item-cell"));
+				getParentCellFor(this).add(new AttributeAppender("class", " gb-r"));
 				this.notifications.add(GradeCellNotification.IS_EXTERNAL);
 			} else if (!this.gradeable) {
-				getParentCellFor(this).add(new AttributeModifier("class", "gb-readonly-item-cell"));
+				getParentCellFor(this).add(new AttributeAppender("class", "gb-r"));
 				this.notifications.add(GradeCellNotification.READONLY);
 			} else {
 				getParentCellFor(this).add(AttributeModifier.remove("class")); // remove the CSS class
@@ -148,8 +151,6 @@ public class GradeItemCellPanel extends Panel {
 					return false;
 				}
 			});
-
-			getParentCellFor(this).add(AttributeModifier.remove("class")); // remove the CSS class
 
 			this.gradeCell = new TextField<String>("w", Model.of(this.formattedGrade)) {
 
@@ -360,9 +361,9 @@ public class GradeItemCellPanel extends Panel {
 		getParent().add(new AttributeModifier("role", "gridcell"));
 		if (isExternal || !this.gradeable) {
 			getParent().add(new AttributeModifier("aria-readonly", "true"));
-			getParent().add(new AttributeModifier("class", "gb-r"));
+			getParent().add(new AttributeAppender("class", " gb-r"));
 		} else {
-			getParent().add(new AttributeModifier("class", "gb-w"));
+			getParent().add(new AttributeAppender("class", " gb-w"));
 		}
 
 		refreshNotifications();
@@ -421,7 +422,6 @@ public class GradeItemCellPanel extends Panel {
 	private void styleGradeCell(final Component gradeCell) {
 
 		final ArrayList<String> cssClasses = new ArrayList<>();
-		cssClasses.add("gb-grade-item-cell"); // always
 		if (this.gradeSaveStyle != null) {
 			cssClasses.add(this.gradeSaveStyle.getCss()); // the particular style for this cell that has been computed previously
 		}
@@ -453,7 +453,7 @@ public class GradeItemCellPanel extends Panel {
 		SUCCESS("grade-save-success"),
 		ERROR("grade-save-error"),
 		WARNING("grade-save-warning"),
-		OVER_LIMIT("grade-save-over-limit");
+		OVER_LIMIT("gb-ec");
 
 		private String css;
 
