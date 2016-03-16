@@ -43,7 +43,7 @@ GbGradeTable.unpack = function (s, rowCount, columnCount) {
 };
 
 
-SAMPLE_CELL = '<div role="gridcell" tabindex="0" class="gb-grade-item-cell" data-assignmentid="%{ASSIGNMENT_ID}" data-studentuuid="%{STUDENT_UUID}" aria-readonly="false"><div><input type="text" tabindex="-1" class="gb-editable-grade" id="editableGradef" value="%{GRADE}"><!-- dropdown menu --><div class="btn-group"> <a class="btn btn-sm btn-default dropdown-toggle" title="%{TITLE}" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" "> <span class="caret"></span> </a> <ul class="dropdown-menu dropdown-menu-right" role="menu"> <li><a href="javascript:;" role="menuitem" id="viewGradeLog11">Grade Log</a></li><li><a href="javascript:;" role="menuitem" class="gb-edit-comments" id="editGradeComment12"><span>Add Comment</span></a></li> </ul> </div></div></div>';
+SAMPLE_CELL = '<div role="gridcell" tabindex="0" class="gb-grade-item-cell" data-assignmentid="%{ASSIGNMENT_ID}" data-studentuuid="%{STUDENT_UUID}" aria-readonly="false"><input type="text" tabindex="-1" class="gb-editable-grade" id="editableGradef" value="%{GRADE}"><a class="btn btn-sm btn-default dropdown-toggle" title="%{TITLE}" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" "> <span class="caret"></span> </a></div>';
 
 GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellProperties) {
   var wasInitialised = td.getAttribute('data-cell-initialised');
