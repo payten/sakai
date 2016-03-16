@@ -79,7 +79,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     input.setAttribute("value", grade);
 
     var dropdown = td.getElementsByClassName("dropdown-toggle")[0];
-    item.setAttribute("title", title);
+    dropdown.setAttribute("title", title);
   }
 
   td.setAttribute('data-cell-initialised', row + ',' + col);
