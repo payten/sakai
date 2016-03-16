@@ -133,12 +133,14 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 				// two byte, no fraction
 				sb.appendCodePoint(((int)grade >> 8) | 128);
 				sb.appendCodePoint(((int)grade & 0xFF));
-			} else {
+			} else if (grade < 16384) {
 				// three byte encoding, fraction
 				sb.appendCodePoint(((int)grade >> 8) | 192);
 				sb.appendCodePoint((int)grade & 0xFF);
 				sb.appendCodePoint(decimalToInteger((grade - (int)grade),
 						2));
+			} else {
+				throw new RuntimeException("Grade too large: " + grade);
 			}
 		}
 
