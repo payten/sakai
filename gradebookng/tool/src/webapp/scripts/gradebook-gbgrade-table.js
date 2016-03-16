@@ -48,10 +48,8 @@ SAMPLE_CELL = '<div role="gridcell" tabindex="0" class="gb-grade-item-cell" data
 GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellProperties) {
   var wasInitialised = td.getAttribute('data-cell-initialised');
 
-  if (!wasInitialised) {
-    td.setAttribute('data-cell-initialised', '1');
-
-    var $td = $(td);
+  if (wasInitialised != (row + ',' + col)) {
+    td.setAttribute('data-cell-initialised', row + ',' + col);
 
     // First time we've initialised this cell.
     var html = SAMPLE_CELL;
@@ -60,7 +58,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     html = html.replace('%{GRADE}', ('' + GbGradeTable.grades[row][col]));
     html = html.replace('%{TITLE}', "Open menu for student " + GbGradeTable.students[row] + " and assignment " + GbGradeTable.assignments[col] + " cell");
 
-    $td.html(html);
+    td.innerHTML = html;
   }
 };
 
@@ -81,7 +79,7 @@ GbGradeTable.renderTable = function (elementId, assignmentList, studentList, dat
     autoRowSize: false,
     autoColSize: false,
     height: 600,
-    width: $('#' + elementId).width(),
+    width: $('#' + elementId).width() * 0.9,
   });
 
 };
