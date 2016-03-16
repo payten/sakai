@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
@@ -14,11 +15,13 @@ import org.apache.wicket.protocol.http.WebApplication;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
+import org.sakaiproject.component.cover.ServerConfigurationService;
 
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+
 
 public class GbGradeTable extends Panel implements IHeaderContributor {
 
@@ -39,47 +42,25 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 	}
 
 	public void renderHead(IHeaderResponse response) {
-		// response.render(JavaScriptHeaderItem.forUrl("/what/ever.js"));
-		String unpackFn = ("\nfunction unpack(s, count) {" +
-				"\n      var blob = atob(s);" +
-				"\n      var result = new Float64Array(count);" +
-				"\n      var writeIndex = 0;" +
-				"\n      for (var i = 0; i < blob.length;) {" +
-				"\n          if (blob[i].charCodeAt() & 128) {" +
-				"\n              // a two byte integer" +
-				"\n              result[writeIndex] = (((blob[i].charCodeAt() & 63) << 8) | blob[i + 1].charCodeAt());" +
-				"\n" +
-				"\n              if (blob[i].charCodeAt() & 64) {" +
-				"\n                  // third byte is a fraction" +
-				"\n                  var fraction = blob[i + 2].charCodeAt();" +
-				"\n                  result[writeIndex] += (fraction / Math.pow(10, Math.ceil(Math.log10(fraction))));" +
-				"\n                  i += 1;" +
-				"\n              }" +
-				"\n" +
-				"\n              i += 2;" +
-				"\n          } else {" +
-				"\n              // a one byte integer" +
-				"\n              result[writeIndex] = blob[i].charCodeAt();" +
-				"\n              i += 1;" +
-				"\n          }" +
-				"\n          writeIndex += 1;" +
-				"\n      };" +
-				"\n" +
-				"\n      return result;" +
-				"\n  }");
+		final String version = ServerConfigurationService.getString("portal.cdn.version", "");
 
-		response.render(OnDomReadyHeaderItem.forScript("function renderTable() { console.log(arguments); }"));
+		response.render(
+			JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/gradebook-gbgrade-table.js?version=%s", version)));
 
-		response.render(OnDomReadyHeaderItem.forScript(unpackFn));
+		response.render(
+			JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/handsontable.full.min.js?version=%s", version)));
 
-		response.render(OnDomReadyHeaderItem.forScript(String.format("var tableData = unpack('%s', '%s')",
-				serializedGrades(),
-				this.grades.size())));
+		response.render(CssHeaderItem.forUrl(String.format("/gradebookng-tool/styles/handsontable.full.min.css?version=%s", version)));
 
-		response.render(OnDomReadyHeaderItem.forScript(String.format("renderTable('%s', %s, %s, tableData)",
-				component.getMarkupId(),
-				jsonAssignments(),
-				jsonStudents())));
+		response.render(OnDomReadyHeaderItem.forScript(String.format("var tableData = GbGradeTable.unpack('%s', %d, %d)",
+									     serializedGrades(),
+									     this.students.size(),
+									     this.assignments.size())));
+
+		response.render(OnDomReadyHeaderItem.forScript(String.format("GbGradeTable.renderTable('%s', %s, %s, tableData)",
+									     component.getMarkupId(),
+									     jsonAssignments(),
+									     jsonStudents())));
 	}
 
 	private List<Long> extractAssignments(List<Assignment> assignments) {
