@@ -43,23 +43,46 @@ GbGradeTable.unpack = function (s, rowCount, columnCount) {
 };
 
 
-SAMPLE_CELL = '<div role="gridcell" tabindex="0" class="gb-grade-item-cell" data-assignmentid="%{ASSIGNMENT_ID}" data-studentuuid="%{STUDENT_UUID}" aria-readonly="false"><input type="text" tabindex="-1" class="gb-editable-grade" id="editableGradef" value="%{GRADE}"><a class="btn btn-sm btn-default dropdown-toggle" title="%{TITLE}" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" "> <span class="caret"></span> </a></div>';
+SAMPLE_CELL = '<div role="gridcell" tabindex="0" class="gb-grade-item-cell" data-assignmentid="%{ASSIGNMENT_ID}" data-studentuuid="%{STUDENT_UUID}" aria-readonly="false"><input type="text" tabindex="-1" class="gb-editable-grade"  value="%{GRADE}"><a class="btn btn-sm btn-default dropdown-toggle" title="%{TITLE}" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" "> <span class="caret"></span> </a></div>';
 
 GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellProperties) {
   var wasInitialised = td.getAttribute('data-cell-initialised');
 
-  if (wasInitialised != (row + ',' + col)) {
-    td.setAttribute('data-cell-initialised', row + ',' + col);
+  if (wasInitialised === (row + ',' + col)) {
+    // Nothing to do
+    return;
+  }
 
+  var assignmentId = GbGradeTable.assignments[col];
+  var studentId = GbGradeTable.students[row];
+  var grade = ('' + GbGradeTable.grades[row][col]);
+  var title = "Open menu for student " + GbGradeTable.students[row] + " and assignment " + GbGradeTable.assignments[col] + " cell";
+
+
+  if (!wasInitialised) {
     // First time we've initialised this cell.
     var html = SAMPLE_CELL;
-    html = html.replace('%{ASSIGNMENT_ID}', GbGradeTable.assignments[col]);
-    html = html.replace('%{STUDENT_UUID}', GbGradeTable.students[row]);
-    html = html.replace('%{GRADE}', ('' + GbGradeTable.grades[row][col]));
-    html = html.replace('%{TITLE}', "Open menu for student " + GbGradeTable.students[row] + " and assignment " + GbGradeTable.assignments[col] + " cell");
+    html = html.replace('%{ASSIGNMENT_ID}', assignmentId);
+    html = html.replace('%{STUDENT_UUID}', studentId);
+    html = html.replace('%{GRADE}', grade);
+    html = html.replace('%{TITLE}', title);
 
     td.innerHTML = html;
+  } else if (wasInitialised != (row + ',' + col)) {
+    // This cell was previously holding a different value.  Just patch it.
+    var item = td.getElementsByClassName("gb-grade-item-cell")[0];
+    item.setAttribute("data-assignmentid", assignmentId);
+    item.setAttribute("data-studentuuid", studentId);
+
+    var input = td.getElementsByClassName("gb-editable-grade")[0];
+    input.value = grade;
+    input.setAttribute("value", grade);
+
+    var dropdown = td.getElementsByClassName("dropdown-toggle")[0];
+    item.setAttribute("title", title);
   }
+
+  td.setAttribute('data-cell-initialised', row + ',' + col);
 };
 
 // FIXME: Hard-coded stuff here
