@@ -410,72 +410,6 @@ public class GradebookPage extends BasePage {
 
 		this.form.add(new GbGradeTable("gradeTable", grades, assignments));
 
-		// TODO make this AjaxFallbackDefaultDataTable
-		final DataTable table = new DataTable("table", cols, studentGradeMatrix, 100) {
-			@Override
-			protected Item newCellItem(final String id, final int index, final IModel model) {
-				return new Item(id, index, model) {
-					@Override
-					protected void onComponentTag(final ComponentTag tag) {
-						super.onComponentTag(tag);
-
-						final Object modelObject = model.getObject();
-
-						if (modelObject instanceof AbstractColumn &&
-								"studentColumn".equals(((AbstractColumn) modelObject).getDisplayModel().getObject())) {
-							tag.setName("th");
-							tag.getAttributes().put("role", "rowheader");
-							tag.getAttributes().put("scope", "row");
-						} else {
-							tag.getAttributes().put("role", "gridcell");
-						}
-						tag.getAttributes().put("tabindex", "0");
-					}
-				};
-			}
-
-			@Override
-			protected Item newRowItem(final String id, final int index, final IModel model) {
-				return new Item(id, index, model) {
-					@Override
-					protected void onComponentTag(final ComponentTag tag) {
-						super.onComponentTag(tag);
-
-						tag.getAttributes().put("role", "row");
-					}
-				};
-			}
-		};
-		table.addBottomToolbar(new NavigationToolbar(table) {
-			@Override
-			protected WebComponent newNavigatorLabel(final String navigatorId, final DataTable<?, ?> table) {
-				return constructTablePaginationLabel(navigatorId, table);
-			}
-		});
-
-		final Map<String, Object> modelData = new HashMap<>();
-		modelData.put("assignments", assignments);
-		modelData.put("categories", categories);
-		modelData.put("categoryType", this.businessService.getGradebookCategoryType());
-
-		table.addTopToolbar(new GbHeadersToolbar(table, null, Model.ofMap(modelData)));
-		table.add(new AttributeModifier("data-siteid", this.businessService.getCurrentSiteId()));
-
-		// enable drag and drop based on user role (note: entity provider has role checks on exposed API)
-		table.add(new AttributeModifier("data-sort-enabled", this.businessService.getUserRole() == GbRole.INSTRUCTOR));
-
-		final WebMarkupContainer noAssignments = new WebMarkupContainer("noAssignments");
-		noAssignments.setVisible(false);
-		this.form.add(noAssignments);
-
-		final WebMarkupContainer noStudents = new WebMarkupContainer("noStudents");
-		noStudents.setVisible(false);
-		this.form.add(noStudents);
-
-		this.form.add(table);
-
-		// Populate the toolbar
-		this.form.add(constructTableSummaryLabel("studentSummary", table));
 
 		final Label gradeItemSummary = new Label("gradeItemSummary", new StringResourceModel("label.toolbar.gradeitemsummary", null,
 				assignments.size() + categories.size(), assignments.size() + categories.size()));
@@ -561,19 +495,6 @@ public class GradebookPage extends BasePage {
 		add(gradeItemsTogglePanel);
 
 		// hide/show components
-
-		// no assignments, hide table, show message
-		if (assignments.isEmpty()) {
-			table.setVisible(false);
-			toggleGradeItemsToolbarItem.setVisible(false);
-			noAssignments.setVisible(true);
-		}
-
-		// no visible students, show table, show message
-		// don't want two messages though, hence the else
-		else if (studentGradeMatrix.size() == 0) {
-			noStudents.setVisible(true);
-		}
 
 		Temp.time("Gradebook page done", stopwatch.getTime());
 	}

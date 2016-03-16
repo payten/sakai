@@ -28,7 +28,6 @@
             <option value="2">Section 2</option>
           </select>
         </li>
-        <li><span wicket:id="studentSummary" class="gradebook-student-summary" role="status">Showing 20 of 25 Students</span></li>
       </ul>
       <ul class="gb-toolbar-right">
         <li><span wicket:id="gradeItemSummary" class="gradebook-item-summary" role="status" aria-live="polite">Viewing <span class="counts"><strong class="visible">8</strong> out of <strong class="total">8</strong></span> Grade Items</span></li>
@@ -39,15 +38,6 @@
           <button wicket:id="toggleCategoriesToolbarItem" id="toggleCategoriesToolbarItem" aria-controls="gradebookGradesTable">Group By Category</button>
         </li>
       </ul>
-    </div>
-    <div id="gradebookGrades">
-      <div id="gradebookHorizontalOverflowWrapper" style="display: none">
-          <div id="gradebookVerticalOverflowWrapper">
-              <table wicket:id="table" id="gradebookGradesTable" class="table-striped table-bordered table-hover" role="grid"></table>
-          </div>
-      </div>
-	  <div wicket:id="noAssignments" class="messageInformation"><wicket:message key="no-assignments.label" /></div>
-	  <div wicket:id="noStudents" class="messageInformation"><wicket:message key="no-students.label" /></div>
     </div>
 
     <!-- Here we go... -->
