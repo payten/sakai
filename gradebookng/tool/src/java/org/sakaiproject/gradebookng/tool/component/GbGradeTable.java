@@ -3,6 +3,9 @@ package org.sakaiproject.gradebookng.tool.component;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.ajax.AjaxEventBehavior;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.attributes.AjaxRequestAttributes;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.head.CssHeaderItem;
@@ -38,6 +41,21 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 		this.grades = extractGrades(grades);
 
 		component = new WebMarkupContainer("gradeTable").setOutputMarkupId(true);
+
+		component.add(new AjaxEventBehavior("gbgradetable.action") {
+
+			@Override
+			protected void updateAjaxAttributes(AjaxRequestAttributes attributes) {
+				super.updateAjaxAttributes(attributes);
+				attributes.getDynamicExtraParameters().add("return [{\"name\": \"ajaxParams\", \"value\": JSON.stringify(attrs.event.extraData)}]");
+			}
+
+			@Override
+			protected void onEvent(AjaxRequestTarget target) {
+				System.err.println("GOT PARAMS: " + getRequest().getRequestParameters().getParameterValue("ajaxParams"));
+			}
+		});
+
 		add(component);
 	}
 
