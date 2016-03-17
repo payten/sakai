@@ -169,7 +169,7 @@ GbGradeTable.renderTable = function (elementId, assignmentList, studentList, dat
     colWidths: [100].concat(assignmentList.map(function () { return 230 })),
     autoRowSize: false,
     autoColSize: false,
-    height: 600,
+    height: $(window).height() * 0.4,
     width: $('#' + elementId).width() * 0.9,
     fillHandle: false,
     afterGetRowHeader: function(row,th) {
