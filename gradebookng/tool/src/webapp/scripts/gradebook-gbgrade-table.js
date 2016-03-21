@@ -45,18 +45,25 @@ GbGradeTable.unpack = function (s, rowCount, columnCount) {
 
 SAMPLE_CELL = '<div role="gridcell" tabindex="0" class="gb-grade-item-cell" data-assignmentid="%{ASSIGNMENT_ID}" data-studentuuid="%{STUDENT_UUID}" aria-readonly="false"><input type="text" tabindex="-1" class="gb-editable-grade"  value="%{GRADE}"><a class="btn btn-sm btn-default dropdown-toggle" title="%{TITLE}" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" "> <span class="caret"></span> </a></div>';
 
+GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value, cellProperties) {
+  td.innerHTML = "C+";
+};
+
 GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellProperties) {
+
+  index = col - 1;
+
   var wasInitialised = td.getAttribute('data-cell-initialised');
 
-  if (wasInitialised === (row + ',' + col)) {
+  if (wasInitialised === (row + ',' + index)) {
     // Nothing to do
     return;
   }
 
-  var assignmentId = GbGradeTable.assignments[col];
+  var assignmentId = GbGradeTable.assignments[index];
   var studentId = GbGradeTable.students[row];
-  var grade = ('' + GbGradeTable.grades[row][col]);
-  var title = "Open menu for student " + GbGradeTable.students[row] + " and assignment " + GbGradeTable.assignments[col] + " cell";
+  var grade = ('' + GbGradeTable.grades[row][index]);
+  var title = "Open menu for student " + GbGradeTable.students[index] + " and assignment " + GbGradeTable.assignments[index] + " cell";
 
   $(td).data("assignmentId", assignmentId);
   $(td).data("studentId", studentId);
@@ -72,7 +79,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     html = html.replace('%{TITLE}', title);
 
     td.innerHTML = html;
-  } else if (wasInitialised != (row + ',' + col)) {
+  } else if (wasInitialised != (row + ',' + index)) {
     // This cell was previously holding a different value.  Just patch it.
     var item = td.getElementsByClassName("gb-grade-item-cell")[0];
     item.setAttribute("data-assignmentid", assignmentId);
@@ -86,13 +93,21 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     dropdown.setAttribute("title", title);
   }
 
-  td.setAttribute('data-cell-initialised', row + ',' + col);
+  td.setAttribute('data-cell-initialised', row + ',' + index);
 };
 
+GbGradeTable.getCategoryColor = function(category) {
+  return "#DAF0EF";
+}
 
-SAMPLE_HEADER_CELL = '<div class="gb-title">%{ASSIGNMENT_NAME}</div><div class="gb-grade-section">Total: <span class="gb-total-points" data-outof-label="/10">10</span></div><div class="gb-due-date">Due: <span>-</span></div><div class="gb-grade-item-flags"><span class="gb-flag-is-released"></span><span class="gb-flag-not-counted"</span></div><div class="btn-group"><a class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" title="Open menu for %{ASSIGNMENT_NAME}"><span class="caret"></span></a></div></div>';
+
+SAMPLE_HEADER_CELL = '<div class="gb-title">%{ASSIGNMENT_NAME}</div><div class="gb-category"><span class="swatch"></span><span>Assignments</span></div><div class="gb-grade-section">Total: <span class="gb-total-points" data-outof-label="/10">10</span></div><div class="gb-due-date">Due: <span>-</span></div><div class="gb-grade-item-flags"><span class="gb-flag-is-released"></span><span class="gb-flag-not-counted"</span></div><div class="btn-group"><a class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" title="Open menu for %{ASSIGNMENT_NAME}"><span class="caret"></span></a></div></div>';
 
 GbGradeTable.headerRenderer = function (col) {
+  if (col == 0) {
+    return '<div class="gb-title">Course Grade</div>';
+  }
+
   var html = SAMPLE_HEADER_CELL;
   html = html.replace(/\%\{ASSIGNMENT_NAME\}/g, "Assignment #<" + GbGradeTable.assignments[col] + ">");
 
@@ -138,14 +153,18 @@ GbGradeTable.renderTable = function (elementId, assignmentList, studentList, dat
     rowHeaders: studentList,
     rowHeaderWidth: 120,
     rowHeaders: studentList,
+    fixedColumnsLeft: 1,
     colHeaders: GbGradeTable.headerRenderer,
-    columns: assignmentList.map(function () {
+    columns: [{
+      renderer: GbGradeTable.courseGradeRenderer,
+      editor: false,
+    }].concat(assignmentList.map(function () {
       return {
         renderer: GbGradeTable.cellRenderer,
         editor: GbGradeTableEditor
       };
-    }),
-    colWidths: assignmentList.map(function () { return 230 }),
+    })),
+    colWidths: [100].concat(assignmentList.map(function () { return 230 })),
     autoRowSize: false,
     autoColSize: false,
     height: 600,
@@ -162,9 +181,15 @@ GbGradeTable.renderTable = function (elementId, assignmentList, studentList, dat
         attr("role", "columnheader").
         attr("scope", "col").
         attr("abbr", name).
-        attr("aria-label", name);
-      
-    }
+        attr("aria-label", name).
+        addClass("gb-categorized");
+      if (col > 0) {
+        $(th).css("borderTopColor", GbGradeTable.getCategoryColor("todo"));
+        $(th).find(".swatch").css("backgroundColor", GbGradeTable.getCategoryColor("todo"));
+      }
+    },
+    currentRowClassName: 'currentRow',
+    currentColClassName: 'currentCol',
   });
 
 };
