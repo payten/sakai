@@ -190,6 +190,7 @@ GbGradeTable.renderTable = function (elementId, assignmentList, studentList, dat
     },
     currentRowClassName: 'currentRow',
     currentColClassName: 'currentCol',
+    multiSelect: false,
   });
 
 };
