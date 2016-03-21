@@ -1094,3 +1094,22 @@ and (max-device-width : 736px) {
     display: none !important;
   }
 }
+
+
+#gradeTable2 td {
+  text-align: center;
+}
+
+.handsontableInputHolder {
+  text-align: center;
+}
+
+.handsontableInputHolder .out-of {
+  position: absolute;
+  right: 2px;
+  background-color: #FAFAFA;
+  font-size: 0.8em;
+  top: 2px;
+  padding: 0.1em 10px;
+  border-left: 1px solid #EEE;
+}
