@@ -51,8 +51,7 @@ GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value
 
 GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellProperties) {
 
-  index = col - 1;
-
+  var index = col - 1;
   var wasInitialised = td.getAttribute('data-cell-initialised');
 
   if (wasInitialised === (row + ',' + index)) {
@@ -65,9 +64,12 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   var grade = ('' + GbGradeTable.grades[row][index]);
   var title = "Open menu for student " + GbGradeTable.students[index] + " and assignment " + GbGradeTable.assignments[index] + " cell";
 
-  $(td).data("assignmentId", assignmentId);
-  $(td).data("studentId", studentId);
+  td.setAttribute("data-assignmentId", assignmentId);
+  td.setAttribute("data-studentId", studentId);
   td.innerHTML = value;
+
+  td.setAttribute('data-cell-initialised', row + ',' + index);
+
   return;
 
   if (!wasInitialised) {
