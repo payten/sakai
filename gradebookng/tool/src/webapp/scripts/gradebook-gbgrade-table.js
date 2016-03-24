@@ -11,10 +11,14 @@ GbGradeTable.unpack = function (s, rowCount, columnCount) {
 
   for (var row = 0; row < rowCount; row++) {
     var writeIndex = 0;
-    var currentRow = new Float64Array(columnCount);
+    var currentRow = [];
 
     for (var column = 0; column < columnCount; column++) {
-      if (blob[readIndex].charCodeAt() & 128) {
+      if (blob[readIndex].charCodeAt() == 127) {
+        // This is a sentinel value meaning "null"
+        currentRow[writeIndex] = "";
+	readIndex += 1;
+      } else if (blob[readIndex].charCodeAt() & 128) {
         // If the top bit is set, we're reading a two byte integer
         currentRow[writeIndex] = (((blob[readIndex].charCodeAt() & 63) << 8) | blob[readIndex + 1].charCodeAt());
 
@@ -46,7 +50,7 @@ GbGradeTable.unpack = function (s, rowCount, columnCount) {
 SAMPLE_CELL = '<div role="gridcell" tabindex="0" class="gb-grade-item-cell" data-assignmentid="%{ASSIGNMENT_ID}" data-studentuuid="%{STUDENT_UUID}" aria-readonly="false"><input type="text" tabindex="-1" class="gb-editable-grade"  value="%{GRADE}"><a class="btn btn-sm btn-default dropdown-toggle" title="%{TITLE}" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" "> <span class="caret"></span> </a></div>';
 
 GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value, cellProperties) {
-  td.innerHTML = "C+";
+  td.innerHTML = value;
 };
 
 GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellProperties) {
@@ -59,10 +63,10 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     return;
   }
 
-  var assignmentId = GbGradeTable.assignments[index];
-  var studentId = GbGradeTable.students[row];
+  var assignmentId = GbGradeTable.columns[index].assignmentId;
+  var studentId = GbGradeTable.students[row].eid;
   var grade = ('' + GbGradeTable.grades[row][index]);
-  var title = "Open menu for student " + GbGradeTable.students[index] + " and assignment " + GbGradeTable.assignments[index] + " cell";
+  var title = "Open menu for student " + GbGradeTable.students[index] + " and assignment " + GbGradeTable.columns[index] + " cell";
 
   td.setAttribute("data-assignmentId", assignmentId);
   td.setAttribute("data-studentId", studentId);
@@ -72,6 +76,9 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
   return;
 
+  // THINKME: All of this was here because patching the DOM was faster than
+  // replacing innerHTML on every scroll event.  Can we do the same sort of
+  // thing?
   if (!wasInitialised) {
     // First time we've initialised this cell.
     var html = SAMPLE_CELL;
@@ -111,15 +118,41 @@ GbGradeTable.headerRenderer = function (col) {
   }
 
   var html = SAMPLE_HEADER_CELL;
-  html = html.replace(/\%\{ASSIGNMENT_NAME\}/g, "Assignment #<" + GbGradeTable.assignments[col] + ">");
+  html = html.replace(/\%\{ASSIGNMENT_NAME\}/g, GbGradeTable.columns[col - 1].title);
 
   return html;
 };
 
 
-// FIXME: Hard-coded stuff here
-GbGradeTable.renderTable = function (elementId, assignmentList, studentList, data) {
+GbGradeTable.mergeColumns = function (data, extraColumns) {
+  var result = [];
 
+  for (var row = 0; row < data.length; row++) {
+    var updatedRow = []
+    for (var col = 0; col < data[row].length; col++) {
+      if (extraColumns[col]) {
+        updatedRow.push(extraColumns[col][row]);
+      }
+
+      updatedRow.push(data[row][col]);
+    }
+
+    result.push(updatedRow)
+  }
+
+  return result;
+}
+
+// FIXME: Hard-coded stuff here
+GbGradeTable.renderTable = function (elementId, tableData) {
+  GbGradeTable.students = tableData.students;
+  GbGradeTable.columns = tableData.columns;
+  GbGradeTable.grades = GbGradeTable.mergeColumns(GbGradeTable.unpack(tableData.serializedGrades,
+                                                                      tableData.rowCount,
+                                                                      tableData.columnCount),
+                                                  {
+                                                    0: tableData.courseGrades,
+                                                  });
 
   GbGradeTableEditor = Handsontable.editors.TextEditor.prototype.extend();
 
@@ -146,27 +179,32 @@ GbGradeTable.renderTable = function (elementId, assignmentList, studentList, dat
     // TODO ajax post and add notifications to this.TD for success/error
   }
 
-  GbGradeTable.students = studentList;
-  GbGradeTable.assignments = assignmentList;
-  GbGradeTable.grades = data;
 
   GbGradeTable.instance = new Handsontable(document.getElementById(elementId), {
-    data: data,
-    rowHeaders: studentList,
+    data: GbGradeTable.grades,
     rowHeaderWidth: 120,
-    rowHeaders: studentList,
+    rowHeaders: GbGradeTable.students.map(function (student) {
+      return student.eid;
+    }),
     fixedColumnsLeft: 1,
     colHeaders: GbGradeTable.headerRenderer,
     columns: [{
       renderer: GbGradeTable.courseGradeRenderer,
       editor: false,
-    }].concat(assignmentList.map(function () {
-      return {
-        renderer: GbGradeTable.cellRenderer,
-        editor: GbGradeTableEditor
-      };
+    }].concat(GbGradeTable.columns.map(function (column) {
+      if (column.type === 'category') {
+        return {
+          renderer: GbGradeTable.cellRenderer,
+          editor: false
+        };
+      } else {
+        return {
+          renderer: GbGradeTable.cellRenderer,
+          editor: GbGradeTableEditor
+        };
+      }
     })),
-    colWidths: [100].concat(assignmentList.map(function () { return 230 })),
+    colWidths: [100].concat(GbGradeTable.columns.map(function () { return 230 })),
     autoRowSize: false,
     autoColSize: false,
     height: $(window).height() * 0.4,

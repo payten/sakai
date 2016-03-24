@@ -24,26 +24,34 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import org.sakaiproject.gradebookng.tool.model.GbGradebookData;
 
 
 public class GbGradeTable extends Panel implements IHeaderContributor {
 
 	private Component component;
-	private List<Long> assignments;
-	private List<String> students;
-	private List<String> grades;
+
+	List<GbStudentGradeInfo> grades;
+	List<Assignment> assignments;
+
+	/*
+	    - Students: id, first name, last name, netid
+	    - Course grades column: is released?, course grade
+	    - course grade value for each student (letter, percentage, points)
+	    - assignment header: id, points, due date, category {id, name, color}, included in course grade?, external?
+	      - categories: enabled?  weighted categories?  normal categories?  handle uncategorized
+	    - scores: number, has comments?, extra credit? (> total points), read only?
+	 */
 
 	public GbGradeTable(String id, List<GbStudentGradeInfo> grades, List<Assignment> assignments) {
 		super(id);
 		
-		this.assignments = extractAssignments(assignments);
-		this.students = extractStudents(grades);
-		this.grades = extractGrades(grades);
-
+		this.grades = grades;
+		this.assignments = assignments;
+		
 		component = new WebMarkupContainer("gradeTable").setOutputMarkupId(true);
 
 		component.add(new AjaxEventBehavior("gbgradetable.action") {
-
 			@Override
 			protected void updateAjaxAttributes(AjaxRequestAttributes attributes) {
 				super.updateAjaxAttributes(attributes);
@@ -70,138 +78,11 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 
 		response.render(CssHeaderItem.forUrl(String.format("/gradebookng-tool/styles/handsontable.full.min.css?version=%s", version)));
 
-		response.render(OnDomReadyHeaderItem.forScript(String.format("var tableData = GbGradeTable.unpack('%s', %d, %d)",
-									     serializedGrades(),
-									     this.students.size(),
-									     this.assignments.size())));
+		GbGradebookData gradebookData = new GbGradebookData(grades, assignments, this);
 
-		response.render(OnDomReadyHeaderItem.forScript(String.format("GbGradeTable.renderTable('%s', %s, %s, tableData)",
-									     component.getMarkupId(),
-									     jsonAssignments(),
-									     jsonStudents())));
+		response.render(OnDomReadyHeaderItem.forScript(String.format("var tableData = %s", gradebookData.toScript())));
+
+		response.render(OnDomReadyHeaderItem.forScript(String.format("GbGradeTable.renderTable('%s', tableData)",
+									     component.getMarkupId())));
 	}
-
-	private List<Long> extractAssignments(List<Assignment> assignments) {
-		List<Long> result = new ArrayList<Long>();
-
-		for (Assignment assignment : assignments) {
-			result.add(assignment.getId());
-		}
-
-		return result;
-	}
-
-	private List<String> extractStudents(List<GbStudentGradeInfo> grades) {
-		List<String> result = new ArrayList<String>();
-
-		for (GbStudentGradeInfo studentGrades : grades) {
-			result.add(studentGrades.getStudentEid());
-		}
-
-		return result;
-	}
-
-	private List<String> extractGrades(List<GbStudentGradeInfo> grades) {
-		List<String> result = new ArrayList<String>();
-
-		for (GbStudentGradeInfo studentGradeInfo : grades) {
-			Map<Long, GbGradeInfo> studentGrades = studentGradeInfo.getGrades();
-
-			for (Long assignmentId : this.assignments) {
-				GbGradeInfo gradeInfo = studentGrades.get(assignmentId);
-
-				if (gradeInfo == null) {
-					result.add("0");
-				} else {
-					String grade = gradeInfo.getGrade();
-					result.add((grade == null) ? "0" : grade);
-				}
-			}
-		}
-
-		return result;
-	}
-
-	private int decimalToInteger(double decimal, int places) {
-		if ((int)decimal == decimal) {
-			return (int)decimal;
-		} else if (places == 0) {
-			if ((decimal - (int)decimal) >= 0.5) {
-				return (int)decimal + 1;
-			} else {
-				return (int)decimal;
-			}
-		} else {
-			return decimalToInteger(decimal * 10, places - 1);
-		}
-	}
-
-	private String serializedGrades() {
-		StringBuilder sb = new StringBuilder();
-
-		for (String gradeString : this.grades) {
-			double grade = Double.valueOf(gradeString);
-
-			boolean hasFraction = ((int)grade != grade);
-
-			if (grade < 128 && !hasFraction) {
-				// single byte, no fraction
-				sb.appendCodePoint((int)grade & 0xFF);
-			} else if (grade < 16384 && !hasFraction) {
-				// two byte, no fraction
-				sb.appendCodePoint(((int)grade >> 8) | 128);
-				sb.appendCodePoint(((int)grade & 0xFF));
-			} else if (grade < 16384) {
-				// three byte encoding, fraction
-				sb.appendCodePoint(((int)grade >> 8) | 192);
-				sb.appendCodePoint((int)grade & 0xFF);
-				sb.appendCodePoint(decimalToInteger((grade - (int)grade),
-						2));
-			} else {
-				throw new RuntimeException("Grade too large: " + grade);
-			}
-		}
-
-		try {
-			return Base64.getEncoder().encodeToString(sb.toString().getBytes("ISO-8859-1"));
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	// FIXME: stupid
-	private String jsonAssignments() {
-		StringBuilder sb = new StringBuilder();
-
-		for (Long assignmentId : this.assignments) {
-			if (sb.length() > 0) {
-				sb.append(", ");
-			}
-			sb.append(assignmentId.toString());
-		}
-
-		return "[" + sb.toString() + "]";
-	}
-
-	// FIXME: double stupid
-	private String jsonStudents() {
-		StringBuilder sb = new StringBuilder();
-
-		for (String student : this.students) {
-			if (sb.length() > 0) {
-				sb.append(", ");
-			}
-			sb.append("\"" + student.toString() + "\"");
-		}
-
-
-
-		return "[" + sb.toString() + "]";
-	}
-
-	// Want to send:
-	//   - the list of all known assignments
-	//   - the list of all known students
-	//   - a giant array where each sequence of assignments.length is the score for a given student.
 }
-
