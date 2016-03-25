@@ -46,82 +46,114 @@ GbGradeTable.unpack = function (s, rowCount, columnCount) {
   return result;
 };
 
+$(document).ready(function() {
+  // need TrimPath to load before parsing templates
+  GbGradeTable.templates = {
+    cell: TrimPath.parseTemplate(
+        $("#cellTemplate").html().trim().toString()),
+    courseGradeCell: TrimPath.parseTemplate(
+        $("#courseGradeCellTemplate").html().trim().toString()),
+    courseGradeHeader: TrimPath.parseTemplate(
+        $("#courseGradeHeaderTemplate").html().trim().toString()),
+    assignmentHeader: TrimPath.parseTemplate(
+        $("#assignmentHeaderTemplate").html().trim().toString()),
+    categoryAverageHeader: TrimPath.parseTemplate(
+        $("#categoryAverageHeaderTemplate").html().trim().toString())
+  };
 
-SAMPLE_CELL = '<div role="gridcell" tabindex="0" class="gb-grade-item-cell" data-assignmentid="%{ASSIGNMENT_ID}" data-studentuuid="%{STUDENT_UUID}" aria-readonly="false"><input type="text" tabindex="-1" class="gb-editable-grade"  value="%{GRADE}"><a class="btn btn-sm btn-default dropdown-toggle" title="%{TITLE}" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" "> <span class="caret"></span> </a></div>';
+});
 
 GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value, cellProperties) {
-  td.innerHTML = value;
+
+  var $td = $(td);
+  var cellKey = (row + ',' + col);
+  var wasInitialised = $td.data('cell-initialised');
+
+  if (wasInitialised === cellKey) {
+    return;
+  }
+
+  if (!wasInitialised) {
+    var html = GbGradeTable.templates.courseGradeCell.process({
+      value: value
+    });
+
+    td.innerHTML = html;
+  } else if (wasInitialised != cellKey) {
+    $td.find(".gb-value").html(value);
+  }
+
+  $td.data('cell-initialised', cellKey);
 };
 
 GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellProperties) {
 
+  var $td = $(td);
   var index = col - 1;
-  var wasInitialised = td.getAttribute('data-cell-initialised');
+  var cellKey = (row + ',' + index);
 
-  if (wasInitialised === (row + ',' + index)) {
+  var wasInitialised = $td.data('cell-initialised');
+
+  if (wasInitialised === cellKey) {
     // Nothing to do
     return;
   }
 
-  var assignmentId = GbGradeTable.columns[index].assignmentId;
-  var studentId = GbGradeTable.students[row].eid;
-  var grade = ('' + GbGradeTable.grades[row][index]);
-  var title = "Open menu for student " + GbGradeTable.students[index] + " and assignment " + GbGradeTable.columns[index] + " cell";
-
-  td.setAttribute("data-assignmentId", assignmentId);
-  td.setAttribute("data-studentId", studentId);
-  td.innerHTML = value;
-
-  td.setAttribute('data-cell-initialised', row + ',' + index);
-
-  return;
+  var column = GbGradeTable.columns[index];
+  var student = GbGradeTable.students[row];
 
   // THINKME: All of this was here because patching the DOM was faster than
   // replacing innerHTML on every scroll event.  Can we do the same sort of
   // thing?
   if (!wasInitialised) {
     // First time we've initialised this cell.
-    var html = SAMPLE_CELL;
-    html = html.replace('%{ASSIGNMENT_ID}', assignmentId);
-    html = html.replace('%{STUDENT_UUID}', studentId);
-    html = html.replace('%{GRADE}', grade);
-    html = html.replace('%{TITLE}', title);
+    var html = GbGradeTable.templates.cell.process({
+      value: value
+    });
 
     td.innerHTML = html;
-  } else if (wasInitialised != (row + ',' + index)) {
+  } else if (wasInitialised != cellKey) {
     // This cell was previously holding a different value.  Just patch it.
-    var item = td.getElementsByClassName("gb-grade-item-cell")[0];
-    item.setAttribute("data-assignmentid", assignmentId);
-    item.setAttribute("data-studentuuid", studentId);
-
-    var input = td.getElementsByClassName("gb-editable-grade")[0];
-    input.value = grade;
-    input.setAttribute("value", grade);
-
-    var dropdown = td.getElementsByClassName("dropdown-toggle")[0];
-    dropdown.setAttribute("title", title);
+    $td.find(".gb-value").html(value);
   }
 
-  td.setAttribute('data-cell-initialised', row + ',' + index);
-};
+  $td.data("studentid", student.userId);
+  if (column.type === "assignment") {
+    $td.data("assignmentid", column.assignmentId);
+    $td.removeData("categoryId");
+  } else if (column.type === "category") {
+    $td.data("categoryId", column.categoryId);
+    $td.removeData("assignmentid");
+  } else {
+    throw "column.type not supported: " + column.type;
+  }
 
-GbGradeTable.getCategoryColor = function(category) {
-  return "#DAF0EF";
-}
+  $td.data('cell-initialised', cellKey);
+};
 
 
 SAMPLE_HEADER_CELL = '<div class="gb-title">%{ASSIGNMENT_NAME}</div><div class="gb-category"><span class="swatch"></span><span>Assignments</span></div><div class="gb-grade-section">Total: <span class="gb-total-points" data-outof-label="/10">10</span></div><div class="gb-due-date">Due: <span>-</span></div><div class="gb-grade-item-flags"><span class="gb-flag-is-released"></span><span class="gb-flag-not-counted"</span></div><div class="btn-group"><a class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" title="Open menu for %{ASSIGNMENT_NAME}"><span class="caret"></span></a></div></div>';
 
 GbGradeTable.headerRenderer = function (col) {
   if (col == 0) {
-    return '<div class="gb-title">Course Grade</div>';
+    return GbGradeTable.templates.courseGradeHeader.process();
   }
 
-  var html = SAMPLE_HEADER_CELL;
-  html = html.replace(/\%\{ASSIGNMENT_NAME\}/g, GbGradeTable.columns[col - 1].title);
+  var column =  GbGradeTable.columns[col - 1];
 
-  return html;
+  if (column.type === "assignment") {
+    return GbGradeTable.templates.assignmentHeader.process(column);
+  } else if (column.type === "category") {
+    return GbGradeTable.templates.categoryAverageHeader.process(column);
+  } else {
+    return "Unknown column type for column: " + col + " (" + column.type+ ")";
+  }
 };
+
+GbGradeTable.studentCellRenderer = function(row) {
+  var student = GbGradeTable.students[row];
+  return student.lastName + ", " + student.firstName + " (" + student.eid + ")";
+}
 
 
 GbGradeTable.mergeColumns = function (data, extraColumns) {
@@ -182,10 +214,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
   GbGradeTable.instance = new Handsontable(document.getElementById(elementId), {
     data: GbGradeTable.grades,
-    rowHeaderWidth: 120,
-    rowHeaders: GbGradeTable.students.map(function (student) {
-      return student.eid;
-    }),
+    rowHeaderWidth: 220,
+    rowHeaders: GbGradeTable.studentCellRenderer,
     fixedColumnsLeft: 1,
     colHeaders: GbGradeTable.headerRenderer,
     columns: [{
@@ -204,7 +234,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
         };
       }
     })),
-    colWidths: [100].concat(GbGradeTable.columns.map(function () { return 230 })),
+    colWidths: [140].concat(GbGradeTable.columns.map(function () { return 230 })),
     autoRowSize: false,
     autoColSize: false,
     height: $(window).height() * 0.4,
@@ -216,16 +246,22 @@ GbGradeTable.renderTable = function (elementId, tableData) {
         attr("scope", "row");
     },
     afterGetColHeader: function(col, th) {
-      var name = "Assignment #<" + col + ">"
       $(th).
         attr("role", "columnheader").
         attr("scope", "col").
-        attr("abbr", name).
-        attr("aria-label", name).
-        addClass("gb-categorized");
+        addClass("gb-categorized"); /* TODO only if enabled */
+
       if (col > 0) {
-        $(th).css("borderTopColor", GbGradeTable.getCategoryColor("todo"));
-        $(th).find(".swatch").css("backgroundColor", GbGradeTable.getCategoryColor("todo"));
+        var column = GbGradeTable.columns[col - 1];
+        var name = column.title;
+        $(th).
+          attr("role", "columnheader").
+          attr("scope", "col").
+          attr("abbr", name).
+          attr("aria-label", name).
+          css("borderTopColor", column.color || column.categoryColor);
+        
+        $(th).find(".swatch").css("backgroundColor", column.color || column.categoryColor);
       }
     },
     currentRowClassName: 'currentRow',
