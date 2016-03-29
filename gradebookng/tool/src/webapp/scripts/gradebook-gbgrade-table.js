@@ -70,7 +70,7 @@ $(document).ready(function() {
 GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value, cellProperties) {
 
   var $td = $(td);
-  var cellKey = (row + ',' + col);
+  var cellKey = (row + ',' + col + ',' + value);
   var wasInitialised = $td.data('cell-initialised');
 
   if (wasInitialised === cellKey) {
