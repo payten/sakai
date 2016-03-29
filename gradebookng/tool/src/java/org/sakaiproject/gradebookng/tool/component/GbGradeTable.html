@@ -3,7 +3,9 @@
         <div wicket:id="gradeTable" id="gradeTable"></div>
 
         <script id="courseGradeHeaderTemplate" type="text/template">
-            <div class="gb-title"><wicket:message key="column.header.coursegrade"/></div>
+            <div class="gb-title">
+                <wicket:message key="column.header.coursegrade"/>
+            </div>
         </script>
         <script id="assignmentHeaderTemplate" type="text/template">
             <div class="gb-title">${title}</div>
@@ -48,6 +50,13 @@
                 ${title}
             </div>
         </script>
+        <script id="studentHeaderTemplate" type="text/template">
+            <div class="relative">
+                <div class="colHeader">
+                    <div class="gb-title"><wicket:message key="column.header.students"/></div>
+                </div>
+            </div>
+        </script>
         <script id="cellTemplate" type="text/template">
             <div class="relative">
                 <span class="gb-value">${value}</span>
@@ -74,6 +83,13 @@
                     <ul class="dropdown-menu dropdown-menu-right" role="menu">
                         <!-- TODO -->
                     </ul>
+                </div>
+            </div>
+        </script>
+        <script id="studentCellTemplate" type="text/template">
+            <div class="relative">
+                <div class="rowHeader">
+                    ${lastName}, ${firstName} (${eid})
                 </div>
             </div>
         </script>

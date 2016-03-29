@@ -58,7 +58,11 @@ $(document).ready(function() {
     assignmentHeader: TrimPath.parseTemplate(
         $("#assignmentHeaderTemplate").html().trim().toString()),
     categoryAverageHeader: TrimPath.parseTemplate(
-        $("#categoryAverageHeaderTemplate").html().trim().toString())
+        $("#categoryAverageHeaderTemplate").html().trim().toString()),
+    studentHeader: TrimPath.parseTemplate(
+        $("#studentHeaderTemplate").html().trim().toString()),
+    studentCell: TrimPath.parseTemplate(
+        $("#studentCellTemplate").html().trim().toString())
   };
 
 });
@@ -124,7 +128,6 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   } else if (column.type === "category") {
     $td.data("categoryId", column.categoryId);
     $td.removeData("assignmentid");
-    // add '%' to value or set null value to '-'
     if (value != null && (value+"").length > 0) {
       $td.find(".gb-value").append("%");
     } else {
@@ -137,8 +140,6 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   $td.data('cell-initialised', cellKey);
 };
 
-
-SAMPLE_HEADER_CELL = '<div class="gb-title">%{ASSIGNMENT_NAME}</div><div class="gb-category"><span class="swatch"></span><span>Assignments</span></div><div class="gb-grade-section">Total: <span class="gb-total-points" data-outof-label="/10">10</span></div><div class="gb-due-date">Due: <span>-</span></div><div class="gb-grade-item-flags"><span class="gb-flag-is-released"></span><span class="gb-flag-not-counted"</span></div><div class="btn-group"><a class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" title="Open menu for %{ASSIGNMENT_NAME}"><span class="caret"></span></a></div></div>';
 
 GbGradeTable.headerRenderer = function (col) {
   if (col == 0) {
@@ -157,8 +158,7 @@ GbGradeTable.headerRenderer = function (col) {
 };
 
 GbGradeTable.studentCellRenderer = function(row) {
-  var student = GbGradeTable.students[row];
-  return student.lastName + ", " + student.firstName + " (" + student.eid + ")";
+  return GbGradeTable.templates.studentCell.process(GbGradeTable.students[row]);
 }
 
 
@@ -212,8 +212,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     Handsontable.editors.TextEditor.prototype.saveValue.apply(this, arguments);
     console.log("-- SAVING --");
     console.log("value: " + $(this.TEXTAREA).val());
-    console.log("studentId: " + $(this.TD).data("studentId"));
-    console.log("assignmentId: " + $(this.TD).data("assignmentId"));
+    console.log("studentId: " + $(this.TD).data("studentid"));
+    console.log("assignmentId: " + $(this.TD).data("assignmentid"));
     // TODO ajax post and add notifications to this.TD for success/error
   }
 
@@ -252,22 +252,37 @@ GbGradeTable.renderTable = function (elementId, tableData) {
         attr("scope", "row");
     },
     afterGetColHeader: function(col, th) {
-      $(th).
+      var $th = $(th);
+      $th.
         attr("role", "columnheader").
         attr("scope", "col").
         addClass("gb-categorized"); /* TODO only if enabled */
 
-      if (col > 0) {
+      // student column
+      if (col == -1) {
+        $th.html(GbGradeTable.templates.studentHeader.process());
+
+      // assignment column
+      } else if (col > 0) {
         var column = GbGradeTable.columns[col - 1];
         var name = column.title;
-        $(th).
+        $th.
           attr("role", "columnheader").
           attr("scope", "col").
           attr("abbr", name).
           attr("aria-label", name).
           css("borderTopColor", column.color || column.categoryColor);
         
-        $(th).find(".swatch").css("backgroundColor", column.color || column.categoryColor);
+        $th.find(".swatch").css("backgroundColor", column.color || column.categoryColor);
+      }
+    },
+    beforeOnCellMouseDown: function(event, coords, td) {
+      if (coords.row < 0 && coords.col >= 0) {
+        event.stopImmediatePropagation();
+        this.selectCell(0, coords.col);
+      } else if (coords.col < 0) {
+        event.stopImmediatePropagation();
+        this.selectCell(coords.row, 0);
       }
     },
     currentRowClassName: 'currentRow',
