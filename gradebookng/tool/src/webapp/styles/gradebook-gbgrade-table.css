@@ -1,6 +1,10 @@
 #gradeTable {
   font-size: 0.9em;
 }
+#gradeTable td,
+#gradeTable th {
+  overflow: visible;
+}
 #gradeTable td {
   text-align: center;
 }
@@ -100,7 +104,8 @@
   background-color: #FAFAFA;
 }
 #gradeTable th.currentCol,
-#gradeTable th.currentRow {
+#gradeTable th.currentRow,
+#gradeTable .handsontable tr > .currentRow:nth-child(2) {
   background-color: #EEE;
 }
 #gradeTable th.gb-categorized {

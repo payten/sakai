@@ -124,6 +124,12 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   } else if (column.type === "category") {
     $td.data("categoryId", column.categoryId);
     $td.removeData("assignmentid");
+    // add '%' to value or set null value to '-'
+    if (value != null && (value+"").length > 0) {
+      $td.find(".gb-value").append("%");
+    } else {
+      $td.find(".gb-value").html("-");
+    }
   } else {
     throw "column.type not supported: " + column.type;
   }
@@ -267,6 +273,41 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     currentRowClassName: 'currentRow',
     currentColClassName: 'currentCol',
     multiSelect: false,
+  });
+
+  // append all dropdown menus to body to avoid overflows on table
+  var $dropdownMenu;
+  var $link;
+  $(window).on('show.bs.dropdown', function (event) {
+    $dropdownMenu = $(event.target).find('.dropdown-menu');
+    $link = $(event.target);
+
+    $dropdownMenu.width($dropdownMenu.outerWidth());
+
+    $('body').append($dropdownMenu.detach());
+
+    var linkOffset = $link.offset();
+
+    $dropdownMenu.css({
+        'display': 'block',
+        'top': linkOffset.top + $link.outerHeight(),
+        'left': linkOffset.left - $dropdownMenu.outerWidth() + $link.outerWidth()
+    });
+  });
+  $(window).on('hide.bs.dropdown', function (event) {
+    $link.append($dropdownMenu.detach());
+    $dropdownMenu.hide();
+    $dropdownMenu = null;
+  });
+  $(".wtHolder").on('scroll', function (event) {
+    if ($dropdownMenu && $dropdownMenu.length > 0) {
+      var linkOffset = $link.offset();
+
+      $dropdownMenu.css({
+          'top': linkOffset.top + $link.outerHeight(),
+          'left': linkOffset.left - $dropdownMenu.outerWidth() + $link.outerWidth()
+      });
+    }
   });
 
 };

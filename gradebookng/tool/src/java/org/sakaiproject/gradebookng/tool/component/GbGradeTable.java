@@ -15,6 +15,8 @@ import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.protocol.http.WebApplication;
 
+import org.apache.wicket.spring.injection.annot.SpringBean;
+import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
@@ -28,6 +30,9 @@ import org.sakaiproject.gradebookng.tool.model.GbGradebookData;
 
 
 public class GbGradeTable extends Panel implements IHeaderContributor {
+
+	@SpringBean(name = "org.sakaiproject.gradebookng.business.GradebookNgBusinessService")
+	protected GradebookNgBusinessService businessService;
 
 	private Component component;
 
@@ -78,7 +83,12 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 
 		response.render(CssHeaderItem.forUrl(String.format("/gradebookng-tool/styles/handsontable.full.min.css?version=%s", version)));
 
-		GbGradebookData gradebookData = new GbGradebookData(grades, assignments, this);
+		GbGradebookData gradebookData = new GbGradebookData(
+				grades,
+				assignments,
+				this.businessService.getGradebookCategories(),
+				this.businessService.getGradebookSettings(),
+				this);
 
 		response.render(OnDomReadyHeaderItem.forScript(String.format("var tableData = %s", gradebookData.toScript())));
 

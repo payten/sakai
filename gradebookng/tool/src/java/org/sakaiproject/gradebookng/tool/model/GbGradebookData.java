@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebookng.tool.model;
 
 import lombok.Value;
+import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import java.util.List;
@@ -13,6 +14,8 @@ import java.util.Base64;
 import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
+import org.sakaiproject.service.gradebook.shared.GradebookInformation;
 
 public class GbGradebookData {
 
@@ -123,13 +126,19 @@ public class GbGradebookData {
     private List<StudentDefinition> students;
     private List<ColumnDefinition> columns;
     private List<GbStudentGradeInfo> studentGradeInfoList;
+    private List<CategoryDefinition> categories;
+    private GradebookInformation settings;
 
     private Component parent;
 
     public GbGradebookData(List<GbStudentGradeInfo> studentGradeInfoList,
                            List<Assignment> assignments,
+                           List<CategoryDefinition> categories,
+                           GradebookInformation settings,
                            Component parentComponent) {
         this.parent = parentComponent;
+        this.categories = categories;
+        this.settings = settings;
 
         this.students = loadStudents(studentGradeInfoList);
         this.columns = loadColumns(assignments);
@@ -251,6 +260,8 @@ public class GbGradebookData {
     }
 
     private List<ColumnDefinition> loadColumns(List<Assignment> assignments) {
+        GradebookUiSettings userSettings = ((GradebookPage) parent.getPage()).getUiSettings();
+
         List<ColumnDefinition> result = new ArrayList<ColumnDefinition>();
 
         if (assignments.isEmpty()) {
@@ -275,18 +286,32 @@ public class GbGradebookData {
 
                                                 nullable(a1.getCategoryId()),
                                                 a1.getCategoryName(),
-                                                "blue",
+                                                userSettings.getCategoryColor(a1.getCategoryName()),
                                                 nullable(a1.getWeight()),
                                                 a1.isCategoryExtraCredit()));
 
 
             // If we're at the end of the assignment list, or we've just changed
             // categories, put out a total.
-            if (a1.getCategoryId() != null &&
+            if (userSettings.isCategoriesEnabled() &&
+                a1.getCategoryId() != null &&
                 (a2 == null || !a1.getCategoryId().equals(a2.getCategoryId()))) {
                 result.add(new CategoryAverageDefinition(a1.getCategoryId(),
                                                          a1.getCategoryName(),
-                                                         "blue"));
+                                                         userSettings.getCategoryColor(a1.getCategoryName())));
+            }
+        }
+
+        // if group by categories is disabled, then show all catagory scores
+        // at the end of the table
+        if (!userSettings.isCategoriesEnabled()) {
+            for (CategoryDefinition category : categories) {
+                if (!category.getAssignmentList().isEmpty()) {
+                    result.add(new CategoryAverageDefinition(
+                        category.getId(),
+                        category.getName(),
+                        userSettings.getCategoryColor(category.getName())));
+                }
             }
         }
 
