@@ -222,13 +222,18 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
   GbGradeTableEditor.prototype.createElements = function () {
     Handsontable.editors.TextEditor.prototype.createElements.apply(this, arguments);
-    // add 'out-of' label
-    var outOf = "<span class='out-of'>/10</span>";
+    var outOf = "<span class='out-of'></span>";
     $(this.TEXTAREA_PARENT).append(outOf);
   };
 
   GbGradeTableEditor.prototype.beginEditing = function() {
     Handsontable.editors.TextEditor.prototype.beginEditing.apply(this, arguments);
+
+    var col = this.instance.getSelected()[1];
+    var assignment = GbGradeTable.columns[col - 2];
+    var points = assignment.points;
+    $(this.TEXTAREA_PARENT).find(".out-of").html("/" + points);
+
     if ($(this.TEXTAREA).val().length > 0) {
       $(this.TEXTAREA).select();
     }
