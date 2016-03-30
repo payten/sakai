@@ -190,8 +190,13 @@ GbGradeTable.mergeColumns = function (data, fixedColumns) {
   return result;
 }
 
+GbGradeTable.ajax = function (params) {
+  GbGradeTable.domElement.trigger("gbgradetable.action", params);
+};
+
 // FIXME: Hard-coded stuff here
 GbGradeTable.renderTable = function (elementId, tableData) {
+  GbGradeTable.domElement = $('#' + elementId);
   GbGradeTable.students = tableData.students;
   GbGradeTable.columns = tableData.columns;
   GbGradeTable.grades = GbGradeTable.mergeColumns(GbGradeTable.unpack(tableData.serializedGrades,
@@ -219,12 +224,22 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   };
 
   GbGradeTableEditor.prototype.saveValue = function() {
+    var oldScore = this.originalValue;
+    var newScore = $(this.TEXTAREA).val();
+    var studentId = $(this.TD).data("studentid");
+    var assignmentId = $(this.TD).data("assignmentid");
+
+    // FIXME: We'll need to pass through the original comment text here.
+    GbGradeTable.ajax({
+      action: 'setScore',
+      studentId: studentId,
+      assignmentId: assignmentId,
+      oldScore: oldScore,
+      newScore: newScore,
+      comment: ""
+    });
+
     Handsontable.editors.TextEditor.prototype.saveValue.apply(this, arguments);
-    console.log("-- SAVING --");
-    console.log("value: " + $(this.TEXTAREA).val());
-    console.log("studentId: " + $(this.TD).data("studentid"));
-    console.log("assignmentId: " + $(this.TD).data("assignmentid"));
-    // TODO ajax post and add notifications to this.TD for success/error
   }
 
 

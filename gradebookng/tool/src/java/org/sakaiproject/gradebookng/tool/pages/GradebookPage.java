@@ -63,6 +63,7 @@ import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
 import org.sakaiproject.service.gradebook.shared.SortType;
 import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.gradebookng.tool.actions.GradeUpdateAction;
 
 /**
  * Grades page. Instructors and TAs see this one. Students see the {@link StudentPage}.
@@ -90,6 +91,8 @@ public class GradebookPage extends BasePage {
 	GbModalWindow updateCourseGradeDisplayWindow;
 
 	Form<Void> form;
+
+	private GbGradeTable gradeTable;
 
 	@SuppressWarnings({ "rawtypes", "unchecked", "serial" })
 	public GradebookPage() {
@@ -174,165 +177,153 @@ public class GradebookPage extends BasePage {
 		// get Gradebook to save additional calls later
 		final Gradebook gradebook = this.businessService.getGradebook();
 
-		// get list of assignments. this allows us to build the columns and then fetch the grades for each student for each assignment from
-		// the map
-		final List<Assignment> assignments = this.businessService.getGradebookAssignments(sortBy);
-		Temp.time("getGradebookAssignments", stopwatch.getTime());
-
-		// get the grade matrix. It should be sorted if we have that info
-		final List<GbStudentGradeInfo> grades = this.businessService.buildGradeMatrix(assignments,
-				settings.getAssignmentSortOrder(), settings.getNameSortOrder(), settings.getCategorySortOrder(),
-				settings.getGroupFilter());
-
-		Temp.time("buildGradeMatrix", stopwatch.getTime());
-
 		// categories enabled?
 		final boolean categoriesEnabled = this.businessService.categoriesAreEnabled();
 
 		// this could potentially be a sortable data provider
-		final ListDataProvider<GbStudentGradeInfo> studentGradeMatrix = new ListDataProvider<GbStudentGradeInfo>(grades);
-		final List<IColumn> cols = new ArrayList<IColumn>();
+		// final ListDataProvider<GbStudentGradeInfo> studentGradeMatrix = new ListDataProvider<GbStudentGradeInfo>(grades);
+		// final List<IColumn> cols = new ArrayList<IColumn>();
 
-		// add an empty column that we can use as a handle for selecting the row
-		final AbstractColumn handleColumn = new AbstractColumn(new Model("")) {
-
-			@Override
-			public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
-				cellItem.add(new EmptyPanel(componentId));
-			}
-
-			@Override
-			public String getCssClass() {
-				return "gb-row-selector";
-			}
-		};
-		cols.add(handleColumn);
+		// // add an empty column that we can use as a handle for selecting the row
+		// final AbstractColumn handleColumn = new AbstractColumn(new Model("")) {
+		// 
+		// 	@Override
+		// 	public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
+		// 		cellItem.add(new EmptyPanel(componentId));
+		// 	}
+		// 
+		// 	@Override
+		// 	public String getCssClass() {
+		// 		return "gb-row-selector";
+		// 	}
+		// };
+		// cols.add(handleColumn);
 
 		// student name column
-		final AbstractColumn studentNameColumn = new AbstractColumn(new Model("studentColumn")) {
-
-			@Override
-			public Component getHeader(final String componentId) {
-				return new StudentNameColumnHeaderPanel(componentId, Model.of(settings.getNameSortOrder())); // pass in the sort
-			}
-
-			@Override
-			public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
-				final GbStudentGradeInfo studentGradeInfo = (GbStudentGradeInfo) rowModel.getObject();
-
-				final Map<String, Object> modelData = new HashMap<>();
-				modelData.put("userId", studentGradeInfo.getStudentUuid());
-				modelData.put("eid", studentGradeInfo.getStudentEid());
-				modelData.put("firstName", studentGradeInfo.getStudentFirstName());
-				modelData.put("lastName", studentGradeInfo.getStudentLastName());
-				modelData.put("displayName", studentGradeInfo.getStudentDisplayName());
-				modelData.put("nameSortOrder", settings.getNameSortOrder()); // pass in the sort
-
-				cellItem.add(new StudentNameCellPanel(componentId, Model.ofMap(modelData)));
-				cellItem.add(new AttributeModifier("data-studentUuid", studentGradeInfo.getStudentUuid()));
-				cellItem.add(new AttributeModifier("abbr", studentGradeInfo.getStudentDisplayName()));
-				cellItem.add(new AttributeModifier("aria-label", studentGradeInfo.getStudentDisplayName()));
-
-				// TODO may need a subclass of Item that does the onComponentTag override and then tag.setName("th");
-			}
-
-			@Override
-			public String getCssClass() {
-				return "gb-student-cell";
-			}
-
-		};
-		cols.add(studentNameColumn);
+		// final AbstractColumn studentNameColumn = new AbstractColumn(new Model("studentColumn")) {
+		// 
+		// 	@Override
+		// 	public Component getHeader(final String componentId) {
+		// 		return new StudentNameColumnHeaderPanel(componentId, Model.of(settings.getNameSortOrder())); // pass in the sort
+		// 	}
+		// 
+		// 	@Override
+		// 	public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
+		// 		final GbStudentGradeInfo studentGradeInfo = (GbStudentGradeInfo) rowModel.getObject();
+		// 
+		// 		final Map<String, Object> modelData = new HashMap<>();
+		// 		modelData.put("userId", studentGradeInfo.getStudentUuid());
+		// 		modelData.put("eid", studentGradeInfo.getStudentEid());
+		// 		modelData.put("firstName", studentGradeInfo.getStudentFirstName());
+		// 		modelData.put("lastName", studentGradeInfo.getStudentLastName());
+		// 		modelData.put("displayName", studentGradeInfo.getStudentDisplayName());
+		// 		modelData.put("nameSortOrder", settings.getNameSortOrder()); // pass in the sort
+		// 
+		// 		cellItem.add(new StudentNameCellPanel(componentId, Model.ofMap(modelData)));
+		// 		cellItem.add(new AttributeModifier("data-studentUuid", studentGradeInfo.getStudentUuid()));
+		// 		cellItem.add(new AttributeModifier("abbr", studentGradeInfo.getStudentDisplayName()));
+		// 		cellItem.add(new AttributeModifier("aria-label", studentGradeInfo.getStudentDisplayName()));
+		// 
+		// 		// TODO may need a subclass of Item that does the onComponentTag override and then tag.setName("th");
+		// 	}
+		// 
+		// 	@Override
+		// 	public String getCssClass() {
+		// 		return "gb-student-cell";
+		// 	}
+		// 
+		// };
+		// cols.add(studentNameColumn);
 
 		// course grade column
-		final AbstractColumn courseGradeColumn = new AbstractColumn(new Model("")) {
-			@Override
-			public Component getHeader(final String componentId) {
-				return new CourseGradeColumnHeaderPanel(componentId, Model.of(settings.getShowPoints()));
-			}
-
-			@Override
-			public String getCssClass() {
-				return "gb-course-grade";
-			}
-
-			@Override
-			public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
-				final GbStudentGradeInfo studentGradeInfo = (GbStudentGradeInfo) rowModel.getObject();
-
-				cellItem.add(new AttributeModifier("tabindex", 0));
-
-				// setup model
-				// note we have additional fields here fornthe course grade model
-				final Map<String, Object> modelData = new HashMap<>();
-				modelData.put("courseGrade", studentGradeInfo.getCourseGrade());
-				modelData.put("studentUuid", studentGradeInfo.getStudentUuid());
-				modelData.put("currentUserUuid", GradebookPage.this.currentUserUuid);
-				modelData.put("currentUserRole", GradebookPage.this.role);
-				modelData.put("gradebook", gradebook);
-				modelData.put("showPoints", settings.getShowPoints());
-				modelData.put("showOverride", true);
-
-				cellItem.add(new CourseGradeItemCellPanel(componentId, Model.ofMap(modelData)));
-				cellItem.setOutputMarkupId(true);
-			}
-		};
-		cols.add(courseGradeColumn);
+		// final AbstractColumn courseGradeColumn = new AbstractColumn(new Model("")) {
+		// 	@Override
+		// 	public Component getHeader(final String componentId) {
+		// 		return new CourseGradeColumnHeaderPanel(componentId, Model.of(settings.getShowPoints()));
+		// 	}
+		// 
+		// 	@Override
+		// 	public String getCssClass() {
+		// 		return "gb-course-grade";
+		// 	}
+		// 
+		// 	@Override
+		// 	public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
+		// 		final GbStudentGradeInfo studentGradeInfo = (GbStudentGradeInfo) rowModel.getObject();
+		// 
+		// 		cellItem.add(new AttributeModifier("tabindex", 0));
+		// 
+		// 		// setup model
+		// 		// note we have additional fields here fornthe course grade model
+		// 		final Map<String, Object> modelData = new HashMap<>();
+		// 		modelData.put("courseGrade", studentGradeInfo.getCourseGrade());
+		// 		modelData.put("studentUuid", studentGradeInfo.getStudentUuid());
+		// 		modelData.put("currentUserUuid", GradebookPage.this.currentUserUuid);
+		// 		modelData.put("currentUserRole", GradebookPage.this.role);
+		// 		modelData.put("gradebook", gradebook);
+		// 		modelData.put("showPoints", settings.getShowPoints());
+		// 		modelData.put("showOverride", true);
+		// 
+		// 		cellItem.add(new CourseGradeItemCellPanel(componentId, Model.ofMap(modelData)));
+		// 		cellItem.setOutputMarkupId(true);
+		// 	}
+		// };
+		// cols.add(courseGradeColumn);
 
 		// build the rest of the columns based on the assignment list
-		for (final Assignment assignment : assignments) {
-
-			final AbstractColumn column = new AbstractColumn(new Model(assignment)) {
-
-				@Override
-				public Component getHeader(final String componentId) {
-					final AssignmentColumnHeaderPanel panel = new AssignmentColumnHeaderPanel(componentId,
-							new Model<Assignment>(assignment));
-
-					panel.add(new AttributeModifier("data-category", assignment.getCategoryName()));
-					panel.add(new AttributeModifier("data-category-id", assignment.getCategoryId()));
-
-					final StringValue createdAssignmentId = getPageParameters().get(CREATED_ASSIGNMENT_ID_PARAM);
-					if (!createdAssignmentId.isNull() && assignment.getId().equals(createdAssignmentId.toLong())) {
-						panel.add(new AttributeModifier("class", "gb-just-created"));
-						getPageParameters().remove(CREATED_ASSIGNMENT_ID_PARAM);
-					}
-
-					return panel;
-				}
-
-				@Override
-				public String getCssClass() {
-					return "gb-grade-item-column-cell";
-				}
-
-				@Override
-				public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
-					final GbStudentGradeInfo studentGrades = (GbStudentGradeInfo) rowModel.getObject();
-
-					final GbGradeInfo gradeInfo = studentGrades.getGrades().get(assignment.getId());
-
-					final Map<String, Object> modelData = new HashMap<>();
-					modelData.put("assignmentId", assignment.getId());
-					modelData.put("assignmentName", assignment.getName());
-					modelData.put("assignmentPoints", assignment.getPoints());
-					modelData.put("studentUuid", studentGrades.getStudentUuid());
-					modelData.put("studentName", studentGrades.getStudentDisplayName());
-					modelData.put("categoryId", assignment.getCategoryId());
-					modelData.put("isExternal", assignment.isExternallyMaintained());
-					modelData.put("externalAppName", assignment.getExternalAppName());
-					modelData.put("gradeInfo", gradeInfo);
-					modelData.put("role", GradebookPage.this.role);
-
-					cellItem.add(new GradeItemCellPanel(componentId, Model.ofMap(modelData)));
-
-					cellItem.setOutputMarkupId(true);
-				}
-
-			};
-
-			cols.add(column);
-		}
+		// for (final Assignment assignment : assignments) {
+		// 
+		// 	final AbstractColumn column = new AbstractColumn(new Model(assignment)) {
+		// 
+		// 		@Override
+		// 		public Component getHeader(final String componentId) {
+		// 			final AssignmentColumnHeaderPanel panel = new AssignmentColumnHeaderPanel(componentId,
+		// 					new Model<Assignment>(assignment));
+		// 
+		// 			panel.add(new AttributeModifier("data-category", assignment.getCategoryName()));
+		// 			panel.add(new AttributeModifier("data-category-id", assignment.getCategoryId()));
+		// 
+		// 			final StringValue createdAssignmentId = getPageParameters().get(CREATED_ASSIGNMENT_ID_PARAM);
+		// 			if (!createdAssignmentId.isNull() && assignment.getId().equals(createdAssignmentId.toLong())) {
+		// 				panel.add(new AttributeModifier("class", "gb-just-created"));
+		// 				getPageParameters().remove(CREATED_ASSIGNMENT_ID_PARAM);
+		// 			}
+		// 
+		// 			return panel;
+		// 		}
+		// 
+		// 		@Override
+		// 		public String getCssClass() {
+		// 			return "gb-grade-item-column-cell";
+		// 		}
+		// 
+		// 		@Override
+		// 		public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
+		// 			final GbStudentGradeInfo studentGrades = (GbStudentGradeInfo) rowModel.getObject();
+		// 
+		// 			final GbGradeInfo gradeInfo = studentGrades.getGrades().get(assignment.getId());
+		// 
+		// 			final Map<String, Object> modelData = new HashMap<>();
+		// 			modelData.put("assignmentId", assignment.getId());
+		// 			modelData.put("assignmentName", assignment.getName());
+		// 			modelData.put("assignmentPoints", assignment.getPoints());
+		// 			modelData.put("studentUuid", studentGrades.getStudentUuid());
+		// 			modelData.put("studentName", studentGrades.getStudentDisplayName());
+		// 			modelData.put("categoryId", assignment.getCategoryId());
+		// 			modelData.put("isExternal", assignment.isExternallyMaintained());
+		// 			modelData.put("externalAppName", assignment.getExternalAppName());
+		// 			modelData.put("gradeInfo", gradeInfo);
+		// 			modelData.put("role", GradebookPage.this.role);
+		// 
+		// 			cellItem.add(new GradeItemCellPanel(componentId, Model.ofMap(modelData)));
+		// 
+		// 			cellItem.setOutputMarkupId(true);
+		// 		}
+		// 
+		// 	};
+		// 
+		// 	cols.add(column);
+		// }
 
 		// render the categories
 		// Display rules:
@@ -342,79 +333,91 @@ public class GradebookPage extends BasePage {
 
 		List<CategoryDefinition> categories = new ArrayList<>();
 
-		if (categoriesEnabled) {
-
-			// only work with categories if enabled
-			categories = this.businessService.getGradebookCategories();
-
-			// remove those that have no assignments
-			categories.removeIf(cat -> cat.getAssignmentList().isEmpty());
-
-			Collections.sort(categories, CategoryDefinition.orderComparator);
-
-			int currentColumnIndex = 3; // take into account first three header columns
-
-			for (final CategoryDefinition category : categories) {
-
-				if (category.getAssignmentList().isEmpty()) {
-					continue;
-				}
-
-				final AbstractColumn column = new AbstractColumn(new Model(category)) {
-
-					@Override
-					public Component getHeader(final String componentId) {
-						final CategoryColumnHeaderPanel panel = new CategoryColumnHeaderPanel(componentId,
-								new Model<CategoryDefinition>(category));
-
-						panel.add(new AttributeModifier("data-category", category.getName()));
-
-						return panel;
-					}
-
-					@Override
-					public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
-						final GbStudentGradeInfo studentGrades = (GbStudentGradeInfo) rowModel.getObject();
-
-						final Double score = studentGrades.getCategoryAverages().get(category.getId());
-
-						final Map<String, Object> modelData = new HashMap<>();
-						modelData.put("score", score);
-						modelData.put("studentUuid", studentGrades.getStudentUuid());
-						modelData.put("categoryId", category.getId());
-
-						cellItem.add(new CategoryColumnCellPanel(componentId, Model.ofMap(modelData)));
-						cellItem.setOutputMarkupId(true);
-					}
-
-					@Override
-					public String getCssClass() {
-						return "gb-category-item-column-cell";
-					}
-
-				};
-
-				if (settings.isCategoriesEnabled()) {
-					// insert category column after assignments in that category
-					currentColumnIndex = currentColumnIndex + category.getAssignmentList().size();
-					cols.add(currentColumnIndex, column);
-					currentColumnIndex = currentColumnIndex + 1;
-				} else {
-					// add to the end of the column list
-					cols.add(column);
-				}
-			}
-		}
+		// if (categoriesEnabled) {
+		// 
+		// 	// only work with categories if enabled
+		// 	categories = this.businessService.getGradebookCategories();
+		// 
+		// 	// remove those that have no assignments
+		// 	categories.removeIf(cat -> cat.getAssignmentList().isEmpty());
+		// 
+		// 	Collections.sort(categories, CategoryDefinition.orderComparator);
+		// 
+		// 	int currentColumnIndex = 3; // take into account first three header columns
+		// 
+		// 	for (final CategoryDefinition category : categories) {
+		// 
+		// 		if (category.getAssignmentList().isEmpty()) {
+		// 			continue;
+		// 		}
+		// 
+		// 		final AbstractColumn column = new AbstractColumn(new Model(category)) {
+		// 
+		// 			@Override
+		// 			public Component getHeader(final String componentId) {
+		// 				final CategoryColumnHeaderPanel panel = new CategoryColumnHeaderPanel(componentId,
+		// 						new Model<CategoryDefinition>(category));
+		// 
+		// 				panel.add(new AttributeModifier("data-category", category.getName()));
+		// 
+		// 				return panel;
+		// 			}
+		// 
+		// 			@Override
+		// 			public void populateItem(final Item cellItem, final String componentId, final IModel rowModel) {
+		// 				final GbStudentGradeInfo studentGrades = (GbStudentGradeInfo) rowModel.getObject();
+		// 
+		// 				final Double score = studentGrades.getCategoryAverages().get(category.getId());
+		// 
+		// 				final Map<String, Object> modelData = new HashMap<>();
+		// 				modelData.put("score", score);
+		// 				modelData.put("studentUuid", studentGrades.getStudentUuid());
+		// 				modelData.put("categoryId", category.getId());
+		// 
+		// 				cellItem.add(new CategoryColumnCellPanel(componentId, Model.ofMap(modelData)));
+		// 				cellItem.setOutputMarkupId(true);
+		// 			}
+		// 
+		// 			@Override
+		// 			public String getCssClass() {
+		// 				return "gb-category-item-column-cell";
+		// 			}
+		// 
+		// 		};
+		// 
+		// 		if (settings.isCategoriesEnabled()) {
+		// 			// insert category column after assignments in that category
+		// 			currentColumnIndex = currentColumnIndex + category.getAssignmentList().size();
+		// 			cols.add(currentColumnIndex, column);
+		// 			currentColumnIndex = currentColumnIndex + 1;
+		// 		} else {
+		// 			// add to the end of the column list
+		// 			cols.add(column);
+		// 		}
+		// 	}
+		// }
 
 		Temp.time("all Columns added", stopwatch.getTime());
 
-		this.form.add(new GbGradeTable("gradeTable", grades, assignments));
+		gradeTable = new GbGradeTable("gradeTable");
+		gradeTable.addEventListener("setScore", new GradeUpdateAction(this.businessService));
+
+		Temp.time("buildGradeMatrix", stopwatch.getTime());
+
+		Map<String, Object> modelFields = new HashMap<String, Object>();
+
+		modelFields.put("grades", new ArrayList<GbStudentGradeInfo>());
+		modelFields.put("assignments", new ArrayList<Assignment>());
+
+		gradeTable.setDefaultModel(Model.ofMap(modelFields));
+
+		this.form.add(gradeTable);
 
 
-		final Label gradeItemSummary = new Label("gradeItemSummary", new StringResourceModel("label.toolbar.gradeitemsummary", null,
-				assignments.size() + categories.size(), assignments.size() + categories.size()));
-		gradeItemSummary.setEscapeModelStrings(false);
-		this.form.add(gradeItemSummary);
+		// final Label gradeItemSummary = new Label("gradeItemSummary", new StringResourceModel("label.toolbar.gradeitemsummary", null,
+		// 		assignments.size() + categories.size(), assignments.size() + categories.size()));
+		// gradeItemSummary.setEscapeModelStrings(false);
+		// this.form.add(gradeItemSummary);
 
 		final WebMarkupContainer toggleGradeItemsToolbarItem = new WebMarkupContainer("toggleGradeItemsToolbarItem");
 		this.form.add(toggleGradeItemsToolbarItem);
@@ -440,7 +443,7 @@ public class GradebookPage extends BasePage {
 
 			@Override
 			public boolean isVisible() {
-				return categoriesEnabled && !assignments.isEmpty();
+				return categoriesEnabled;
 			}
 		};
 		this.form.add(toggleCategoriesToolbarItem);
@@ -488,15 +491,57 @@ public class GradebookPage extends BasePage {
 		// set selected group, or first item in list
 		groupFilter.setModelObject((settings.getGroupFilter() != null) ? settings.getGroupFilter() : groups.get(0));
 		groupFilter.setNullValid(false);
+		groupFilter.setVisible(false);
 		this.form.add(groupFilter);
 
+		final List<Assignment> assignments = this.businessService.getGradebookAssignments(sortBy);
 		final ToggleGradeItemsToolbarPanel gradeItemsTogglePanel = new ToggleGradeItemsToolbarPanel("gradeItemsTogglePanel",
-				Model.ofList(assignments));
+													    Model.ofList(assignments));
+		gradeItemsTogglePanel.setVisible(false);
 		add(gradeItemsTogglePanel);
 
 		// hide/show components
 
 		Temp.time("Gradebook page done", stopwatch.getTime());
+	}
+
+	@Override
+	protected void onBeforeRender() {
+		super.onBeforeRender();
+
+		// get list of assignments. this allows us to build the columns and then fetch the grades for each student for each assignment from
+		// the map
+		// first get any settings data from the session
+		final GradebookUiSettings settings = getUiSettings();
+
+		SortType sortBy = SortType.SORT_BY_SORTING;
+		if (settings.isCategoriesEnabled()) {
+			// Pre-sort assignments by the categorized sort order
+			sortBy = SortType.SORT_BY_CATEGORY;
+		}
+
+
+		final StopWatch stopwatch = new StopWatch();
+		stopwatch.start();
+
+		final List<Assignment> assignments = this.businessService.getGradebookAssignments(sortBy);
+		Temp.time("getGradebookAssignments", stopwatch.getTime());
+
+		// get the grade matrix. It should be sorted if we have that info
+		final List<GbStudentGradeInfo> grades = this.businessService.buildGradeMatrix(assignments,
+											      settings.getAssignmentSortOrder(), settings.getNameSortOrder(), settings.getCategorySortOrder(),
+											      settings.getGroupFilter());
+
+		Temp.time("buildGradeMatrix", stopwatch.getTime());
+
+		Map<String, Object> model = (Map<String, Object>) gradeTable.getDefaultModelObject();
+		((List<GbStudentGradeInfo>) model.get("grades")).clear();
+		((List<GbStudentGradeInfo>) model.get("grades")).addAll(grades);
+
+		((List<Assignment>) model.get("assignments")).clear();
+		((List<Assignment>) model.get("assignments")).addAll(assignments);
+
+		gradeTable.modelChanged();
 	}
 
 	/**

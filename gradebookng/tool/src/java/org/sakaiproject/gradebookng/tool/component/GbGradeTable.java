@@ -1,5 +1,6 @@
 package org.sakaiproject.gradebookng.tool.component;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.wicket.Component;
@@ -15,6 +16,7 @@ import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.protocol.http.WebApplication;
 
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.service.gradebook.shared.Assignment;
@@ -22,11 +24,16 @@ import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import org.sakaiproject.gradebookng.tool.model.GbGradebookData;
+import org.sakaiproject.gradebookng.tool.actions.Action;
+import java.util.HashMap;
 
 
 public class GbGradeTable extends Panel implements IHeaderContributor {
@@ -35,9 +42,6 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 	protected GradebookNgBusinessService businessService;
 
 	private Component component;
-
-	List<GbStudentGradeInfo> grades;
-	List<Assignment> assignments;
 
 	/*
 	    - Students: id, first name, last name, netid
@@ -48,11 +52,28 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 	    - scores: number, has comments?, extra credit? (> total points), read only?
 	 */
 
-	public GbGradeTable(String id, List<GbStudentGradeInfo> grades, List<Assignment> assignments) {
-		super(id);
+	private Map<String, List<Action>> listeners = new HashMap<String, List<Action>>();
+
+	public void addEventListener(String event, Action listener) {
+		if (!listeners.containsKey(event)) {
+			listeners.put(event, new ArrayList<Action>(1));
+		}
 		
-		this.grades = grades;
-		this.assignments = assignments;
+		listeners.get(event).add(listener);
+	}
+
+	public void notifyListeners(String event, JsonNode params) {
+		if (!listeners.containsKey(event)) {
+			return;
+		}
+		
+		for (Action listener : listeners.get(event)) {
+			listener.handleEvent(params);
+		}
+	}
+
+	public GbGradeTable(String id) {
+		super(id);
 		
 		component = new WebMarkupContainer("gradeTable").setOutputMarkupId(true);
 
@@ -65,7 +86,14 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 
 			@Override
 			protected void onEvent(AjaxRequestTarget target) {
-				System.err.println("GOT PARAMS: " + getRequest().getRequestParameters().getParameterValue("ajaxParams"));
+				try {
+					ObjectMapper mapper = new ObjectMapper();
+					JsonNode params = mapper.readTree(getRequest().getRequestParameters().getParameterValue("ajaxParams").toString());
+
+					notifyListeners(params.get("action").asText(), params);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		});
 
@@ -73,6 +101,10 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 	}
 
 	public void renderHead(IHeaderResponse response) {
+		Map<String, Object> model = (Map<String, Object>) getDefaultModelObject();
+		List<GbStudentGradeInfo> grades = (List<GbStudentGradeInfo>) model.get("grades");
+		List<Assignment> assignments = (List<Assignment>) model.get("assignments");
+
 		final String version = ServerConfigurationService.getString("portal.cdn.version", "");
 
 		response.render(
