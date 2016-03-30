@@ -93,7 +93,7 @@ GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value
 GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellProperties) {
 
   var $td = $(td);
-  var index = col - 1;
+  var index = col - 2;
   var cellKey = (row + ',' + index);
 
   var wasInitialised = $td.data('cell-initialised');
@@ -143,10 +143,12 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
 GbGradeTable.headerRenderer = function (col) {
   if (col == 0) {
+    return GbGradeTable.templates.studentHeader.process();
+  } else if (col == 1) {
     return GbGradeTable.templates.courseGradeHeader.process();
   }
 
-  var column =  GbGradeTable.columns[col - 1];
+  var column =  GbGradeTable.columns[col - 2];
 
   if (column.type === "assignment") {
     return GbGradeTable.templates.assignmentHeader.process(column);
@@ -157,21 +159,27 @@ GbGradeTable.headerRenderer = function (col) {
   }
 };
 
-GbGradeTable.studentCellRenderer = function(row) {
-  return GbGradeTable.templates.studentCell.process(GbGradeTable.students[row]);
+GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value, cellProperties) {
+  var $td = $(td);
+
+  $td.attr("scope", "row").attr("role", "rowHeader");
+
+  var html = GbGradeTable.templates.studentCell.process(GbGradeTable.students[row]);
+  $td.html(html);
 }
 
 
-GbGradeTable.mergeColumns = function (data, extraColumns) {
+GbGradeTable.mergeColumns = function (data, fixedColumns) {
   var result = [];
 
   for (var row = 0; row < data.length; row++) {
     var updatedRow = []
-    for (var col = 0; col < data[row].length; col++) {
-      if (extraColumns[col]) {
-        updatedRow.push(extraColumns[col][row]);
-      }
 
+    for (var i=0; i < fixedColumns.length; i++) {
+      updatedRow.push(fixedColumns[i][row]);
+    }
+
+    for (var col = 0; col < data[row].length; col++) {
       updatedRow.push(data[row][col]);
     }
 
@@ -188,9 +196,10 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   GbGradeTable.grades = GbGradeTable.mergeColumns(GbGradeTable.unpack(tableData.serializedGrades,
                                                                       tableData.rowCount,
                                                                       tableData.columnCount),
-                                                  {
-                                                    0: tableData.courseGrades,
-                                                  });
+                                                  [
+                                                    tableData.students,
+                                                    tableData.courseGrades
+                                                  ]);
 
   GbGradeTableEditor = Handsontable.editors.TextEditor.prototype.extend();
 
@@ -220,27 +229,31 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
   GbGradeTable.instance = new Handsontable(document.getElementById(elementId), {
     data: GbGradeTable.grades,
-    rowHeaderWidth: 220,
-    rowHeaders: GbGradeTable.studentCellRenderer,
-    fixedColumnsLeft: 1,
+//    rowHeaderWidth: 220,
+//    rowHeaders: GbGradeTable.studentCellRenderer,
+    fixedColumnsLeft: 2,
     colHeaders: GbGradeTable.headerRenderer,
     columns: [{
-      renderer: GbGradeTable.courseGradeRenderer,
-      editor: false,
-    }].concat(GbGradeTable.columns.map(function (column) {
-      if (column.type === 'category') {
-        return {
-          renderer: GbGradeTable.cellRenderer,
-          editor: false
-        };
-      } else {
-        return {
-          renderer: GbGradeTable.cellRenderer,
-          editor: GbGradeTableEditor
-        };
-      }
-    })),
-    colWidths: [140].concat(GbGradeTable.columns.map(function () { return 230 })),
+        renderer: GbGradeTable.studentCellRenderer,
+        editor: false,
+      },
+      {
+        renderer: GbGradeTable.courseGradeRenderer,
+        editor: false,
+      }].concat(GbGradeTable.columns.map(function (column) {
+        if (column.type === 'category') {
+          return {
+            renderer: GbGradeTable.cellRenderer,
+            editor: false
+          };
+        } else {
+          return {
+            renderer: GbGradeTable.cellRenderer,
+            editor: GbGradeTableEditor
+          };
+        }
+      })),
+    colWidths: [240,140].concat(GbGradeTable.columns.map(function () { return 230 })),
     autoRowSize: false,
     autoColSize: false,
     height: $(window).height() * 0.4,
@@ -258,13 +271,9 @@ GbGradeTable.renderTable = function (elementId, tableData) {
         attr("scope", "col").
         addClass("gb-categorized"); /* TODO only if enabled */
 
-      // student column
-      if (col == -1) {
-        $th.html(GbGradeTable.templates.studentHeader.process());
-
       // assignment column
-      } else if (col > 0) {
-        var column = GbGradeTable.columns[col - 1];
+      if (col > 1) {
+        var column = GbGradeTable.columns[col - 2];
         var name = column.title;
         $th.
           attr("role", "columnheader").
@@ -287,7 +296,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     },
     currentRowClassName: 'currentRow',
     currentColClassName: 'currentCol',
-    multiSelect: false,
+    multiSelect: false
   });
 
   // append all dropdown menus to body to avoid overflows on table
@@ -323,6 +332,14 @@ GbGradeTable.renderTable = function (elementId, tableData) {
           'left': linkOffset.left - $dropdownMenu.outerWidth() + $link.outerWidth()
       });
     }
+  });
+
+  var filterTimeout;
+  $("#studentFilterInput").on("keyup", function(event) {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(function() {
+
+    }, 500);
   });
 
 };

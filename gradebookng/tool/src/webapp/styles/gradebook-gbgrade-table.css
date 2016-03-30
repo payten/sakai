@@ -29,6 +29,10 @@
   line-height: 30px;
 }
 
+#gradeTable .handsontable tr > *:nth-child(1){
+  background-color: #F6f6f6;
+  text-align: left;
+}
 #gradeTable .handsontable tr > *:nth-child(2){
   border-right: 1px solid #BBB;
   background-color: #F6f6f6;
@@ -105,6 +109,7 @@
 }
 #gradeTable th.currentCol,
 #gradeTable th.currentRow,
+#gradeTable .handsontable tr > .currentRow:nth-child(1),
 #gradeTable .handsontable tr > .currentRow:nth-child(2) {
   background-color: #EEE;
 }

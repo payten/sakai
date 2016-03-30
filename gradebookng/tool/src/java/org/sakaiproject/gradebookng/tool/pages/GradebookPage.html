@@ -22,6 +22,10 @@
     <div id="gradebookGradesToolbar">
       <ul class="gb-toolbar-left">
         <li>
+            <label for="studentFilterInput" class="sr-only"><wicket:message key="filter.students"/></label>
+            <input type="text" id="studentFilterInput" aria-controls="gradeTable" wicket:message="placeholder:filter.students">
+        </li>
+        <li>
           <label for="filterByGroup" style="display:none" aria-hidden="true"><wicket:message key="filter.groups" /></label>
           <select id="filterByGroup" wicket:id="groupFilter">
             <option value="1">Section 1</option>
