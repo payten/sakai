@@ -94,7 +94,8 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
   var $td = $(td);
   var index = col - 2;
-  var cellKey = (row + ',' + index);
+  var student = instance.getDataAtCell(row, 0);
+  var cellKey = (row + ',' + index + ',' + value + ',' + student.eid);
 
   var wasInitialised = $td.data('cell-initialised');
 
@@ -104,7 +105,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   }
 
   var column = GbGradeTable.columns[index];
-  var student = GbGradeTable.students[row];
+  var student = instance.getDataAtCell(row, 0);
 
   // THINKME: All of this was here because patching the DOM was faster than
   // replacing innerHTML on every scroll event.  Can we do the same sort of
@@ -164,7 +165,7 @@ GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value,
 
   $td.attr("scope", "row").attr("role", "rowHeader");
 
-  var html = GbGradeTable.templates.studentCell.process(GbGradeTable.students[row]);
+  var html = GbGradeTable.templates.studentCell.process(value);
   $td.html(html);
 }
 
@@ -334,11 +335,37 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     }
   });
 
+
   var filterTimeout;
   $("#studentFilterInput").on("keyup", function(event) {
     clearTimeout(filterTimeout);
     filterTimeout = setTimeout(function() {
+      var query = $(event.target).val();
 
+      GbGradeTable.forceRedraw = true;
+
+      if (query == "") {
+        GbGradeTable.instance.loadData(GbGradeTable.grades);
+      } else {
+        var queryStrings = query.split(" ");
+        var filteredData = GbGradeTable.grades.filter(function(row) {
+          var match = true;
+
+          var student = row[0];
+          var searchableFields = [student.firstName, student.lastName, student.eid];
+          var studentSearchString = searchableFields.join(";")
+
+          for (var i=0; i<queryStrings.length; i++) {
+            var queryString = queryStrings[i];
+
+            if (studentSearchString.match(queryString) == null) {
+              return false;
+            }
+          }
+          return match;
+        });
+        GbGradeTable.instance.loadData(filteredData);
+      }
     }, 500);
   });
 
