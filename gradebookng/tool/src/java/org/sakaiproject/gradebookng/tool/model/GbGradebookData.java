@@ -16,6 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
 import org.sakaiproject.service.gradebook.shared.GradebookInformation;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 
 public class GbGradebookData {
 
@@ -94,7 +96,13 @@ public class GbGradebookData {
             if (average == null) {
                 return null;
             } else {
-                return FormatHelper.formatDoubleToTwoDecimalPlaces(average);
+		final NumberFormat df = NumberFormat.getInstance();
+		df.setMinimumFractionDigits(0);
+		df.setMaximumFractionDigits(2);
+		df.setGroupingUsed(false);
+		df.setRoundingMode(RoundingMode.HALF_DOWN);
+
+		return df.format(average);
             }
         }
     }
