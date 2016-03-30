@@ -1,10 +1,6 @@
 #gradeTable {
   font-size: 0.9em;
 }
-#gradeTable td,
-#gradeTable th {
-  overflow: visible;
-}
 #gradeTable td {
   text-align: center;
 }
