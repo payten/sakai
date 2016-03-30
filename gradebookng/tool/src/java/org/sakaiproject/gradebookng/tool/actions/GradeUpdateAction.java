@@ -11,6 +11,7 @@ import org.sakaiproject.gradebookng.business.GradeSaveResponse;
 import org.sakaiproject.gradebookng.business.util.FormatHelper;
 import org.sakaiproject.gradebookng.tool.panels.GradeItemCellPanel;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
+import org.sakaiproject.service.gradebook.shared.CourseGrade;
 
 public class GradeUpdateAction implements Action, Serializable {
 
@@ -22,9 +23,19 @@ public class GradeUpdateAction implements Action, Serializable {
     }
 
     // FIXME: We'll use a proper ObjectMapper for these soon.
-    private class OKResponse implements ActionResponse {
+    private class GradeUpdateResponse implements ActionResponse {
+        private String courseGrade;
+
+        public GradeUpdateResponse(String courseGrade) {
+            this.courseGrade = courseGrade;
+        }
+
+        public String getStatus() {
+            return "OK";
+        }
+
         public String toJson() {
-            return "{\"status\": \"OK\"}";
+            return "{\"courseGrade\": \"" + courseGrade + "\"}";
         }
     }
 
@@ -34,8 +45,12 @@ public class GradeUpdateAction implements Action, Serializable {
             this.msg = msg;
         }
 
+        public String getStatus() {
+            return "error";
+        }
+
         public String toJson() {
-            return String.format("{\"status\": \"ArgumentError\", \"msg\": \"%s\"}", msg);
+            return String.format("{\"msg\": \"%s\"}", msg);
         }
     }
 
@@ -60,6 +75,17 @@ public class GradeUpdateAction implements Action, Serializable {
         final GradeSaveResponse result = businessService.saveGrade(Long.valueOf(assignmentId), studentUuid,
                 oldGrade, newGrade, params.get("comment").asText());
 
+	CourseGrade studentCourseGrade = businessService.getCourseGrade(studentUuid);
+
+        if (studentCourseGrade != null) {
+            String grade = studentCourseGrade.getMappedGrade();
+
+            return new GradeUpdateResponse(grade);
+        } else {
+            return new GradeUpdateResponse("-");
+        }
+
+
         // TODO here, add the message
         // switch (result) {
         // case OK:
@@ -80,14 +106,12 @@ public class GradeUpdateAction implements Action, Serializable {
         //     handleNoChange(GradeItemCellPanel.this.gradeCell);
         //     break;
         // case CONCURRENT_EDIT:
-        //     markError(GradeItemCellPanel.this.gradeCell);
+        //     mark
         //     error(getString("error.concurrentedit"));
         //     GradeItemCellPanel.this.notifications.add(GradeCellNotification.CONCURRENT_EDIT);
         //     break;
         // default:
         //     throw new UnsupportedOperationException("The response for saving the grade is unknown.");
         // }
-
-        return new OKResponse();
     }
 }

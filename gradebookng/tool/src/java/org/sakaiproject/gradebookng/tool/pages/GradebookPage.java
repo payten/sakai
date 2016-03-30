@@ -420,6 +420,7 @@ public class GradebookPage extends BasePage {
 		// this.form.add(gradeItemSummary);
 
 		final WebMarkupContainer toggleGradeItemsToolbarItem = new WebMarkupContainer("toggleGradeItemsToolbarItem");
+		toggleGradeItemsToolbarItem.setVisible(false);
 		this.form.add(toggleGradeItemsToolbarItem);
 
 		final Button toggleCategoriesToolbarItem = new Button("toggleCategoriesToolbarItem") {

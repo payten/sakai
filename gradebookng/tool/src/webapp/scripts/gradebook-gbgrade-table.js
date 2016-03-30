@@ -190,7 +190,18 @@ GbGradeTable.mergeColumns = function (data, fixedColumns) {
   return result;
 }
 
-GbGradeTable.ajax = function (params) {
+var nextRequestId = 0;
+GbGradeTable.ajaxCallbacks = {}
+
+GbGradeTable.ajaxComplete = function (requestId, status, data) {
+  GbGradeTable.ajaxCallbacks[requestId](status, data);
+};
+
+GbGradeTable.ajax = function (params, callback) {
+  params['_requestId'] = nextRequestId++;
+
+  GbGradeTable.ajaxCallbacks[params['_requestId']] = callback;
+
   GbGradeTable.domElement.trigger("gbgradetable.action", params);
 };
 
@@ -224,6 +235,9 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   };
 
   GbGradeTableEditor.prototype.saveValue = function() {
+    var that = this;
+    var row = this.row;
+
     var oldScore = this.originalValue;
     var newScore = $(this.TEXTAREA).val();
     var studentId = $(this.TD).data("studentid");
@@ -237,6 +251,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       oldScore: oldScore,
       newScore: newScore,
       comment: ""
+    }, function (status, data) {
+      that.instance.setDataAtCell(row, 1, data.courseGrade);
     });
 
     Handsontable.editors.TextEditor.prototype.saveValue.apply(this, arguments);

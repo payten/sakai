@@ -34,6 +34,7 @@ import java.util.Map;
 import org.sakaiproject.gradebookng.tool.model.GbGradebookData;
 import org.sakaiproject.gradebookng.tool.actions.Action;
 import java.util.HashMap;
+import org.sakaiproject.gradebookng.tool.actions.ActionResponse;
 
 
 public class GbGradeTable extends Panel implements IHeaderContributor {
@@ -52,24 +53,18 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 	    - scores: number, has comments?, extra credit? (> total points), read only?
 	 */
 
-	private Map<String, List<Action>> listeners = new HashMap<String, List<Action>>();
+	private Map<String, Action> listeners = new HashMap<String, Action>();
 
 	public void addEventListener(String event, Action listener) {
-		if (!listeners.containsKey(event)) {
-			listeners.put(event, new ArrayList<Action>(1));
-		}
-		
-		listeners.get(event).add(listener);
+		listeners.put(event, listener);
 	}
 
-	public void notifyListeners(String event, JsonNode params) {
+	public ActionResponse handleEvent(String event, JsonNode params) {
 		if (!listeners.containsKey(event)) {
-			return;
+			throw new RuntimeException("Missing AJAX handler");
 		}
 		
-		for (Action listener : listeners.get(event)) {
-			listener.handleEvent(params);
-		}
+		return listeners.get(event).handleEvent(params);
 	}
 
 	public GbGradeTable(String id) {
@@ -90,7 +85,10 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 					ObjectMapper mapper = new ObjectMapper();
 					JsonNode params = mapper.readTree(getRequest().getRequestParameters().getParameterValue("ajaxParams").toString());
 
-					notifyListeners(params.get("action").asText(), params);
+					ActionResponse response = handleEvent(params.get("action").asText(), params);
+
+					target.appendJavaScript(String.format("GbGradeTable.ajaxComplete(%d, '%s', %s);",
+									      params.get("_requestId").intValue(), response.getStatus(), response.toJson()));
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
