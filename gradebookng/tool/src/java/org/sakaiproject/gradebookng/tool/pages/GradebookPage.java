@@ -47,6 +47,7 @@ import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.util.Temp;
 import org.sakaiproject.gradebookng.tool.component.GbHeadersToolbar;
 import org.sakaiproject.gradebookng.tool.component.GbGradeTable;
+import org.sakaiproject.gradebookng.tool.model.AssignmentsAndGrades;
 import org.sakaiproject.gradebookng.tool.model.GbModalWindow;
 import org.sakaiproject.gradebookng.tool.model.GradebookUiSettings;
 import org.sakaiproject.gradebookng.tool.panels.AddOrEditGradeItemPanel;
@@ -64,6 +65,8 @@ import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
 import org.sakaiproject.service.gradebook.shared.SortType;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.gradebookng.tool.actions.GradeUpdateAction;
+import org.apache.wicket.model.LoadableDetachableModel;
+import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 
 /**
  * Grades page. Instructors and TAs see this one. Students see the {@link StudentPage}.
@@ -72,7 +75,6 @@ import org.sakaiproject.gradebookng.tool.actions.GradeUpdateAction;
  *
  */
 public class GradebookPage extends BasePage {
-
 	private static final long serialVersionUID = 1L;
 
 	public static final String CREATED_ASSIGNMENT_ID_PARAM = "createdAssignmentId";
@@ -399,17 +401,14 @@ public class GradebookPage extends BasePage {
 
 		Temp.time("all Columns added", stopwatch.getTime());
 
-		gradeTable = new GbGradeTable("gradeTable");
+		gradeTable = new GbGradeTable("gradeTable",
+					      new LoadableDetachableModel() {
+						      @Override
+						      public AssignmentsAndGrades load() {
+							      return new AssignmentsAndGrades(businessService, settings);
+						      }
+					      });
 		gradeTable.addEventListener("setScore", new GradeUpdateAction(this.businessService));
-
-		Temp.time("buildGradeMatrix", stopwatch.getTime());
-
-		Map<String, Object> modelFields = new HashMap<String, Object>();
-
-		modelFields.put("grades", new ArrayList<GbStudentGradeInfo>());
-		modelFields.put("assignments", new ArrayList<Assignment>());
-
-		gradeTable.setDefaultModel(Model.ofMap(modelFields));
 
 		this.form.add(gradeTable);
 
@@ -506,44 +505,37 @@ public class GradebookPage extends BasePage {
 		Temp.time("Gradebook page done", stopwatch.getTime());
 	}
 
-	@Override
-	protected void onBeforeRender() {
-		super.onBeforeRender();
-
-		// get list of assignments. this allows us to build the columns and then fetch the grades for each student for each assignment from
-		// the map
-		// first get any settings data from the session
-		final GradebookUiSettings settings = getUiSettings();
-
-		SortType sortBy = SortType.SORT_BY_SORTING;
-		if (settings.isCategoriesEnabled()) {
-			// Pre-sort assignments by the categorized sort order
-			sortBy = SortType.SORT_BY_CATEGORY;
-		}
-
-
-		final StopWatch stopwatch = new StopWatch();
-		stopwatch.start();
-
-		final List<Assignment> assignments = this.businessService.getGradebookAssignments(sortBy);
-		Temp.time("getGradebookAssignments", stopwatch.getTime());
-
-		// get the grade matrix. It should be sorted if we have that info
-		final List<GbStudentGradeInfo> grades = this.businessService.buildGradeMatrix(assignments,
-											      settings.getAssignmentSortOrder(), settings.getNameSortOrder(), settings.getCategorySortOrder(),
-											      settings.getGroupFilter());
-
-		Temp.time("buildGradeMatrix", stopwatch.getTime());
-
-		Map<String, Object> model = (Map<String, Object>) gradeTable.getDefaultModelObject();
-		((List<GbStudentGradeInfo>) model.get("grades")).clear();
-		((List<GbStudentGradeInfo>) model.get("grades")).addAll(grades);
-
-		((List<Assignment>) model.get("assignments")).clear();
-		((List<Assignment>) model.get("assignments")).addAll(assignments);
-
-		gradeTable.modelChanged();
-	}
+	// @Override
+	// protected void onBeforeRender() {
+	// 	super.onBeforeRender();
+	// 
+	// 	// get list of assignments. this allows us to build the columns and then fetch the grades for each student for each assignment from
+	// 	// the map
+	// 	// first get any settings data from the session
+	// 	final GradebookUiSettings settings = getUiSettings();
+	// 
+	// 	final StopWatch stopwatch = new StopWatch();
+	// 	stopwatch.start();
+	// 
+	// 	final List<Assignment> assignments = this.businessService.getGradebookAssignments(sortBy);
+	// 	Temp.time("getGradebookAssignments", stopwatch.getTime());
+	// 
+	// 	// get the grade matrix. It should be sorted if we have that info
+	// 	final List<GbStudentGradeInfo> grades = this.businessService.buildGradeMatrix(assignments,
+	// 										      settings.getAssignmentSortOrder(), settings.getNameSortOrder(), settings.getCategorySortOrder(),
+	// 										      settings.getGroupFilter());
+	// 
+	// 	Temp.time("buildGradeMatrix", stopwatch.getTime());
+	// 
+	// 	Map<String, Object> model = (Map<String, Object>) gradeTable.getDefaultModelObject();
+	// 	((List<GbStudentGradeInfo>) model.get("grades")).clear();
+	// 	((List<GbStudentGradeInfo>) model.get("grades")).addAll(grades);
+	// 
+	// 	((List<Assignment>) model.get("assignments")).clear();
+	// 	((List<Assignment>) model.get("assignments")).addAll(assignments);
+	// 
+	// 	gradeTable.modelChanged();
+	// }
 
 	/**
 	 * Getters for panels to get at modal windows

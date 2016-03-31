@@ -20,6 +20,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.service.gradebook.shared.Assignment;
+import org.sakaiproject.gradebookng.tool.model.AssignmentsAndGrades;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
 import org.sakaiproject.component.cover.ServerConfigurationService;
@@ -67,9 +68,11 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 		return listeners.get(event).handleEvent(params);
 	}
 
-	public GbGradeTable(String id) {
+	public GbGradeTable(String id, IModel model) {
 		super(id);
 		
+		setDefaultModel(model);
+
 		component = new WebMarkupContainer("gradeTable").setOutputMarkupId(true);
 
 		component.add(new AjaxEventBehavior("gbgradetable.action") {
@@ -99,9 +102,10 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 	}
 
 	public void renderHead(IHeaderResponse response) {
-		Map<String, Object> model = (Map<String, Object>) getDefaultModelObject();
-		List<GbStudentGradeInfo> grades = (List<GbStudentGradeInfo>) model.get("grades");
-		List<Assignment> assignments = (List<Assignment>) model.get("assignments");
+		AssignmentsAndGrades assignmentsAndGrades = (AssignmentsAndGrades)getDefaultModelObject();
+
+		List<GbStudentGradeInfo> grades = assignmentsAndGrades.getGrades();
+		List<Assignment> assignments = assignmentsAndGrades.getAssignments();
 
 		final String version = ServerConfigurationService.getString("portal.cdn.version", "");
 
