@@ -1,64 +1,38 @@
 package org.sakaiproject.gradebookng.tool.pages;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Component;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.behavior.AttributeAppender;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.NavigationToolbar;
-import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptHeaderItem;
-import org.apache.wicket.markup.html.WebComponent;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.panel.EmptyPanel;
-import org.apache.wicket.markup.repeater.Item;
-import org.apache.wicket.markup.repeater.data.ListDataProvider;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.util.string.StringValue;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.gradebookng.business.GbRole;
-import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
 import org.sakaiproject.gradebookng.business.model.GbGroup;
-import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.util.Temp;
-import org.sakaiproject.gradebookng.tool.component.GbHeadersToolbar;
 import org.sakaiproject.gradebookng.tool.component.GbGradeTable;
-import org.sakaiproject.gradebookng.tool.model.AssignmentsAndGrades;
+import org.sakaiproject.gradebookng.tool.model.GbGradeTableData;
 import org.sakaiproject.gradebookng.tool.model.GbModalWindow;
 import org.sakaiproject.gradebookng.tool.model.GradebookUiSettings;
 import org.sakaiproject.gradebookng.tool.panels.AddOrEditGradeItemPanel;
-import org.sakaiproject.gradebookng.tool.panels.AssignmentColumnHeaderPanel;
-import org.sakaiproject.gradebookng.tool.panels.CategoryColumnCellPanel;
-import org.sakaiproject.gradebookng.tool.panels.CategoryColumnHeaderPanel;
-import org.sakaiproject.gradebookng.tool.panels.CourseGradeColumnHeaderPanel;
-import org.sakaiproject.gradebookng.tool.panels.CourseGradeItemCellPanel;
-import org.sakaiproject.gradebookng.tool.panels.GradeItemCellPanel;
-import org.sakaiproject.gradebookng.tool.panels.StudentNameCellPanel;
-import org.sakaiproject.gradebookng.tool.panels.StudentNameColumnHeaderPanel;
 import org.sakaiproject.gradebookng.tool.panels.ToggleGradeItemsToolbarPanel;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
@@ -66,7 +40,6 @@ import org.sakaiproject.service.gradebook.shared.SortType;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.gradebookng.tool.actions.GradeUpdateAction;
 import org.apache.wicket.model.LoadableDetachableModel;
-import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 
 /**
  * Grades page. Instructors and TAs see this one. Students see the {@link StudentPage}.
@@ -404,8 +377,8 @@ public class GradebookPage extends BasePage {
 		gradeTable = new GbGradeTable("gradeTable",
 					      new LoadableDetachableModel() {
 						      @Override
-						      public AssignmentsAndGrades load() {
-							      return new AssignmentsAndGrades(businessService, settings);
+						      public GbGradeTableData load() {
+							      return new GbGradeTableData(businessService, settings);
 						      }
 					      });
 		gradeTable.addEventListener("setScore", new GradeUpdateAction(this.businessService));

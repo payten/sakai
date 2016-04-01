@@ -1,7 +1,6 @@
 package org.sakaiproject.gradebookng.tool.component;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxEventBehavior;
@@ -14,23 +13,14 @@ import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.protocol.http.WebApplication;
 
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.spring.injection.annot.SpringBean;
-import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
-import org.sakaiproject.service.gradebook.shared.Assignment;
-import org.sakaiproject.gradebookng.tool.model.AssignmentsAndGrades;
-import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
-import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
+import org.sakaiproject.gradebookng.tool.model.GbGradeTableData;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 import org.sakaiproject.gradebookng.tool.model.GbGradebookData;
 import org.sakaiproject.gradebookng.tool.actions.Action;
@@ -39,9 +29,6 @@ import org.sakaiproject.gradebookng.tool.actions.ActionResponse;
 
 
 public class GbGradeTable extends Panel implements IHeaderContributor {
-
-	@SpringBean(name = "org.sakaiproject.gradebookng.business.GradebookNgBusinessService")
-	protected GradebookNgBusinessService businessService;
 
 	private Component component;
 
@@ -102,10 +89,7 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 	}
 
 	public void renderHead(IHeaderResponse response) {
-		AssignmentsAndGrades assignmentsAndGrades = (AssignmentsAndGrades)getDefaultModelObject();
-
-		List<GbStudentGradeInfo> grades = assignmentsAndGrades.getGrades();
-		List<Assignment> assignments = assignmentsAndGrades.getAssignments();
+		GbGradeTableData gbGradeTableData = (GbGradeTableData)getDefaultModelObject();
 
 		final String version = ServerConfigurationService.getString("portal.cdn.version", "");
 
@@ -118,10 +102,10 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 		response.render(CssHeaderItem.forUrl(String.format("/gradebookng-tool/styles/handsontable.full.min.css?version=%s", version)));
 
 		GbGradebookData gradebookData = new GbGradebookData(
-				grades,
-				assignments,
-				this.businessService.getGradebookCategories(),
-				this.businessService.getGradebookSettings(),
+				gbGradeTableData.getGrades(),
+				gbGradeTableData.getAssignments(),
+				gbGradeTableData.getCategories(),
+				gbGradeTableData.getGradebookInformation(),
 				this);
 
 		response.render(OnDomReadyHeaderItem.forScript(String.format("var tableData = %s", gradebookData.toScript())));
