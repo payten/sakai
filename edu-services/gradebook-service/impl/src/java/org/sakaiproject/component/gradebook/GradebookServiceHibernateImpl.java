@@ -3521,4 +3521,36 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 		}
 
 	}
+
+    @Override
+    public List<CommentDefinition> getGradeComments(final String gradebookUid, final Long assignmentId, final List<String> studentUuids) {
+        if (!authz.isUserAbleToGrade(gradebookUid)) {
+            log.error("AUTHORIZATION FAILURE: User " + getUserUid() + " in gradebook " + gradebookUid + " attempted to access comments for " + assignmentId);
+            throw new SecurityException("You do not have permission to perform this operation");
+        }
+
+        Assignment assignment = getAssignment(assignmentId);
+
+        List<Comment> comments = getComments(assignment, studentUuids);
+        List<CommentDefinition> commentDefinitions = new ArrayList<>();
+
+        for (Comment comment : comments) {
+            CommentDefinition commentDefinition = new CommentDefinition();
+            commentDefinition.setAssignmentName(assignment.getName());
+            commentDefinition.setCommentText(comment.getCommentText());
+            commentDefinition.setDateRecorded(comment.getDateRecorded());
+            commentDefinition.setGraderUid(comment.getGraderId());
+            commentDefinition.setStudentUid(comment.getStudentId());
+            commentDefinitions.add(commentDefinition);
+        }
+
+        return commentDefinitions;
+
+//        Map<String, String> result = new HashMap<>();
+//        for (Comment comment : commentRecords) {
+//            result.put(comment.getStudentId(), comment.getCommentText());
+//        }
+
+//        return result;
+    };
 }

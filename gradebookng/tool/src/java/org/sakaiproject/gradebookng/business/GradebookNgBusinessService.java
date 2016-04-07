@@ -58,6 +58,7 @@ import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
+import org.sakaiproject.tool.gradebook.Comment;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradingEvent;
 import org.sakaiproject.user.api.User;
@@ -669,6 +670,9 @@ public class GradebookNgBusinessService {
 					studentUuids);
 			Temp.timeWithContext("buildGradeMatrix", "getGradesForStudentsForItem: " + assignment.getId(), stopwatch.getTime());
 
+            // keep track of all the students we have grades and comments for
+            final List<String> processedStudentUuids = new ArrayList<>();
+
 			// iterate the definitions returned and update the record for each student with the grades
 			for (final GradeDefinition def : defs) {
 				final GbStudentGradeInfo sg = matrix.get(def.getStudentUid());
@@ -678,8 +682,27 @@ public class GradebookNgBusinessService {
 				} else {
 					// this will overwrite the stub entry for the TA matrix if need be
 					sg.addGrade(assignment.getId(), new GbGradeInfo(def));
+                    processedStudentUuids.add( def.getStudentUid());
 				}
 			}
+            // if some students don't have grades, double check for their grade comment
+            List<String> studentsWithoutGrades = new ArrayList<String>(studentUuids);
+            studentsWithoutGrades.removeAll(processedStudentUuids);
+            List<CommentDefinition> comments = this.gradebookService.getGradeComments(gradebook.getUid(), assignmentId, studentsWithoutGrades);
+            for (CommentDefinition comment : comments) {
+                final GbStudentGradeInfo sg = matrix.get(comment.getStudentUid());
+                if (sg == null) {
+                    log.warn("No matrix entry seeded for: " + comment.getStudentUid() + ". This user may be been removed from the site");
+                } else if (sg.getGrades().containsKey(assignmentId)) {
+                    GbGradeInfo gradeInfo = sg.getGrades().get(assignmentId);
+                    gradeInfo.setGradeComment(comment.getCommentText());
+                } else {
+                    GbGradeInfo gradeInfo = new GbGradeInfo(null);
+                    gradeInfo.setGradeComment(comment.getCommentText());
+                    sg.addGrade(assignment.getId(), gradeInfo);
+                }
+            }
+
 			Temp.timeWithContext("buildGradeMatrix", "updatedStudentGradeInfo: " + assignment.getId(), stopwatch.getTime());
 		}
 		Temp.timeWithContext("buildGradeMatrix", "matrix built", stopwatch.getTime());
