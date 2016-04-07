@@ -399,7 +399,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
           for (var i=0; i<queryStrings.length; i++) {
             var queryString = queryStrings[i];
 
-            if (studentSearchString.match(queryString) == null) {
+            if (studentSearchString.match(new RegExp(queryString, "i")) == null) {
               return false;
             }
           }
