@@ -141,6 +141,13 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     throw "column.type not supported: " + column.type;
   }
 
+  if (student.hasComments.charAt(index) === '1') {
+    $td.find(".gb-comment-notification").show();
+  } else {
+    $td.find(".gb-comment-notification").hide();
+  }
+
+
   $td.data('cell-initialised', cellKey);
 };
 
@@ -482,7 +489,6 @@ GbGradeTable.selectCell = function(assignmentId, studentId) {
   if (assignmentId != null) {
     col = GbGradeTable.colForAssignment(assignmentId);
   }
-  // TODO handle student name vs course grade column focus
 
   return GbGradeTable.instance.selectCell(row, col);
 };
@@ -521,6 +527,18 @@ GbGradeTable.selectStudentCell = function(studentId) {
 GbGradeTable.updateComment = function(assignmentId, studentId, comment) {
   var row = GbGradeTable.rowForStudent(studentId);
   var col = GbGradeTable.colForAssignment(assignmentId);
+  var index = col - 2;
 
-  // TODO refresh the comment in the data and show the flag in the cell
+  var hasComments = GbGradeTable.students[row].hasComments;
+  var flag = (comment == null || comment == "") ? '0' : '1';
+
+  GbGradeTable.students[row].hasComments = hasComments.substr(0, index) + flag + hasComments.substr(index+1);
+  GbGradeTable.redrawCell(row, col);
+};
+
+GbGradeTable.redrawCell = function(row, col) {
+  var $cell = $(GbGradeTable.instance.getCell(row, col));
+  $cell.removeData('cell-initialised');
+
+  GbGradeTable.instance.render();
 };

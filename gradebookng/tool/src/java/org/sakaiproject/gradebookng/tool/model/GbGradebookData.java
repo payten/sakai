@@ -1,23 +1,27 @@
 package org.sakaiproject.gradebookng.tool.model;
 
 import lombok.Value;
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.util.StringUtil;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
-import java.util.List;
-import java.util.ArrayList;
+
 import org.apache.wicket.Component;
 import org.sakaiproject.gradebookng.business.util.FormatHelper;
 import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
 import java.io.UnsupportedEncodingException;
-import java.util.Base64;
-import java.util.Map;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
 import org.sakaiproject.service.gradebook.shared.GradebookInformation;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 
 public class GbGradebookData {
 
@@ -29,6 +33,8 @@ public class GbGradebookData {
         private String userId;
         private String firstName;
         private String lastName;
+
+        private String hasComments;
     }
 
     private interface ColumnDefinition {
@@ -148,9 +154,10 @@ public class GbGradebookData {
         this.categories = categories;
         this.settings = settings;
 
-        this.students = loadStudents(studentGradeInfoList);
-        this.columns = loadColumns(assignments);
         this.studentGradeInfoList = studentGradeInfoList;
+
+        this.columns = loadColumns(assignments);
+        this.students = loadStudents(studentGradeInfoList);
     }
 
     public String toScript() {
@@ -261,7 +268,8 @@ public class GbGradebookData {
             result.add(new StudentDefinition(student.getStudentEid(),
                     student.getStudentUuid(),
                     student.getStudentFirstName(),
-                    student.getStudentLastName()));
+                    student.getStudentLastName(),
+                    formatCommentData(student)));
         }
 
         return result;
@@ -324,6 +332,26 @@ public class GbGradebookData {
         }
 
         return result;
+    }
+
+    private String formatCommentData(GbStudentGradeInfo student) {
+        StringBuilder sb = new StringBuilder();
+
+        for (ColumnDefinition column : this.columns) {
+            if (column instanceof AssignmentDefinition) {
+                AssignmentDefinition assignmentColumn = (AssignmentDefinition) column;
+                GbGradeInfo gradeInfo = student.getGrades().get(assignmentColumn.getAssignmentId());
+                if (gradeInfo != null && !StringUtils.isBlank(gradeInfo.getGradeComment())) {
+                    sb.append('1');
+                } else {
+                    sb.append('0');
+                }
+            } else {
+                sb.append('0');
+            }
+        }
+
+        return sb.toString();
     }
 
     private String nullable(Object value) {
