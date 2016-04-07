@@ -7,39 +7,33 @@ import org.apache.wicket.model.Model;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.gradebookng.tool.model.GbModalWindow;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
-import org.sakaiproject.gradebookng.tool.panels.GradeLogPanel;
+import org.sakaiproject.gradebookng.tool.panels.AddOrEditGradeItemPanel;
+import org.sakaiproject.gradebookng.tool.panels.GradeStatisticsPanel;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
-public class ViewGradeLogAction implements Action, Serializable {
+public class ViewAssignmentStatisticsAction implements Action, Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private GradebookNgBusinessService businessService;
 
-    public ViewGradeLogAction(GradebookNgBusinessService businessService) {
+    public ViewAssignmentStatisticsAction(GradebookNgBusinessService businessService) {
         this.businessService = businessService;
     }
 
     @Override
     public ActionResponse handleEvent(JsonNode params, AjaxRequestTarget target) {
         String assignmentId = params.get("assignmentId").asText();
-        String studentUuid = params.get("studentId").asText();
-
-        Map<String, Object> model = new HashMap<>();
-        model.put("assignmentId", Long.valueOf(assignmentId));
-        model.put("studentUuid", studentUuid);
 
         final GradebookPage gradebookPage = (GradebookPage) target.getPage();
-        final GbModalWindow window = gradebookPage.getGradeLogWindow();
-
+        final GbModalWindow window = gradebookPage.getGradeStatisticsWindow();
         window.setAssignmentToReturnFocusTo(assignmentId);
-        window.setStudentToReturnFocusTo(studentUuid);
-        window.setContent(new GradeLogPanel(window.getContentId(), Model.ofMap(model), window));
+        window.setContent(new GradeStatisticsPanel(window.getContentId(),
+                                                   Model.of(Long.valueOf(assignmentId)),
+                                                   window));
         window.show(target);
-
+        
         return new EmptyOkResponse();
     }
 }

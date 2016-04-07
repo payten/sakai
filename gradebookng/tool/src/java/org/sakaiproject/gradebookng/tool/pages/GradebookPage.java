@@ -386,6 +386,7 @@ public class GradebookPage extends BasePage {
 		gradeTable.addEventListener("editAssignment", new EditAssignmentAction(this.businessService));
 		gradeTable.addEventListener("viewStatistics", new ViewAssignmentStatisticsAction(this.businessService));
 		gradeTable.addEventListener("overrideCourseGrade", new OverrideCourseGradeAction(this.businessService));
+		gradeTable.addEventListener("editComment", new EditCommentAction(this.businessService));
 
 		this.form.add(gradeTable);
 

@@ -458,46 +458,69 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       action: 'overrideCourseGrade',
       studentId: $cell.data("studentid")
     });
+  }).
+  // Edit Comment
+  on("click", ".gb-dropdown-menu .gb-edit-comments", function() {
+    var $dropdown = $(this).closest(".gb-dropdown-menu");
+    var $cell = $dropdown.data("cell");
+
+    GbGradeTable.ajax({
+      action: 'editComment',
+      assignmentId: $cell.data("assignmentid"),
+      studentId: $cell.data("studentid")
+    });
   });
 };
 
 GbGradeTable.selectCell = function(assignmentId, studentId) {
   var row = 0;
   if (studentId != null){
-    row = GbGradeTable.students.findIndex(function(student, index, array) {
-            return student.userId === studentId;
-          });
+    row = GbGradeTable.rowForStudent(studentId);
   }
 
   var col = 0;
   if (assignmentId != null) {
-    col = GbGradeTable.columns.findIndex(function(column, index, array) {
-            return column.assignmentId === parseInt(assignmentId);
-          }) + 2; // include offset of two non-assignment columns
+    col = GbGradeTable.colForAssignment(assignmentId);
   }
   // TODO handle student name vs course grade column focus
 
-  GbGradeTable.instance.selectCell(row, col);
+  return GbGradeTable.instance.selectCell(row, col);
 };
 
 GbGradeTable.selectCourseGradeCell = function(studentId) {
   var row = 0;
   if (studentId != null){
-    row = GbGradeTable.students.findIndex(function(student, index, array) {
-            return student.userId === studentId;
-          });
+    row = GbGradeTable.rowForStudent(studentId);
   }
 
-  GbGradeTable.instance.selectCell(row, 1);
+  return GbGradeTable.instance.selectCell(row, 1);
 };
+
+GbGradeTable.rowForStudent = function(studentId) {
+  return GbGradeTable.students.findIndex(function(student, index, array) {
+           return student.userId === studentId;
+         });
+};
+
+GbGradeTable.colForAssignment = function(assignmentId) {
+  return GbGradeTable.columns.findIndex(function(column, index, array) {
+           return column.assignmentId === parseInt(assignmentId);
+         }) + 2; // include offset of two non-assignment columns
+};
+
 
 GbGradeTable.selectStudentCell = function(studentId) {
   var row = 0;
   if (studentId != null){
-    row = GbGradeTable.students.findIndex(function(student, index, array) {
-            return student.userId === studentId;
-          });
+    row = GbGradeTable.rowForStudent(studentId);
   }
 
-  GbGradeTable.instance.selectCell(row, 0);
+  return GbGradeTable.instance.selectCell(row, 0);
+};
+
+GbGradeTable.updateComment = function(assignmentId, studentId, comment) {
+  var row = GbGradeTable.rowForStudent(studentId);
+  var col = GbGradeTable.colForAssignment(assignmentId);
+
+  // TODO refresh the comment in the data and show the flag in the cell
 };
