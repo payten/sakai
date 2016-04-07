@@ -48,7 +48,8 @@ public class ViewGradeLogAction implements Action, Serializable {
         final GradebookPage gradebookPage = (GradebookPage) target.getPage();
         final GbModalWindow window = gradebookPage.getGradeLogWindow();
 
-        window.setComponentToReturnFocusTo(assignmentId, studentUuid);
+        window.setAssignmentToReturnFocusTo(assignmentId);
+        window.setStudentToReturnFocusTo(studentUuid);
         window.setContent(new GradeLogPanel(window.getContentId(), Model.ofMap(model), window));
         window.show(target);
 

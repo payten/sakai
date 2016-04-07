@@ -87,6 +87,9 @@ GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value
     $td.find(".gb-value").html(value);
   }
 
+  var student = GbGradeTable.students[row];
+
+  $td.data('studentid', student.userId);
   $td.data('cell-initialised', cellKey);
 };
 
@@ -320,6 +323,10 @@ GbGradeTable.renderTable = function (elementId, tableData) {
           attr("abbr", name).
           attr("aria-label", name).
           css("borderTopColor", column.color || column.categoryColor);
+
+        if (column.type == "assignment") {
+          $th.data("assignmentid", column.assignmentId);
+        }
         
         $th.find(".swatch").css("backgroundColor", column.color || column.categoryColor);
       }
@@ -421,6 +428,36 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       studentId: $cell.data("studentid"),
       assignmentId: $cell.data("assignmentid")
     });
+  }).
+  // Edit Assignment
+  on("click", ".gb-dropdown-menu .edit-assignment-details", function() {
+    var $dropdown = $(this).closest(".gb-dropdown-menu");
+    var $cell = $dropdown.data("cell");
+
+    GbGradeTable.ajax({
+      action: 'editAssignment',
+      assignmentId: $cell.data("assignmentid")
+    });
+  }).
+  // View Assignment Statistics
+  on("click", ".gb-dropdown-menu .gb-view-statistics", function() {
+    var $dropdown = $(this).closest(".gb-dropdown-menu");
+    var $cell = $dropdown.data("cell");
+
+    GbGradeTable.ajax({
+      action: 'viewStatistics',
+      assignmentId: $cell.data("assignmentid")
+    });
+  }).
+  // Override Course Grade
+  on("click", ".gb-dropdown-menu .gb-course-grade-override", function() {
+    var $dropdown = $(this).closest(".gb-dropdown-menu");
+    var $cell = $dropdown.data("cell");
+
+    GbGradeTable.ajax({
+      action: 'overrideCourseGrade',
+      studentId: $cell.data("studentid")
+    });
   });
 };
 
@@ -441,4 +478,26 @@ GbGradeTable.selectCell = function(assignmentId, studentId) {
   // TODO handle student name vs course grade column focus
 
   GbGradeTable.instance.selectCell(row, col);
+};
+
+GbGradeTable.selectCourseGradeCell = function(studentId) {
+  var row = 0;
+  if (studentId != null){
+    row = GbGradeTable.students.findIndex(function(student, index, array) {
+            return student.userId === studentId;
+          });
+  }
+
+  GbGradeTable.instance.selectCell(row, 1);
+};
+
+GbGradeTable.selectStudentCell = function(studentId) {
+  var row = 0;
+  if (studentId != null){
+    row = GbGradeTable.students.findIndex(function(student, index, array) {
+            return student.userId === studentId;
+          });
+  }
+
+  GbGradeTable.instance.selectCell(row, 0);
 };
