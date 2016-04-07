@@ -200,7 +200,7 @@ GbGradeTable.ajaxComplete = function (requestId, status, data) {
 GbGradeTable.ajax = function (params, callback) {
   params['_requestId'] = nextRequestId++;
 
-  GbGradeTable.ajaxCallbacks[params['_requestId']] = callback;
+  GbGradeTable.ajaxCallbacks[params['_requestId']] = callback || $.noop;;
 
   GbGradeTable.domElement.trigger("gbgradetable.action", params);
 };
@@ -263,6 +263,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     Handsontable.editors.TextEditor.prototype.saveValue.apply(this, arguments);
   }
 
+
+  GbGradeTable.container = $("#gradebookSpreadsheet");
 
   GbGradeTable.instance = new Handsontable(document.getElementById(elementId), {
     data: GbGradeTable.grades,
@@ -341,7 +343,10 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   var $link;
   $(window).on('show.bs.dropdown', function (event) {
     $dropdownMenu = $(event.target).find('.dropdown-menu');
+    $dropdownMenu.addClass("gb-dropdown-menu");
+
     $link = $(event.target);
+    $dropdownMenu.data("cell", $link.closest("td, th"));
 
     $dropdownMenu.width($dropdownMenu.outerWidth());
 
@@ -405,4 +410,35 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     }, 500);
   });
 
+  // Setup menu event bindings
+  // View Log
+  $(document).on("click", ".gb-dropdown-menu .gb-view-log", function() {
+    var $dropdown = $(this).closest(".gb-dropdown-menu");
+    var $cell = $dropdown.data("cell");
+
+    GbGradeTable.ajax({
+      action: 'viewLog',
+      studentId: $cell.data("studentid"),
+      assignmentId: $cell.data("assignmentid")
+    });
+  });
+};
+
+GbGradeTable.selectCell = function(assignmentId, studentId) {
+  var row = 0;
+  if (studentId != null){
+    row = GbGradeTable.students.findIndex(function(student, index, array) {
+            return student.userId === studentId;
+          });
+  }
+
+  var col = 0;
+  if (assignmentId != null) {
+    col = GbGradeTable.columns.findIndex(function(column, index, array) {
+            return column.assignmentId === parseInt(assignmentId);
+          }) + 2; // include offset of two non-assignment columns
+  }
+  // TODO handle student name vs course grade column focus
+
+  GbGradeTable.instance.selectCell(row, col);
 };

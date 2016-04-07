@@ -47,12 +47,12 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 		listeners.put(event, listener);
 	}
 
-	public ActionResponse handleEvent(String event, JsonNode params) {
+	public ActionResponse handleEvent(String event, JsonNode params, AjaxRequestTarget target) {
 		if (!listeners.containsKey(event)) {
 			throw new RuntimeException("Missing AJAX handler");
 		}
 		
-		return listeners.get(event).handleEvent(params);
+		return listeners.get(event).handleEvent(params, target);
 	}
 
 	public GbGradeTable(String id, IModel model) {
@@ -75,7 +75,7 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 					ObjectMapper mapper = new ObjectMapper();
 					JsonNode params = mapper.readTree(getRequest().getRequestParameters().getParameterValue("ajaxParams").toString());
 
-					ActionResponse response = handleEvent(params.get("action").asText(), params);
+					ActionResponse response = handleEvent(params.get("action").asText(), params, target);
 
 					target.appendJavaScript(String.format("GbGradeTable.ajaxComplete(%d, '%s', %s);",
 									      params.get("_requestId").intValue(), response.getStatus(), response.toJson()));

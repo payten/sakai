@@ -15,6 +15,8 @@ public class GbModalWindow extends ModalWindow {
 	private static final long serialVersionUID = 1L;
 
 	private Component componentToReturnFocusTo;
+	private String assignmentIdToReturnFocusTo;
+	private String studentUuidToReturnFocusTo;
 	private List<WindowClosedCallback> closeCallbacks;
 	private boolean positionAtTop = false;
 
@@ -81,6 +83,17 @@ public class GbModalWindow extends ModalWindow {
 		this.componentToReturnFocusTo = component;
 	}
 
+    /**
+     * Set the student and assignment of the cell to return focus to upon closing the window.
+     *
+     * @param component
+     */
+    public void setComponentToReturnFocusTo(final String assignmentId, final String studentUuid) {
+        this.assignmentIdToReturnFocusTo = assignmentId;
+        this.studentUuidToReturnFocusTo = studentUuid;
+        
+    }
+
 	public void addWindowClosedCallback(final WindowClosedCallback callback) {
 		this.closeCallbacks.add(callback);
 	}
@@ -110,7 +123,18 @@ public class GbModalWindow extends ModalWindow {
 				if (GbModalWindow.this.componentToReturnFocusTo != null) {
 					target.appendJavaScript(String.format("setTimeout(function() {$('#%s').focus();});",
 							GbModalWindow.this.componentToReturnFocusTo.getMarkupId()));
-				}
+				} else if (GbModalWindow.this.assignmentIdToReturnFocusTo != null &&
+                    GbModalWindow.this.studentUuidToReturnFocusTo != null) {
+                    target.appendJavaScript(String.format("setTimeout(function() {GbGradeTable.selectCell('%s', '%s');});",
+                        GbModalWindow.this.assignmentIdToReturnFocusTo,
+                        GbModalWindow.this.studentUuidToReturnFocusTo));
+                } else if (GbModalWindow.this.assignmentIdToReturnFocusTo != null) {
+                    target.appendJavaScript(String.format("setTimeout(function() {GbGradeTable.selectCell('%s', null);});",
+                        GbModalWindow.this.assignmentIdToReturnFocusTo));
+                } else if (GbModalWindow.this.studentUuidToReturnFocusTo != null) {
+                    target.appendJavaScript(String.format("setTimeout(function() {GbGradeTable.selectCell(null, '%s');});",
+                        GbModalWindow.this.studentUuidToReturnFocusTo));
+                }
 			}
 		});
 	}

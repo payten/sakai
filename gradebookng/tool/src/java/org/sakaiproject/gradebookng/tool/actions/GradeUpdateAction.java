@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 import java.lang.Error;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.DoubleValidator;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.sakaiproject.gradebookng.business.GradeSaveResponse;
 import org.sakaiproject.gradebookng.business.util.FormatHelper;
 import org.sakaiproject.gradebookng.tool.panels.GradeItemCellPanel;
@@ -55,7 +56,7 @@ public class GradeUpdateAction implements Action, Serializable {
     }
 
     @Override
-    public ActionResponse handleEvent(JsonNode params) {
+    public ActionResponse handleEvent(JsonNode params, AjaxRequestTarget target) {
         final String oldGrade = params.get("oldScore").asText();
         final String rawNewGrade = params.get("newScore").asText();
 

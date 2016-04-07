@@ -28,6 +28,7 @@ import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.gradebookng.business.GbRole;
 import org.sakaiproject.gradebookng.business.model.GbGroup;
 import org.sakaiproject.gradebookng.business.util.Temp;
+import org.sakaiproject.gradebookng.tool.actions.ViewGradeLogAction;
 import org.sakaiproject.gradebookng.tool.component.GbGradeTable;
 import org.sakaiproject.gradebookng.tool.model.GbGradeTableData;
 import org.sakaiproject.gradebookng.tool.model.GbModalWindow;
@@ -382,6 +383,7 @@ public class GradebookPage extends BasePage {
 						      }
 					      });
 		gradeTable.addEventListener("setScore", new GradeUpdateAction(this.businessService));
+		gradeTable.addEventListener("viewLog", new ViewGradeLogAction(this.businessService));
 
 		this.form.add(gradeTable);
 
