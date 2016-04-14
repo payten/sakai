@@ -93,6 +93,24 @@ GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value
   $td.data('cell-initialised', cellKey);
 };
 
+GbGradeTable.replaceContents = function (elt, newContents) {
+  // empty it
+  while (elt.firstChild) {
+    elt.removeChild(elt.firstChild);
+  }
+
+  if ($.isArray(newContents)) {
+    for (var i in newContents) {
+      elt.appendChild(newContents[i]);
+    }
+  } else {
+    elt.appendChild(newContents);
+  }
+
+  return elt;
+};
+
+// This function is called a *lot*, so avoid doing anything too expensive here.
 GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellProperties) {
 
   var $td = $(td);
@@ -106,7 +124,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   var keyValues = [row, index, value, student.eid, hasComment, column.type];
   var cellKey = keyValues.join(",");
 
-  var wasInitialised = $td.data('cell-initialised');
+  var wasInitialised = $.data(td, 'cell-initialised');
 
   if (!GbGradeTable.forceRedraw && wasInitialised === cellKey) {
     // Nothing to do
@@ -115,9 +133,6 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
   var student = instance.getDataAtCell(row, 0);
 
-  // THINKME: All of this was here because patching the DOM was faster than
-  // replacing innerHTML on every scroll event.  Can we do the same sort of
-  // thing?
   if (!wasInitialised) {
     // First time we've initialised this cell.
     var html = GbGradeTable.templates.cell.process({
@@ -126,21 +141,24 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
     td.innerHTML = html;
   } else if (wasInitialised != cellKey) {
+
     // This cell was previously holding a different value.  Just patch it.
-    $td.find(".gb-value").html(value);
+    var elt = $td.find(".gb-value")[0];
+
+    GbGradeTable.replaceContents(elt, document.createTextNode(value));
   }
 
-  $td.data("studentid", student.userId);
+  $.data(td, "studentid", student.userId);
   if (column.type === "assignment") {
-    $td.data("assignmentid", column.assignmentId);
-    $td.removeData("categoryId");
+    $.data(td, "assignmentid", column.assignmentId);
+    $.removeData(td, "categoryId");
   } else if (column.type === "category") {
-    $td.data("categoryId", column.categoryId);
-    $td.removeData("assignmentid");
+    $.data(td, "categoryId", column.categoryId);
+    $.removeData(td, "assignmentid");
     if (value != null && (value+"").length > 0) {
-      $td.find(".gb-value").append("%");
+      GbGradeTable.replaceContents($td.find(".gb-value")[0], document.createTextNode('' + value + '%'));
     } else {
-      $td.find(".gb-value").html("-");
+      GbGradeTable.replaceContents($td.find(".gb-value")[0], document.createTextNode('-'));
     }
   } else {
     throw "column.type not supported: " + column.type;
@@ -148,13 +166,12 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
 
   if (hasComment) {
-    $td.find(".gb-comment-notification").show();
+    $td.find(".gb-comment-notification").css('display', 'block');
   } else {
-    $td.find(".gb-comment-notification").hide();
+    $td.find(".gb-comment-notification").css('display', 'none');
   }
 
-
-  $td.data('cell-initialised', cellKey);
+  $.data(td, 'cell-initialised', cellKey);
 };
 
 
@@ -181,6 +198,10 @@ GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value,
 
   var html = GbGradeTable.templates.studentCell.process(value);
   $td.html(html);
+
+  // If this cell gets reused for a score display, it'll need to be fully
+  // reinitialised before use.
+  $.removeData(td, "cell-initialised");
 }
 
 
@@ -280,6 +301,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
   GbGradeTable.container = $("#gradebookSpreadsheet");
 
+  GbGradeTable.columnDOMNodeCache = {};
+
   GbGradeTable.instance = new Handsontable(document.getElementById(elementId), {
     data: GbGradeTable.grades,
 //    rowHeaderWidth: 220,
@@ -298,14 +321,28 @@ GbGradeTable.renderTable = function (elementId, tableData) {
         attr("role", "rowheader").
         attr("scope", "row");
     },
+
+    // This function is another hotspot.  Efficiency is paramount!
     afterGetColHeader: function(col, th) {
       var $th = $(th);
 
+      // Calculate the HTML that we need to show
+      var html = '';
       if (col < 2) {
-        $th.html(GbGradeTable.headerRenderer(col));
+        html = GbGradeTable.headerRenderer(col);
       } else {
-        $th.html(GbGradeTable.headerRenderer(col, this.view.settings.columns[col]._data_))
+        html = GbGradeTable.headerRenderer(col, this.view.settings.columns[col]._data_);
       }
+
+      // If we haven't got a cached parse of it, do that now
+      if (!GbGradeTable.columnDOMNodeCache[col] || GbGradeTable.columnDOMNodeCache[col].html !== html) {
+        GbGradeTable.columnDOMNodeCache[col] = {
+          html: html,
+          dom: $(html).toArray()
+        };
+      }
+
+      GbGradeTable.replaceContents(th, GbGradeTable.columnDOMNodeCache[col].dom);
 
       $th.
         attr("role", "columnheader").
@@ -324,9 +361,9 @@ GbGradeTable.renderTable = function (elementId, tableData) {
           css("borderTopColor", column.color || column.categoryColor);
 
         if (column.type == "assignment") {
-          $th.data("assignmentid", column.assignmentId);
+          $.data(th, "assignmentid", column.assignmentId);
         }
-        
+
         $th.find(".swatch").css("backgroundColor", column.color || column.categoryColor);
       }
     },
@@ -748,6 +785,7 @@ GbGradeTable.setupToggleGradeItems = function() {
     }
 
     updateCategoryFilterState($input);
+
     GbGradeTable.redrawTable(true);
   };
 
