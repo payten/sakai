@@ -525,10 +525,13 @@
   border: 1px solid #bdbdbd;
   min-width: 200px;
   min-height: 100px;
+  max-height: 340px;
   top: 38px;
   background-color: #FFF;
   box-shadow: 1px 1px 2px #AAA;
-  z-index: 40;
+  z-index: 200;
+  overflow: auto;
+  padding-right: 14px;
 } 
 #gradeItemsTogglePanel .hide-me {
   display: none;
@@ -555,17 +558,17 @@
   display: inline-block;
   content: "";
 }
-#gradeItemsTogglePanel .gradebook-item-category-filter label {
+#gradeItemsTogglePanel .gb-item-category-filter label {
   font-weight: bold;
 }
-#gradeItemsTogglePanel .gradebook-item-filter label {
+#gradeItemsTogglePanel .gb-item-filter label {
   font-weight: normal;
 }
-#gradeItemsTogglePanel .gradebook-item-category-filter .weighting {
+#gradeItemsTogglePanel .gb-item-category-filter .weighting {
   font-weight: 200;
   color: #999;
 }
-#gradeItemsTogglePanel .gradebook-item-category-filter-signal {
+#gradeItemsTogglePanel .gb-item-filter-signal {
   height: 1.2em;
   width: 1.2em;
   border: 1px solid #EEE;
@@ -574,18 +577,22 @@
   position: absolute;
   right: 0;
 }
-#gradeItemsTogglePanel .gradebook-item-category-filter,
-#gradeItemsTogglePanel .gradebook-item-filter,
-#gradeItemsTogglePanel .gradebook-item-category-score-filter {
+#gradeItemsTogglePanel .off .gb-item-filter-signal,
+#gradeItemsTogglePanel .partial .gb-item-filter-signal {
+  background-color: #FFF !important;
+}
+#gradeItemsTogglePanel .gb-item-category-filter,
+#gradeItemsTogglePanel .gb-item-filter,
+#gradeItemsTogglePanel .gb-item-category-score-filter {
   clear: both;
   margin-left: 10px;
   position: relative;
 }
-#gradeItemsTogglePanel .gradebook-item-filter,
-#gradeItemsTogglePanel .gradebook-item-category-score-filter {
+#gradeItemsTogglePanel .gb-item-filter,
+#gradeItemsTogglePanel .gb-item-category-score-filter {
   margin-left: 20px;
 }
-#gradeItemsTogglePanel .gradebook-item-category-score-filter label {
+#gradeItemsTogglePanel .gb-item-category-score-filter label {
   font-style: italic;
 }
 #gradeItemsTogglePanel label {
@@ -593,13 +600,15 @@
   width: 90%;
   width: calc(100% - 20px);
 }
-#gradeItemsTogglePanel .gradebook-filter-partial-signal {
+#gradeItemsTogglePanel .gb-filter-partial-signal {
   display: block;
 
   border-left: 1.2em solid transparent;
   border-right: 0px solid transparent;
   border-bottom: 1.2em solid;
   border-bottom-color: inherit;
+  margin-top: -1px;
+  margin-left: -1px;
 }
 #gradeItemsTogglePanel #showAllGradeItems,
 #gradeItemsTogglePanel #hideAllGradeItems {
@@ -608,33 +617,33 @@
   margin: 0 5px 0;
   border-bottom: none;
 }
-#gradeItemsTogglePanel .gradebook-item-filter-group {
+#gradeItemsTogglePanel .gb-item-filter-group {
   border-bottom: 1px dotted #DDD;
   padding-bottom: 5px;
   margin-bottom: 5px;
 }
-#gradeItemsTogglePanel .gradebook-item-filter-group:last-child {
+#gradeItemsTogglePanel .gb-item-filter-group:last-child {
   border-bottom: none;
   margin: 0;
 }
-#gradeItemsTogglePanel .gradebook-item-filter-group .btn-group {
+#gradeItemsTogglePanel .gb-item-filter-group .btn-group {
   float: right;
   margin-top: 3px;
 }
-#gradeItemsTogglePanel .gradebook-item-filter-group .btn-group .btn.dropdown-toggle {
+#gradeItemsTogglePanel .gb-item-filter-group .btn-group .btn.dropdown-toggle {
   padding: 0 4px;
 }
-#gradeItemsTogglePanel .gradebook-item-filter .gb-show-this-item,
-#gradeItemsTogglePanel .gradebook-item-filter.off .gb-hide-this-item,
-#gradeItemsTogglePanel .gradebook-item-category-filter .gb-show-this-category,
-#gradeItemsTogglePanel .gradebook-item-category-filter.off .gb-hide-this-category,
-#gradeItemsTogglePanel .gradebook-item-category-score-filter .gb-show-this-category-score,
-#gradeItemsTogglePanel .gradebook-item-category-score-filter.off .gb-hide-this-category-score {
+#gradeItemsTogglePanel .gb-item-filter .gb-show-this-item,
+#gradeItemsTogglePanel .gb-item-filter.off .gb-hide-this-item,
+#gradeItemsTogglePanel .gb-item-category-filter .gb-show-this-category,
+#gradeItemsTogglePanel .gb-item-category-filter.off .gb-hide-this-category,
+#gradeItemsTogglePanel .gb-item-category-score-filter .gb-show-this-category-score,
+#gradeItemsTogglePanel .gb-item-category-score-filter.off .gb-hide-this-category-score {
   display: none;
 }
-#gradeItemsTogglePanel .gradebook-item-filter.off .gb-show-this-item,
-#gradeItemsTogglePanel .gradebook-item-category-filter.off .gb-show-this-category,
-#gradeItemsTogglePanel .gradebook-item-category-score-filter.off .gb-show-this-category-score {
+#gradeItemsTogglePanel .gb-item-filter.off .gb-show-this-item,
+#gradeItemsTogglePanel .gb-item-category-filter.off .gb-show-this-category,
+#gradeItemsTogglePanel .gb-item-category-score-filter.off .gb-show-this-category-score {
   display: block;
 }
 /* Student filter */

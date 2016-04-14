@@ -3,68 +3,77 @@
         <div wicket:id="gradeTable" id="gradeTable"></div>
 
         <script id="courseGradeHeaderTemplate" type="text/template">
-            <div class="gb-title">
-                <wicket:message key="column.header.coursegrade"/>
-            </div>
-            <div class="btn-group">
-                <a class="btn btn-sm btn-default dropdown-toggle"
-                   data-toggle="dropdown" href="#" role="button" aria-haspopup="true">
-                    <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                    <!-- TODO --><li><a href="javascript:void(0);" class="gb-set-zero-score" role="menuitem"><wicket:message key="coursegrade.option.setungraded" /></a></li>
-                    <!-- TODO --><li><a href="javascript:void(0);" class="gb-show-points" role="menuitem"><wicket:message key="coursegrade.option.showpoints" /></a></li>
-                    <!-- TODO --><li><a href="javascript:void(0);" class="gb-hide-points hide" role="menuitem"><wicket:message key="coursegrade.option.hidepoints" /></a></li>
-                </ul>
+            <span class="colHeader hide">${col}</span>
+            <div class="relative">
+                <div class="gb-title">
+                    <wicket:message key="column.header.coursegrade"/>
+                </div>
+                <div class="btn-group">
+                    <a class="btn btn-sm btn-default dropdown-toggle"
+                       data-toggle="dropdown" href="#" role="button" aria-haspopup="true">
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <!-- TODO --><li><a href="javascript:void(0);" class="gb-set-zero-score" role="menuitem"><wicket:message key="coursegrade.option.setungraded" /></a></li>
+                        <!-- TODO --><li><a href="javascript:void(0);" class="gb-show-points" role="menuitem"><wicket:message key="coursegrade.option.showpoints" /></a></li>
+                        <!-- TODO --><li><a href="javascript:void(0);" class="gb-hide-points hide" role="menuitem"><wicket:message key="coursegrade.option.hidepoints" /></a></li>
+                    </ul>
+                </div>
             </div>
         </script>
         <script id="assignmentHeaderTemplate" type="text/template">
-            <div class="gb-title">${title}</div>
-            {if categoryId}
-                <div class="gb-category">
-                    <wicket:message key="label.category"/> 
-                    <span class="swatch" style="background-color: #${categoryColor}"></span>
-                    <span>${categoryName}</span>
+            <span class="colHeader hide">${col}</span>
+            <div class="relative">
+                <div class="gb-title">${title}</div>
+                {if categoryId}
+                    <div class="gb-category">
+                        <wicket:message key="label.category"/> 
+                        <span class="swatch" style="background-color: #${categoryColor}"></span>
+                        <span>${categoryName}</span>
+                    </div>
+                {else}
+                    <div class="gb-uncategorized">
+                        <wicket:message key="gradebookpage.uncategorised"/>
+                    </div>
+                {/if}
+                <div class="gb-grade-section">
+                    <wicket:message key="label.total"/>
+                    <span class="gb-total-points" data-outof-label="/${points}">
+                        ${points}
+                    </span>
                 </div>
-            {else}
-                <div class="gb-uncategorized">
-                    <wicket:message key="gradebookpage.uncategorised"/>
+                <div class="gb-due-date">
+                    <wicket:message key="label.due"/> 
+                    <span>${dueDate}</span>
                 </div>
-            {/if}
-            <div class="gb-grade-section">
-                <wicket:message key="label.total"/>
-                <span class="gb-total-points" data-outof-label="/${points}">
-                    ${points}
-                </span>
-            </div>
-            <div class="gb-due-date">
-                <wicket:message key="label.due"/> 
-                <span>${dueDate}</span>
-            </div>
-            <div class="gb-grade-item-flags">
-                {if released}<!-- TODO popover --><span class="gb-flag-is-released"></span>{/if}
-                {if includedInCourseGrade}<!-- TODO popover --><span class="gb-flag-not-counted"></span>{/if}
-            </div>
-            <div class="btn-group">
-                <a class="btn btn-sm btn-default dropdown-toggle"
-                   data-toggle="dropdown" href="#" role="button" aria-haspopup="true">
-                    <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                    <li><a href="javascript:void(0);" class="edit-assignment-details" role="menuitem"><wicket:message key="assignment.option.edit" /></a></li>
-                    <li><a href="javascript:void(0);" class="gb-view-statistics" role="menuitem"><wicket:message key="assignment.option.viewgradestatistics" /></a></li>
-                    <!-- TODO --><li><a href="javascript:void(0);" class="move-assignment-left" role="menuitem"><wicket:message key="assignment.option.moveleft" /></a></li>
-                    <!-- TODO --><li><a href="javascript:void(0);" class="move-assignment-right" role="menuitem"><wicket:message key="assignment.option.moveright" /></a></li>
-                    <!-- TODO --><li><a href="javascript:void(0);" class="gb-hide-item" role="menuitem"><wicket:message key="assignment.option.hide" /></a></li>
-                    <!-- TODO --><li><a href="javascript:void(0);" class="gb-set-ungraded" role="menuitem"><wicket:message key="assignment.option.setungraded" /></a></li>
-                    <!-- TODO --><li><a href="javascript:void(0);" class="gb-delete-item" role="menuitem"><span class="text-danger"><wicket:message key="delete.label" /></span></a></li>
-                </ul>
+                <div class="gb-grade-item-flags">
+                    {if released}<!-- TODO popover --><span class="gb-flag-is-released"></span>{/if}
+                    {if includedInCourseGrade}<!-- TODO popover --><span class="gb-flag-not-counted"></span>{/if}
+                </div>
+                <div class="btn-group">
+                    <a class="btn btn-sm btn-default dropdown-toggle"
+                       data-toggle="dropdown" href="#" role="button" aria-haspopup="true">
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <li><a href="javascript:void(0);" class="edit-assignment-details" role="menuitem"><wicket:message key="assignment.option.edit" /></a></li>
+                        <li><a href="javascript:void(0);" class="gb-view-statistics" role="menuitem"><wicket:message key="assignment.option.viewgradestatistics" /></a></li>
+                        <!-- TODO --><li><a href="javascript:void(0);" class="move-assignment-left" role="menuitem"><wicket:message key="assignment.option.moveleft" /></a></li>
+                        <!-- TODO --><li><a href="javascript:void(0);" class="move-assignment-right" role="menuitem"><wicket:message key="assignment.option.moveright" /></a></li>
+                        <!-- TODO --><li><a href="javascript:void(0);" class="gb-hide-item" role="menuitem"><wicket:message key="assignment.option.hide" /></a></li>
+                        <!-- TODO --><li><a href="javascript:void(0);" class="gb-set-ungraded" role="menuitem"><wicket:message key="assignment.option.setungraded" /></a></li>
+                        <!-- TODO --><li><a href="javascript:void(0);" class="gb-delete-item" role="menuitem"><span class="text-danger"><wicket:message key="delete.label" /></span></a></li>
+                    </ul>
+                </div>
             </div>
         </script>
-        <script id="categoryAverageHeaderTemplate" type="text/template">
-            <div class="gb-title">
-                <span class="swatch" style="background-color: #${color}"></span>
-                ${title}
+        <script id="categoryScoreHeaderTemplate" type="text/template">
+            <span class="colHeader hide">${col}</span>
+            <div class="relative">
+                <div class="gb-title">
+                    <span class="swatch" style="background-color: #${color}"></span>
+                    ${title}
+                </div>
             </div>
         </script>
         <script id="studentHeaderTemplate" type="text/template">

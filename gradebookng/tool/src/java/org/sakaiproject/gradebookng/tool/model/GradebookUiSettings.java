@@ -117,7 +117,7 @@ public class GradebookUiSettings implements Serializable {
 	/**
 	 * Helper to generate a RGB CSS color string with values between 180-250 to ensure a lighter color e.g. rgb(181,222,199)
 	 */
-	private String generateRandomRGBColorString() {
+	public static String generateRandomRGBColorString() {
 		final Random rand = new Random();
 		final int min = 180;
 		final int max = 250;

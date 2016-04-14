@@ -72,7 +72,7 @@ public class EditCommentAction implements Action, Serializable {
                     String.format("GbGradeTable.updateComment('%s', '%s', '%s');",
                         assignmentId,
                         studentUuid,
-                        comment));
+                        comment == null ? "" : comment));
             }
         });
         window.show(target);

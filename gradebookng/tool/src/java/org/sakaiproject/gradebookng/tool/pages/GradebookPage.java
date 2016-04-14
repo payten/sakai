@@ -1,8 +1,6 @@
 package org.sakaiproject.gradebookng.tool.pages;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.wicket.AttributeModifier;
@@ -397,7 +395,7 @@ public class GradebookPage extends BasePage {
 		// this.form.add(gradeItemSummary);
 
 		final WebMarkupContainer toggleGradeItemsToolbarItem = new WebMarkupContainer("toggleGradeItemsToolbarItem");
-		toggleGradeItemsToolbarItem.setVisible(false);
+		//toggleGradeItemsToolbarItem.setVisible(false);
 		this.form.add(toggleGradeItemsToolbarItem);
 
 		final Button toggleCategoriesToolbarItem = new Button("toggleCategoriesToolbarItem") {
@@ -472,10 +470,14 @@ public class GradebookPage extends BasePage {
 		groupFilter.setVisible(false);
 		this.form.add(groupFilter);
 
-		final List<Assignment> assignments = this.businessService.getGradebookAssignments(sortBy);
-		final ToggleGradeItemsToolbarPanel gradeItemsTogglePanel = new ToggleGradeItemsToolbarPanel("gradeItemsTogglePanel",
-													    Model.ofList(assignments));
-		gradeItemsTogglePanel.setVisible(false);
+		final Map<String, Object> togglePanelModel = new HashMap<>();
+		togglePanelModel.put("assignments", this.businessService.getGradebookAssignments(sortBy));
+		togglePanelModel.put("settings", settings);
+		togglePanelModel.put("categoriesEnabled", categoriesEnabled);
+
+		final ToggleGradeItemsToolbarPanel gradeItemsTogglePanel =
+			new ToggleGradeItemsToolbarPanel("gradeItemsTogglePanel", Model.ofMap(togglePanelModel));
+		//gradeItemsTogglePanel.setVisible(false);
 		add(gradeItemsTogglePanel);
 
 		// hide/show components
@@ -565,6 +567,7 @@ public class GradebookPage extends BasePage {
 			settings = new GradebookUiSettings();
 			settings.setCategoriesEnabled(this.businessService.categoriesAreEnabled());
 			settings.initializeCategoryColors(this.businessService.getGradebookCategories());
+			settings.setCategoryColor(getString(GradebookPage.UNCATEGORISED), settings.generateRandomRGBColorString());
 			setUiSettings(settings);
 		}
 

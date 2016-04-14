@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
@@ -35,12 +36,8 @@ public class ToggleGradeItemsToolbarPanel extends Panel {
 	@SpringBean(name = "org.sakaiproject.gradebookng.business.GradebookNgBusinessService")
 	protected GradebookNgBusinessService businessService;
 
-	IModel<List<? extends Assignment>> model;
-	boolean categoriesEnabled = false;
-
-	public ToggleGradeItemsToolbarPanel(final String id, final IModel<List<? extends Assignment>> model) {
+	public ToggleGradeItemsToolbarPanel(final String id, final IModel<Map<String, Object>> model) {
 		super(id, model);
-		this.model = model;
 	}
 
 	@Override
@@ -51,15 +48,15 @@ public class ToggleGradeItemsToolbarPanel extends Panel {
 		final List<String> categoryNames = new ArrayList<String>();
 		final Map<String, List<Assignment>> categoryNamesToAssignments = new HashMap<String, List<Assignment>>();
 
-		final List<Assignment> assignments = (List<Assignment>) this.model.getObject();
-
-		// only deal with categories if categories are enabled
-		this.categoriesEnabled = this.businessService.categoriesAreEnabled();
+		final Map<String, Object> model = (Map<String, Object>) getDefaultModelObject();
+		final List<Assignment> assignments = (List<Assignment>) model.get("assignments");
+		final GradebookUiSettings settings = (GradebookUiSettings) model.get("settings");
+		final boolean categoriesEnabled = (Boolean) model.get("categoriesEnabled");
 
 		// iterate over assignments and build map of categoryname to list of assignments
 		for (final Assignment assignment : assignments) {
 
-			final String categoryName = getCategoryName(assignment);
+			final String categoryName = getCategoryName(assignment, categoriesEnabled);
 
 			if (!categoryNamesToAssignments.containsKey(categoryName)) {
 				categoryNames.add(categoryName);
@@ -78,15 +75,15 @@ public class ToggleGradeItemsToolbarPanel extends Panel {
 
 				final GradebookPage gradebookPage = (GradebookPage) getPage();
 
-				GradebookUiSettings settings = gradebookPage.getUiSettings();
-				if (settings == null) {
-					settings = new GradebookUiSettings();
-					gradebookPage.setUiSettings(settings);
-				}
-
 				Label categoryLabel = new Label("category", categoryName);
 				categoryLabel.add(new AttributeModifier("data-category-color", settings.getCategoryColor(categoryName)));
 				categoryItem.add(categoryLabel);
+
+				categoryItem.add(new WebMarkupContainer("categorySignal").
+					add(new AttributeModifier("style",
+						String.format("background-color: %s; border-color: %s",
+							settings.getCategoryColor(categoryName),
+							settings.getCategoryColor(categoryName)))));
 
 				final CheckBox categoryCheckbox = new CheckBox("categoryCheckbox");
 				categoryCheckbox.add(new AttributeModifier("value", categoryName));
@@ -101,21 +98,19 @@ public class ToggleGradeItemsToolbarPanel extends Panel {
 						final Assignment assignment = assignmentItem.getModelObject();
 
 						GradebookUiSettings settings = gradebookPage.getUiSettings();
-						if (settings == null) {
-							settings = new GradebookUiSettings();
-							gradebookPage.setUiSettings(settings);
-						}
 
 						assignmentItem.add(new Label("assignmentTitle", assignment.getName()));
+						assignmentItem.add(new WebMarkupContainer("assignmentSignal").
+							add(new AttributeModifier("style",
+								String.format("background-color: %s; border-color: %s",
+									settings.getCategoryColor(getCategoryName(assignment, categoriesEnabled)),
+									settings.getCategoryColor(getCategoryName(assignment, categoriesEnabled))))));
 
 						final CheckBox assignmentCheckbox = new AjaxCheckBox("assignmentCheckbox",
 								Model.of(Boolean.valueOf(settings.isAssignmentVisible(assignment.getId())))) {
 							@Override
 							protected void onUpdate(final AjaxRequestTarget target) {
 								GradebookUiSettings settings = gradebookPage.getUiSettings();
-								if (settings == null) {
-									settings = new GradebookUiSettings();
-								}
 
 								final Boolean value = settings.isAssignmentVisible(assignment.getId());
 								settings.setAssignmentVisibility(assignment.getId(), !value);
@@ -134,15 +129,18 @@ public class ToggleGradeItemsToolbarPanel extends Panel {
 				categoryScoreFilter.add(new Label("categoryScoreLabel",
 						new StringResourceModel("label.toolbar.categoryscorelabel", null, new Object[] { categoryName })));
 
+				categoryScoreFilter.add(new WebMarkupContainer("categoryScoreSignal").
+					add(new AttributeModifier("style",
+						String.format("background-color: %s; border-color: %s",
+							settings.getCategoryColor(categoryName),
+							settings.getCategoryColor(categoryName)))));
+
 				final CheckBox categoryScoreCheckbox = new AjaxCheckBox("categoryScoreCheckbox",
 						new Model<Boolean>(settings.isCategoryScoreVisible(categoryName))) {// Model.of(Boolean.valueOf(settings.isCategoryScoreVisible(category))))
 					// {
 					@Override
 					protected void onUpdate(final AjaxRequestTarget target) {
 						GradebookUiSettings settings = gradebookPage.getUiSettings();
-						if (settings == null) {
-							settings = new GradebookUiSettings();
-						}
 
 						final Boolean value = settings.isCategoryScoreVisible(categoryName);
 						settings.setCategoryScoreVisibility(categoryName, !value);
@@ -164,9 +162,9 @@ public class ToggleGradeItemsToolbarPanel extends Panel {
 	 * @param assignment
 	 * @return
 	 */
-	private String getCategoryName(final Assignment assignment) {
+	private String getCategoryName(final Assignment assignment, final boolean categoriesEnabled) {
 
-		if (!this.categoriesEnabled) {
+		if (!categoriesEnabled) {
 			return getString(GradebookPage.UNCATEGORISED);
 		}
 
