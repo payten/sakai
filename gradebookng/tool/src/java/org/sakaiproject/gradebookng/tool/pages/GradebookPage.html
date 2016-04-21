@@ -18,6 +18,7 @@
 	<div wicket:id="deleteItemWindow" />
 	<div wicket:id="gradeStatisticsWindow" />
 	<div wicket:id="updateCourseGradeDisplayWindow" />
+	<div wicket:id="sortGradeItemsWindow" />
 
     <div id="gradebookGradesToolbar">
       <ul class="gb-toolbar-left">
@@ -34,11 +35,14 @@
         </li>
       </ul>
       <ul class="gb-toolbar-right">
-        <li>
-          <button wicket:id="toggleGradeItemsToolbarItem" id="toggleGradeItemsToolbarItem" aria-popup="true" aria-controls="gradeItemsTogglePanel">Show/Hide Items</button>
+         <li>
+           <a wicket:id="sortGradeItemsToolbarItem" id="sortGradeItemsToolbarItem" class="btn btn-default" aria-popup="true"><wicket:message key="label.toolbar.sortgradeitems"/></a>
         </li>
         <li>
-          <button wicket:id="toggleCategoriesToolbarItem" id="toggleCategoriesToolbarItem" aria-controls="gradebookGradesTable">Group By Category</button>
+          <button wicket:id="toggleGradeItemsToolbarItem" id="toggleGradeItemsToolbarItem" aria-popup="true" aria-controls="gradeItemsTogglePanel"><wicket:message key="label.toolbar.toggleitems"/></button>
+        </li>
+        <li>
+          <button wicket:id="toggleCategoriesToolbarItem" id="toggleCategoriesToolbarItem" aria-controls="gradebookGradesTable"><wicket:message key="label.toolbar.togglecategories"/></button>
         </li>
       </ul>
     </div>
