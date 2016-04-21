@@ -172,6 +172,27 @@ public class GbGradebookData {
         }
     }
 
+    ///
+    // Pack our list of scores into as little space as possible.
+    //
+    // Most scores will be between 0 - 100, so we store small numbers in a
+    // single byte.  Larger scores will be stored in two bytes, and scores with
+    // fractional parts in three bytes.
+    //
+    // We go to all of this effort because grade tables can be very large.  A
+    // site with 2,000 students and 100 gradeable items will have 200,000
+    // scores.  Even if all of those scores were between 0 and 100, encoding
+    // them as a JSON array would use around 3 bytes per score (two digits plus
+    // a comma separator), for a total of 600KB.  We can generally at least
+    // halve that number by byte packing the numbers ourselves and unpacking
+    // them using JavaScript on the client.
+    //
+    // Why not just use AJAX and send them a chunk at a time?  The GradebookNG
+    // design is built around having a single large table of all grades, and
+    // firing AJAX requests on scroll events ends up being prohibitively slow.
+    // Having all the data available up front helps keep the scroll performance
+    // fast.
+    //
     private String serializeGrades(List<String> gradeList) {
         StringBuilder sb = new StringBuilder();
 
@@ -188,14 +209,27 @@ public class GbGradebookData {
 
             if (grade < 127 && !hasFraction) {
                 // single byte, no fraction
+                //
+                // input number like 0nnnnnnn serialized as 0nnnnnnn
                 sb.appendCodePoint((int)grade & 0xFF);
             } else if (grade < 16384 && !hasFraction) {
                 // two byte, no fraction
-                sb.appendCodePoint(((int)grade >> 8) | 128);
+                //
+                // input number like 00nnnnnn nnnnnnnn serialized as 10nnnnnn nnnnnnnn
+                //
+                // where leading '10' means 'two bytes, no fraction part'
+                sb.appendCodePoint(((int)grade >> 8) | 0b10000000);
                 sb.appendCodePoint(((int)grade & 0xFF));
             } else if (grade < 16384) {
                 // three byte encoding, fraction
-                sb.appendCodePoint(((int)grade >> 8) | 192);
+                //
+                // input number like 00nnnnnn nnnnnnnn.25 serialized as 11nnnnnn nnnnnnnn 00011001
+                //
+                // where leading '11' means 'two bytes plus a fraction part',
+                // and the fraction part is stored as an integer between 0-99,
+                // where 50 represents 0.5, 25 represents .25, etc.
+
+                sb.appendCodePoint(((int)grade >> 8) | 0b11000000);
                 sb.appendCodePoint((int)grade & 0xFF);
                 sb.appendCodePoint(decimalToInteger((grade - (int)grade),
                         2));
