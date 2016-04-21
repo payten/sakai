@@ -381,6 +381,20 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     multiSelect: false
   });
 
+
+  // resize the table on window resize
+  var resizeTimeout;
+  $(window).on("resize", function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function() {
+      GbGradeTable.instance.updateSettings({
+        height: $(window).height() * 0.5,
+        width: $("#gradebookSpreadsheet").width()
+      });
+    }, 200);
+  });
+
+
   // append all dropdown menus to body to avoid overflows on table
   var $dropdownMenu;
   var $link;
