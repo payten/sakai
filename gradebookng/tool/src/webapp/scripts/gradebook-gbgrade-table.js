@@ -313,8 +313,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     colWidths: [240,140].concat(GbGradeTable.columns.map(function () { return 230 })),
     autoRowSize: false,
     autoColSize: false,
-    height: $(window).height() * 0.4,
-    width: $('#' + elementId).width() * 0.9,
+    height: $(window).height() * 0.5,
+    width: $("#gradebookSpreadsheet").width(),
     fillHandle: false,
     afterGetRowHeader: function(row,th) {
       $(th).
