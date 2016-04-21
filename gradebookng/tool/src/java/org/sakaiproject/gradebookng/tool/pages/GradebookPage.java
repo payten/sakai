@@ -8,6 +8,7 @@ import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;
@@ -32,6 +33,7 @@ import org.sakaiproject.gradebookng.tool.model.GbGradeTableData;
 import org.sakaiproject.gradebookng.tool.model.GbModalWindow;
 import org.sakaiproject.gradebookng.tool.model.GradebookUiSettings;
 import org.sakaiproject.gradebookng.tool.panels.AddOrEditGradeItemPanel;
+import org.sakaiproject.gradebookng.tool.panels.SortGradeItemsPanel;
 import org.sakaiproject.gradebookng.tool.panels.ToggleGradeItemsToolbarPanel;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
@@ -62,6 +64,7 @@ public class GradebookPage extends BasePage {
 	GbModalWindow deleteItemWindow;
 	GbModalWindow gradeStatisticsWindow;
 	GbModalWindow updateCourseGradeDisplayWindow;
+	GbModalWindow sortGradeItemsWindow;
 
 	Form<Void> form;
 
@@ -103,6 +106,10 @@ public class GradebookPage extends BasePage {
 
 		this.gradeCommentWindow = new GbModalWindow("gradeCommentWindow");
 		this.form.add(this.gradeCommentWindow);
+
+		this.sortGradeItemsWindow = new GbModalWindow("sortGradeItemsWindow");
+		this.sortGradeItemsWindow.showUnloadConfirmation(false);
+		this.form.add(this.sortGradeItemsWindow);
 
 		this.deleteItemWindow = new GbModalWindow("deleteItemWindow");
 		this.form.add(this.deleteItemWindow);
@@ -424,6 +431,27 @@ public class GradebookPage extends BasePage {
 		};
 		this.form.add(toggleCategoriesToolbarItem);
 
+		final AjaxLink sortGradeItemsToolbarItem = new AjaxLink("sortGradeItemsToolbarItem") {
+			@Override
+			public void onClick(AjaxRequestTarget target) {
+				GbModalWindow window = GradebookPage.this.getSortGradeItemsWindow();
+
+				Map<String, Object> model = new HashMap<>();
+				model.put("categoriesEnabled", categoriesEnabled);
+
+				window.setTitle(getString("sortgradeitems.heading"));
+				window.setContent(new SortGradeItemsPanel(window.getContentId(), Model.ofMap(model), window));
+				window.setComponentToReturnFocusTo(this);
+				window.show(target);
+			}
+
+			@Override
+			public boolean isVisible() {
+				return GradebookPage.this.role == GbRole.INSTRUCTOR;
+			}
+		};
+		this.form.add(sortGradeItemsToolbarItem);
+
 		// section and group dropdown
 		final List<GbGroup> groups = this.businessService.getSiteSectionsAndGroups();
 
@@ -554,6 +582,10 @@ public class GradebookPage extends BasePage {
 		return this.updateCourseGradeDisplayWindow;
 	}
 
+	public GbModalWindow getSortGradeItemsWindow() {
+		return this.sortGradeItemsWindow;
+	}
+
 	/**
 	 * Getter for the GradebookUiSettings. Used to store a few UI related settings for the current session only.
 	 *
@@ -594,11 +626,14 @@ public class GradebookPage extends BasePage {
 		// GradebookNG Grade specific styles and behaviour
 		response.render(CssHeaderItem.forUrl(String.format("/gradebookng-tool/styles/gradebook-grades.css?version=%s", version)));
 		response.render(CssHeaderItem.forUrl(String.format("/gradebookng-tool/styles/gradebook-gbgrade-table.css?version=%s", version)));
+		response.render(CssHeaderItem.forUrl(String.format("/gradebookng-tool/styles/gradebook-sorter.css?version=%s", version)));
 		response.render(JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/gradebook-grades.js?version=%s", version)));
 		response.render(
 				JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/gradebook-grade-summary.js?version=%s", version)));
 		response.render(
 				JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/gradebook-update-ungraded.js?version=%s", version)));
+		response.render(
+				JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/gradebook-sorter.js?version=%s", version)));
 	}
 
 	/**
