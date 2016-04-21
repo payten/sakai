@@ -53,12 +53,11 @@
 
 #gradeTable .handsontable th {
   background-color: #F6f6f6;
+  height: 102px;
 }
-
 
 #gradeTable thead th .relative {
   height: 100%;
-  min-height: 90px;
 }
 #gradeTable tbody td .relative {
   height: 100%;
