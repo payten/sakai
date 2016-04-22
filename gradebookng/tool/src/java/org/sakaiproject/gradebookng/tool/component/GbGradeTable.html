@@ -120,6 +120,15 @@
                 <div class="rowHeader">
                     ${lastName}, ${firstName} (${eid})
                 </div>
+                <div class="btn-group">
+                    <a class="btn btn-sm btn-default dropdown-toggle"
+                       data-toggle="dropdown" href="#" role="button" aria-haspopup="true">
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <li><a href="javascript:void(0);" class="gb-view-grade-summary" role="menuitem"><wicket:message key="label.studentsummary.instructorviewtab" /></a></li>
+                    </ul>
+                </div>
             </div>
         </script>
     </wicket:panel>

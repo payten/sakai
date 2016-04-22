@@ -56,7 +56,7 @@ public class StudentGradeSummaryGradesPanel extends Panel {
 
 		// unpack model
 		final Map<String, Object> modelData = (Map<String, Object>) getDefaultModelObject();
-		final String userId = (String) modelData.get("userId");
+		final String userId = (String) modelData.get("studentUuid");
 
 		// get grades
 		final Map<Assignment, GbGradeInfo> grades = this.businessService.getGradesForStudent(userId);

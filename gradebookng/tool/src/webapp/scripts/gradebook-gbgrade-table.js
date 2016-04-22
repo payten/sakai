@@ -199,6 +199,8 @@ GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value,
   var html = GbGradeTable.templates.studentCell.process(value);
   $td.html(html);
 
+  $td.data("studentid", value.userId);
+
   // If this cell gets reused for a score display, it'll need to be fully
   // reinitialised before use.
   $.removeData(td, "cell-initialised");
@@ -494,10 +496,26 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       assignmentId: $cell.data("assignmentid"),
       studentId: $cell.data("studentid")
     });
+  }).
+  // View Grade Summary
+  on("click", ".gb-dropdown-menu .gb-view-grade-summary", function() {
+    var $dropdown = $(this).closest(".gb-dropdown-menu");
+    var $cell = $dropdown.data("cell");
+
+    GbGradeTable.viewGradeSummary($cell.data("studentid"));
   });
 
   GbGradeTable.setupToggleGradeItems();
 };
+
+
+GbGradeTable.viewGradeSummary = function(studentId) {
+  GbGradeTable.ajax({
+    action: 'viewGradeSummary',
+    studentId: studentId
+  });
+};
+
 
 GbGradeTable.selectCell = function(assignmentId, studentId) {
   var row = 0;
