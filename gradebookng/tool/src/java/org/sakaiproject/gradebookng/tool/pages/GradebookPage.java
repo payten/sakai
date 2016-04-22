@@ -438,6 +438,7 @@ public class GradebookPage extends BasePage {
 
 				Map<String, Object> model = new HashMap<>();
 				model.put("categoriesEnabled", categoriesEnabled);
+				model.put("settings", settings);
 
 				window.setTitle(getString("sortgradeitems.heading"));
 				window.setContent(new SortGradeItemsPanel(window.getContentId(), Model.ofMap(model), window));

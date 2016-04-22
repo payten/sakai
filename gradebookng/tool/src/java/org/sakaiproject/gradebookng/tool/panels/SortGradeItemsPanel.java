@@ -4,6 +4,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
@@ -42,22 +43,6 @@ public class SortGradeItemsPanel extends Panel {
 
 		final Map<String, Object> model = (Map<String, Object>)getDefaultModelObject();
 		final boolean categoriesEnabled = (boolean) model.get("categoriesEnabled");
-
-		if (categoriesEnabled) {
-			tabs.add(new AbstractTab(new Model<String>(getString("sortgradeitems.bycategory"))) {
-				@Override
-				public Panel getPanel(final String panelId) {
-					return new SortGradeItemsByCategoryPanel(panelId);
-				}
-			});
-		}
-		tabs.add(new AbstractTab(new Model<String>(getString("sortgradeitems.bygradeitem"))) {
-			@Override
-			public Panel getPanel(final String panelId) {
-				return new SortGradeItemsByGradeItemPanel(panelId);
-			}
-		});
-
 
 		final Form<Void> form = new Form<>("form");
 
@@ -117,6 +102,25 @@ public class SortGradeItemsPanel extends Panel {
 			}
 		};
 
+		if (categoriesEnabled) {
+			tabs.add(new AbstractTab(new Model<String>(getString("sortgradeitems.bycategory"))) {
+				@Override
+				public Panel getPanel(final String panelId) {
+					return new SortGradeItemsByCategoryPanel(panelId, (IModel<Map<String, Object>>)getDefaultModel());
+				}
+			});
+
+			submit.add(new Label("label", getString("sortgradeitems.submitbycategory")));
+		} else {
+			submit.add(new Label("label", getString("sortgradeitems.submit")));
+		}
+		tabs.add(new AbstractTab(new Model<String>(getString("sortgradeitems.bygradeitem"))) {
+			@Override
+			public Panel getPanel(final String panelId) {
+				return new SortGradeItemsByGradeItemPanel(panelId);
+			}
+		});
+
 		form.add(new AjaxBootstrapTabbedPanel("tabs", tabs) {
 			@Override
 			protected String getTabContainerCssClass() {
@@ -125,6 +129,15 @@ public class SortGradeItemsPanel extends Panel {
 
 			@Override
 			protected void onAjaxUpdate(final AjaxRequestTarget target) {
+				// ensure the submit button reflects the currently selected tab
+				// as form will only submit the status on that tab (not both!)
+				if (getSelectedTab() == 1) {
+					submit.replace(new Label("label", getString("sortgradeitems.submit")));
+					target.add(submit);
+				} else if (getTabs().size() > 1) {
+					submit.replace(new Label("label", getString("sortgradeitems.submitbycategory")));
+					target.add(submit);
+				}
 				super.onAjaxUpdate(target);
 			}
 		});

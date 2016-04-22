@@ -29,3 +29,8 @@
   padding: 4px 10px;
   margin-bottom: 4px;
 }
+
+#gradebookSorter .gb-sorter-category {
+  border-left: 3px solid transparent;
+  padding-left: 10px;
+}

@@ -14,6 +14,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
+import org.sakaiproject.gradebookng.tool.model.GradebookUiSettings;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
 import org.sakaiproject.service.gradebook.shared.SortType;
@@ -28,13 +29,16 @@ public class SortGradeItemsByCategoryPanel extends Panel {
 	@SpringBean(name = "org.sakaiproject.gradebookng.business.GradebookNgBusinessService")
 	protected GradebookNgBusinessService businessService;
 
-	public SortGradeItemsByCategoryPanel(final String id) {
-		super(id);
+	public SortGradeItemsByCategoryPanel(final String id, final IModel<Map<String, Object>> model) {
+		super(id, model);
 	}
 
 	@Override
 	public void onInitialize() {
 		super.onInitialize();
+
+		Map<String, Object> model = (Map<String, Object>)getDefaultModelObject();
+		GradebookUiSettings settings = (GradebookUiSettings)model.get("settings");
 
 		// retrieve all categories, remove empty and ensure they're sorted
 		final List<CategoryDefinition> categories = this.businessService.getGradebookCategories().
@@ -47,6 +51,9 @@ public class SortGradeItemsByCategoryPanel extends Panel {
 				final CategoryDefinition category = categoryItem.getModelObject();
 				List<Assignment> assignments = category.getAssignmentList();
 				Collections.sort(assignments, new CategorizedAssignmentComparator());
+
+				categoryItem.add(new AttributeModifier("style",
+					String.format("border-left-color: %s", settings.getCategoryColor(category.getName()))));
 				categoryItem.add(new Label("name", category.getName()));
 				categoryItem.add(new ListView<Assignment>("gradeItemList", assignments) {
 					@Override
