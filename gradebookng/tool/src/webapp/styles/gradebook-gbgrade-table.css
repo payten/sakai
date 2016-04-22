@@ -73,7 +73,32 @@
   text-align: left;
   line-height: 1.2em;
   padding-bottom: 4px;
+  display: block;
+  cursor: pointer;
 }
+
+#gradeTable .gb-title:hover:after {
+  font-family: 'gradebook-icons';
+  content: '\f0dc';
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+#gradeTable .gb-title.gb-sorted-asc:after {
+  font-family: 'gradebook-icons';
+  content: '\f0de';
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+#gradeTable .gb-title.gb-sorted-desc:after {
+  font-family: 'gradebook-icons';
+  content: '\f0dd';
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
 #gradeTable .gb-grade-section,
 #gradeTable .gb-due-date,
 #gradeTable .gb-category {

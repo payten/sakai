@@ -5,9 +5,9 @@
         <script id="courseGradeHeaderTemplate" type="text/template">
             <span class="colHeader hide">${col}</span>
             <div class="relative">
-                <div class="gb-title">
+                <a class="gb-title">
                     <wicket:message key="column.header.coursegrade"/>
-                </div>
+                </a>
                 <div class="btn-group">
                     <a class="btn btn-sm btn-default dropdown-toggle"
                        data-toggle="dropdown" href="#" role="button" aria-haspopup="true">
@@ -24,7 +24,7 @@
         <script id="assignmentHeaderTemplate" type="text/template">
             <span class="colHeader hide">${col}</span>
             <div class="relative">
-                <div class="gb-title">${title}</div>
+                <a class="gb-title">${title}</a>
                 {if categoryId}
                     <div class="gb-category">
                         <wicket:message key="label.category"/> 
@@ -70,18 +70,18 @@
         <script id="categoryScoreHeaderTemplate" type="text/template">
             <span class="colHeader hide">${col}</span>
             <div class="relative">
-                <div class="gb-title">
+                <a class="gb-title">
                     <span class="swatch" style="background-color: #${color}"></span>
                     ${title}
-                </div>
+                </a>
             </div>
         </script>
         <script id="studentHeaderTemplate" type="text/template">
             <div class="relative">
                 <div class="colHeader">
-                    <div class="gb-title">
+                    <a class="gb-title">
                         <wicket:message key="column.header.students"/>
-                    </div>
+                    </a>
                 </div>
             </div>
         </script>

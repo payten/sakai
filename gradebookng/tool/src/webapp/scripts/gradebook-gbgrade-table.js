@@ -506,6 +506,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   });
 
   GbGradeTable.setupToggleGradeItems();
+  GbGradeTable.setupColumnSorting();
 };
 
 
@@ -1036,4 +1037,97 @@ GbGradeTable.setupToggleGradeItems = function() {
   $panel.find(".gb-item-category-score-filter :input").on("change", handleCategoryScoreFilterStateChange);
 
   $panel.find(":input:not(:checked)").trigger("change");
+};
+
+GbGradeTable.setupColumnSorting = function() {
+  var $table = $(GbGradeTable.instance.rootElement);
+
+  $table.on("click", ".gb-title", function() {
+    var $handle = $(this);
+
+    var colIndex = $handle.closest("th").index();
+
+    var direction = $handle.data("sortOrder");
+
+    // remove all sort icons
+    $table.find(".gb-title").each(function() {
+      $(this).removeClass("gb-sorted-asc").removeClass("gb-sorted-desc");
+      $(this).data("sortOrder", null);
+    });
+
+    if (direction == null) {
+      direction = "desc";
+    } else if (direction == "desc") {
+      direction = "asc";
+    } else {
+      direction = null;
+    }
+
+    $handle.data("sortOrder", direction);
+    if (direction != null) {
+      $handle.addClass("gb-sorted-"+direction);
+    }
+
+    GbGradeTable.sort(colIndex, direction);
+  });
+};
+
+GbGradeTable.COURSE_GRADES = [].concat.apply([], "FEDCBA".split("").map(function(letter) {
+  return [letter + "-", letter, letter + "+"]
+}));
+
+GbGradeTable.sort = function(colIndex, direction) {
+  console.log(colIndex, direction);
+
+  if (direction == null) {
+    // reset the table data to default order
+    GbGradeTable.instance.loadData(GbGradeTable.grades);
+    return;
+  }
+
+  var clone = GbGradeTable.grades.slice(0);
+
+  clone.sort(function(row_a, row_b) {
+    var a = row_a[colIndex];
+    var b = row_b[colIndex];
+
+    // sort by students
+    if (colIndex == 0) {
+      if (a.eid > b.eid) {
+        return 1;
+      }
+      if (a.eid < b.eid) {
+        return -1;
+      }
+    // sort by course grade
+    } else if (colIndex == 1) {
+      if ($.inArray(a, GbGradeTable.COURSE_GRADES) > $.inArray(b, GbGradeTable.COURSE_GRADES)) {
+        return 1;
+      }
+      if ($.inArray(a, GbGradeTable.COURSE_GRADES) < $.inArray(b, GbGradeTable.COURSE_GRADES)) {
+        return -1;
+      }
+    } else {
+      if (a == null || a == "") {
+        return -1;
+      }
+      if (b == null || b == "") {
+        return 1;
+      }
+      if (a > b) {
+        return 1;
+      }
+      if (a < b) {
+        return -1;
+      }
+    }
+
+    return 0;
+  });
+
+  if (direction == "desc") {
+    clone.reverse();
+  }
+
+  GbGradeTable.instance.loadData(clone);
 };
