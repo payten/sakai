@@ -121,7 +121,8 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   // key needs to contain all values the cell requires for render
   // otherwise it won't rerender when those values change
   var hasComment = column.type === "assignment" ? GbGradeTable.hasComment(student, column.assignmentId) : false;
-  var keyValues = [row, index, value, student.eid, hasComment, column.type];
+  var scoreState = column.type === "assignment" ? GbGradeTable.getScoreState(student.userId, column.assignmentId) : false;
+  var keyValues = [row, index, value, student.eid, hasComment, column.type, scoreState];
   var cellKey = keyValues.join(",");
 
   var wasInitialised = $.data(td, 'cell-initialised');
@@ -164,11 +165,39 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     throw "column.type not supported: " + column.type;
   }
 
-
+  // comment notification
   if (hasComment) {
     $td.find(".gb-comment-notification").css('display', 'block');
   } else {
     $td.find(".gb-comment-notification").css('display', 'none');
+  }
+
+  // other notifications as a flag
+  var $flag = $td.find(".gb-notification");
+  if (scoreState == "saved") {
+    $td.addClass("gb-save-success");
+    GbGradeTable.setScoreState(false, student.userId, column.assignmentId);
+    setTimeout(function() {
+      $td.removeClass("gb-save-success", 2000);
+    }, 2000);
+  } else if (scoreState == "error") {
+    $td.addClass("gb-save-error");
+  } else if (scoreState == "invalid") {
+    $td.addClass("gb-save-invalid");
+  } else {
+    $flag.attr("css", "gb-notification");
+  }
+  // error
+  // invalid
+  // save
+  // concurrent edit detected
+  // extra credit
+  if (parseFloat(value) > parseFloat(column.points)) {
+    $td.addClass("gb-extra-credit");
+    $flag.addClass("gb-flag-extra-credit");
+  } else {
+    $flag.removeClass("gb-flag-extra-credit");
+    $td.removeClass("gb-extra-credit");
   }
 
   $.data(td, 'cell-initialised', cellKey);
@@ -280,10 +309,12 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     var that = this;
     var row = this.row;
 
+    var $td = $(this.TD);
+
     var oldScore = this.originalValue;
     var newScore = $(this.TEXTAREA).val();
-    var studentId = $(this.TD).data("studentid");
-    var assignmentId = $(this.TD).data("assignmentid");
+    var studentId = $td.data("studentid");
+    var assignmentId = $td.data("assignmentid");
 
     // FIXME: We'll need to pass through the original comment text here.
     GbGradeTable.ajax({
@@ -294,6 +325,16 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       newScore: newScore,
       comment: ""
     }, function (status, data) {
+      if (status == "OK") {
+        GbGradeTable.setScoreState("saved", studentId, assignmentId);
+      } else if (status == "error") {
+        GbGradeTable.setScoreState("error", studentId, assignmentId);
+      } else if (status == "invalid") {
+        GbGradeTable.setScoreState("invalid", studentId, assignmentId);
+      } else {
+        console.log("Unhandled saveValue response: " + status);
+      }
+
       that.instance.setDataAtCell(row, 1, data.courseGrade);
     });
 
@@ -1130,4 +1171,24 @@ GbGradeTable.sort = function(colIndex, direction) {
   }
 
   GbGradeTable.instance.loadData(clone);
+};
+
+GbGradeTable.setScoreState = function(state, studentId, assignmentId) {
+  var student = GbGradeTable.modelForStudent(studentId);
+
+  if (!student.hasOwnProperty('scoreStatus')) {
+    student.scoreStatus = {};
+  }
+
+  student.scoreStatus[assignmentId] = state;
+};
+
+GbGradeTable.getScoreState = function(studentId, assignmentId) {
+  var student = GbGradeTable.modelForStudent(studentId);
+
+  if (student.hasOwnProperty('scoreStatus')) {
+    return student.scoreStatus[assignmentId];
+  } else {
+    return false;
+  }
 };

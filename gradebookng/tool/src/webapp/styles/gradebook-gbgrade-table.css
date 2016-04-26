@@ -176,3 +176,52 @@
   font-family: "gradebook-icons";
   content: '\f075';
 }
+
+#gradeTable .gb-notification {
+  position: absolute;
+  left: 10px;
+  top: 5px;
+  font-size: 16px;
+}
+[class*="gb-flag"] {
+  color: #999;
+  font-family: 'gradebook-icons';
+  display: inline-block;
+}
+.gb-flag-not-counted:before {
+  content: '\e600';
+}
+.gb-flag-not-released:before {
+  content: '\e601';
+}
+#gradeTable .gb-extra-credit {
+  background-color: #FCF8E3 !important;
+}
+.gb-flag-extra-credit:before {
+  content: '\f0fe';
+  color: rgb(200,144,0);
+}
+#gradeTable .gb-save-success {
+  background-color: #DFF0D8 !important;
+}
+#gradeTable .gb-save-success .gb-notification:before {
+  font-family: "gradebook-icons";
+  content: "\f05d" !important;
+  color: green;
+}
+#gradeTable .gb-save-error {
+	background-color: #FFBBBB !important;
+}
+#gradeTable .gb-save-error .gb-notification:before {
+  font-family: "gradebook-icons";
+  content: "\f06a" !important;
+  color: rgb(204,0,0) !important;
+}
+#gradeTable .gb-save-invalid {
+  background-color: #FCF8E3 !important;
+}
+#gradeTable .gb-save-invalid .gb-notification:before {
+  font-family: "gradebook-icons";
+  content: "\f071" !important;
+  color: rgb(200,144,0) !important;
+}
