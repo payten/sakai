@@ -301,6 +301,9 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     }
   };
 
+  // If an entered score is invalid, we keep track of the last good value here
+  var lastValidGrades = {};
+
   GbGradeTableEditor.prototype.saveValue = function() {
     var that = this;
     var row = this.row;
@@ -312,21 +315,38 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     var studentId = $td.data("studentid");
     var assignmentId = $td.data("assignmentid");
 
+    if (!lastValidGrades[studentId]) {
+      lastValidGrades[studentId] = {};
+    }
+
     // FIXME: We'll need to pass through the original comment text here.
     GbGradeTable.ajax({
       action: 'setScore',
       studentId: studentId,
       assignmentId: assignmentId,
-      oldScore: oldScore,
+      oldScore: (lastValidGrades[studentId][assignmentId] || oldScore),
       newScore: newScore,
       comment: ""
     }, function (status, data) {
       if (status == "OK") {
         GbGradeTable.setScoreState("saved", studentId, assignmentId);
+        delete lastValidGrades[studentId][assignmentId];
+
+        if ($.isEmptyObject(lastValidGrades[studentId])) {
+          delete(lastValidGrades[studentId])
+        }
       } else if (status == "error") {
         GbGradeTable.setScoreState("error", studentId, assignmentId);
+
+        if (!lastValidGrades[studentId][assignmentId]) {
+          lastValidGrades[studentId][assignmentId] = oldScore;
+        }
       } else if (status == "invalid") {
         GbGradeTable.setScoreState("invalid", studentId, assignmentId);
+
+        if (!lastValidGrades[studentId][assignmentId]) {
+          lastValidGrades[studentId][assignmentId] = oldScore;
+        }
       } else {
         console.log("Unhandled saveValue response: " + status);
       }
