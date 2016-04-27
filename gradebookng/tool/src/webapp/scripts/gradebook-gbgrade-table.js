@@ -572,6 +572,12 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     var $cell = $dropdown.data("cell");
 
     GbGradeTable.viewGradeSummary($cell.data("studentid"));
+  }).
+  // Set Zero Score for Empty Cells
+  on("click", ".gb-dropdown-menu .gb-set-zero-score", function() {
+    GbGradeTable.ajax({
+      action: 'setZeroScore'
+    });
   });
 
   GbGradeTable.setupToggleGradeItems();
