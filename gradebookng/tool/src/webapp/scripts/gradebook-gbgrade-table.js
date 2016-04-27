@@ -173,8 +173,10 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   }
 
   // other notifications
-  var $td_div = $td.find(".relative:first");
   var $flag = $td.find(".gb-notification");
+  var $td_div = $td.find(".relative:first");
+  $td_div.attr("class", "relative"); // reset CSS styling of TD>div.relative
+
   if (scoreState == "saved") {
     $td_div.addClass("gb-save-success");
     GbGradeTable.setScoreState(false, student.userId, column.assignmentId);
@@ -185,8 +187,6 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     $td_div.addClass("gb-save-error");
   } else if (scoreState == "invalid") {
     $td_div.addClass("gb-save-invalid");
-  } else {
-    $flag.attr("css", "gb-notification");
   }
   if (parseFloat(value) > parseFloat(column.points)) {
     $td_div.addClass("gb-extra-credit");
