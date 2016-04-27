@@ -55,6 +55,22 @@ public class GradeUpdateAction implements Action, Serializable {
         }
     }
 
+    private class SaveGradeErrorResponse implements ActionResponse {
+        private GradeSaveResponse serverResponse;
+        public SaveGradeErrorResponse(GradeSaveResponse serverResponse) {
+            this.serverResponse = serverResponse;
+        }
+
+        public String getStatus() {
+            return "error";
+        }
+
+        public String toJson() {
+            // TODO map to a reasonable message based on server response
+            return String.format("{\"msg\": \"%s\"}", serverResponse.toString());
+        }
+    }
+
     @Override
     public ActionResponse handleEvent(JsonNode params, AjaxRequestTarget target) {
         final String oldGrade = params.get("oldScore").asText();
@@ -75,6 +91,10 @@ public class GradeUpdateAction implements Action, Serializable {
         // for concurrency, get the original grade we have in the UI and pass it into the service as a check
         final GradeSaveResponse result = businessService.saveGrade(Long.valueOf(assignmentId), studentUuid,
                 oldGrade, newGrade, params.get("comment").asText());
+
+        if (!result.equals(GradeSaveResponse.OK)) {
+            return new SaveGradeErrorResponse(result);
+        }
 
 	CourseGrade studentCourseGrade = businessService.getCourseGrade(studentUuid);
 
