@@ -588,6 +588,16 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       action: 'viewCourseGradeLog',
       studentId: $cell.data("studentid")
     });
+  }).
+  // Delete Grade Item
+  on("click", ".gb-dropdown-menu .gb-delete-item", function() {
+    var $dropdown = $(this).closest(".gb-dropdown-menu");
+    var $cell = $dropdown.data("cell");
+
+    GbGradeTable.ajax({
+      action: 'deleteAssignment',
+      assignmentId: $cell.data("assignmentid")
+    });
   });
 
   GbGradeTable.setupToggleGradeItems();
