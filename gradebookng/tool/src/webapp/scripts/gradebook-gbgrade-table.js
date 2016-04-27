@@ -134,6 +134,8 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
   var student = instance.getDataAtCell(row, 0);
 
+  var valueCell;
+
   if (!wasInitialised) {
     // First time we've initialised this cell.
     var html = GbGradeTable.templates.cell.process({
@@ -142,11 +144,14 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
     td.innerHTML = html;
   } else if (wasInitialised != cellKey) {
+    valueCell = td.getElementsByClassName('gb-value')[0];
 
     // This cell was previously holding a different value.  Just patch it.
-    var elt = $td.find(".gb-value")[0];
+    GbGradeTable.replaceContents(valueCell, document.createTextNode(value));
+  }
 
-    GbGradeTable.replaceContents(elt, document.createTextNode(value));
+  if (!valueCell) {
+    valueCell = td.getElementsByClassName('gb-value')[0];
   }
 
   $.data(td, "studentid", student.userId);
@@ -157,43 +162,50 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     $.data(td, "categoryId", column.categoryId);
     $.removeData(td, "assignmentid");
     if (value != null && (value+"").length > 0) {
-      GbGradeTable.replaceContents($td.find(".gb-value")[0], document.createTextNode('' + value + '%'));
+      GbGradeTable.replaceContents(valueCell, document.createTextNode('' + value + '%'));
     } else {
-      GbGradeTable.replaceContents($td.find(".gb-value")[0], document.createTextNode('-'));
+      GbGradeTable.replaceContents(valueCell, document.createTextNode('-'));
     }
   } else {
     throw "column.type not supported: " + column.type;
   }
 
   // comment notification
-  if (hasComment) {
-    $td.find(".gb-comment-notification").css('display', 'block');
-  } else {
-    $td.find(".gb-comment-notification").css('display', 'none');
+  var commentNotification = td.getElementsByClassName("gb-comment-notification")[0];
+  if (commentNotification) {
+    if (hasComment) {
+      commentNotification.style.display = 'block';
+    } else {
+      commentNotification.style.display = 'none';
+    }
   }
 
   // other notifications
-  var $flag = $td.find(".gb-notification");
-  var $td_div = $td.find(".relative:first");
-  $td_div.attr("class", "relative"); // reset CSS styling of TD>div.relative
+  var gbNotification = td.getElementsByClassName('gb-notification')[0];
+  var cellDiv = td.getElementsByClassName('relative')[0];
+
+  /* var $flag = $td.find(".gb-notification");
+     var $td_div = $td.find(".relative:first"); */
+  cellDiv.className = 'relative';
+  var $cellDiv = $(cellDiv);
 
   if (scoreState == "saved") {
-    $td_div.addClass("gb-save-success");
+    $cellDiv.addClass("gb-save-success");
     GbGradeTable.setScoreState(false, student.userId, column.assignmentId);
     setTimeout(function() {
-      $td_div.removeClass("gb-save-success", 2000);
+      $cellDiv.removeClass("gb-save-success", 2000);
     }, 2000);
   } else if (scoreState == "error") {
-    $td_div.addClass("gb-save-error");
+    $cellDiv.addClass("gb-save-error");
   } else if (scoreState == "invalid") {
-    $td_div.addClass("gb-save-invalid");
+    $cellDiv.addClass("gb-save-invalid");
   }
   if (parseFloat(value) > parseFloat(column.points)) {
-    $td_div.addClass("gb-extra-credit");
-    $flag.addClass("gb-flag-extra-credit");
+    $cellDiv.addClass("gb-extra-credit");
+    $(gbNotification).addClass("gb-flag-extra-credit");
   } else {
-    $flag.removeClass("gb-flag-extra-credit");
-    $td_div.removeClass("gb-extra-credit");
+    $(gbNotification).removeClass("gb-flag-extra-credit");
+    $cellDiv.removeClass("gb-extra-credit");
   }
 
   $.data(td, 'cell-initialised', cellKey);
@@ -564,6 +576,21 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
   GbGradeTable.setupToggleGradeItems();
   GbGradeTable.setupColumnSorting();
+
+  // Patch HandsonTable getWorkspaceWidth for improved scroll performance on big tables
+  var origGetWorkspaceWidth = WalkontableViewport.prototype.getWorkspaceWidth;
+
+  (function () {
+    var cachedWidth = undefined;
+    WalkontableViewport.prototype.getWorkspaceWidth = function () {
+      var self = this;
+      if (!cachedWidth) {
+        cachedWidth = origGetWorkspaceWidth.bind(self)();
+      }
+
+      return cachedWidth;
+    }
+  }());
 };
 
 
