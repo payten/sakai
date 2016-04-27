@@ -38,13 +38,10 @@ public class UpdateUngradedItemsPanel extends Panel {
 
 	private final ModalWindow window;
 
-	private final IModel<Long> model;
-
 	private static final double DEFAULT_GRADE = 0;
 
 	public UpdateUngradedItemsPanel(final String id, final IModel<Long> model, final ModalWindow window) {
-		super(id);
-		this.model = model;
+		super(id, model);
 		this.window = window;
 	}
 
@@ -53,7 +50,7 @@ public class UpdateUngradedItemsPanel extends Panel {
 		super.onInitialize();
 
 		// unpack model
-		final Long assignmentId = this.model.getObject();
+		final Long assignmentId = (Long) getDefaultModelObject();
 
 		// form model
 		final GradeOverride override = new GradeOverride();

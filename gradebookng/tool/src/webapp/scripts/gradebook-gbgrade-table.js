@@ -598,6 +598,16 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       action: 'deleteAssignment',
       assignmentId: $cell.data("assignmentid")
     });
+  }).
+  // Set ungraded values for assignment
+  on("click", ".gb-dropdown-menu .gb-set-ungraded", function() {
+    var $dropdown = $(this).closest(".gb-dropdown-menu");
+    var $cell = $dropdown.data("cell");
+
+    GbGradeTable.ajax({
+      action: 'setUngraded',
+      assignmentId: $cell.data("assignmentid")
+    });
   });
 
   GbGradeTable.setupToggleGradeItems();
