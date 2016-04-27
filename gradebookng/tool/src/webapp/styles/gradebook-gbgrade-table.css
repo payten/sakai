@@ -49,6 +49,11 @@
 #gradeTable .handsontable th,
 #gradeTable .handsontable td {
   border-color: #EAEAEA;
+  padding: 0;
+}
+#gradeTable .handsontable th > .relative,
+#gradeTable .handsontable td > .relative {
+  padding: 0 4px;
 }
 
 #gradeTable .handsontable th {
@@ -195,7 +200,7 @@
   content: '\e601';
 }
 #gradeTable .gb-extra-credit {
-  background-color: #FCF8E3 !important;
+  background-color: #FCF8E3;
 }
 .gb-flag-extra-credit:before {
   content: '\f0fe';

@@ -172,32 +172,28 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     $td.find(".gb-comment-notification").css('display', 'none');
   }
 
-  // other notifications as a flag
+  // other notifications
+  var $td_div = $td.find(".relative:first");
   var $flag = $td.find(".gb-notification");
   if (scoreState == "saved") {
-    $td.addClass("gb-save-success");
+    $td_div.addClass("gb-save-success");
     GbGradeTable.setScoreState(false, student.userId, column.assignmentId);
     setTimeout(function() {
-      $td.removeClass("gb-save-success", 2000);
+      $td_div.removeClass("gb-save-success", 2000);
     }, 2000);
   } else if (scoreState == "error") {
-    $td.addClass("gb-save-error");
+    $td_div.addClass("gb-save-error");
   } else if (scoreState == "invalid") {
-    $td.addClass("gb-save-invalid");
+    $td_div.addClass("gb-save-invalid");
   } else {
     $flag.attr("css", "gb-notification");
   }
-  // error
-  // invalid
-  // save
-  // concurrent edit detected
-  // extra credit
   if (parseFloat(value) > parseFloat(column.points)) {
-    $td.addClass("gb-extra-credit");
+    $td_div.addClass("gb-extra-credit");
     $flag.addClass("gb-flag-extra-credit");
   } else {
     $flag.removeClass("gb-flag-extra-credit");
-    $td.removeClass("gb-extra-credit");
+    $td_div.removeClass("gb-extra-credit");
   }
 
   $.data(td, 'cell-initialised', cellKey);
