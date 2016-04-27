@@ -141,65 +141,12 @@ public class GbCourseGradeLabel extends Label {
 	 * @return formatted string ready for display
 	 */
 	private String buildCourseGrade() {
-		final List<String> parts = new ArrayList<>();
-
-		// letter grade
-		String letterGrade = null;
-		if (this.showOverride && StringUtils.isNotBlank(this.courseGrade.getEnteredGrade())) {
-			letterGrade = this.courseGrade.getEnteredGrade();
-		} else {
-			letterGrade = this.courseGrade.getMappedGrade();
-		}
-
-		if (StringUtils.isNotBlank(letterGrade)
-				&& (this.gradebook.isCourseLetterGradeDisplayed() || this.currentUserRole == GbRole.INSTRUCTOR)) {
-			parts.add(letterGrade);
-		}
-
-		// percentage
-		final String calculatedGrade = FormatHelper.formatStringAsPercentage(this.courseGrade.getCalculatedGrade());
-
-		if (StringUtils.isNotBlank(calculatedGrade)
-				&& (this.gradebook.isCourseAverageDisplayed() || this.currentUserRole == GbRole.INSTRUCTOR)) {
-			if (parts.isEmpty()) {
-				parts.add(new StringResourceModel("coursegrade.display.percentage-first", null,
-						new Object[] { calculatedGrade }).getString());
-			} else {
-				parts.add(new StringResourceModel("coursegrade.display.percentage-second", null,
-						new Object[] { calculatedGrade }).getString());
-			}
-		}
-
-		// requested points
-		if (this.showPoints) {
-
-			// don't display points for weighted category type
-			final GbCategoryType categoryType = GbCategoryType.valueOf(this.gradebook.getCategory_type());
-			if (categoryType != GbCategoryType.WEIGHTED_CATEGORY) {
-
-				final Double pointsEarned = this.courseGrade.getPointsEarned();
-				final Double totalPointsPossible = this.courseGrade.getTotalPointsPossible();
-
-				// if instructor, show the points if requested
-				// otherwise check the settings
-				if (this.currentUserRole == GbRole.INSTRUCTOR || this.gradebook.isCoursePointsDisplayed()) {
-					if (parts.isEmpty()) {
-						parts.add(new StringResourceModel("coursegrade.display.points-first", null,
-								new Object[] { pointsEarned, totalPointsPossible }).getString());
-					} else {
-						parts.add(new StringResourceModel("coursegrade.display.points-second", null,
-								new Object[] { pointsEarned, totalPointsPossible }).getString());
-					}
-				}
-			}
-		}
-
-		// if parts is empty, there are no grades, display a -
-		if (parts.isEmpty()) {
-			parts.add(getString("coursegrade.display.none"));
-		}
-
-		return String.join(" ", parts);
+		return FormatHelper.formatCourseGrade(
+			this.courseGrade,
+			this.gradebook.isCourseLetterGradeDisplayed() || this.currentUserRole == GbRole.INSTRUCTOR,
+			this.showOverride,
+			this.gradebook.isCourseAverageDisplayed() || this.currentUserRole == GbRole.INSTRUCTOR,
+			this.showPoints);
 	}
 
 }

@@ -79,12 +79,12 @@ GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value
 
   if (!wasInitialised) {
     var html = GbGradeTable.templates.courseGradeCell.process({
-      value: value
+      value: value[0]
     });
 
     td.innerHTML = html;
   } else if (wasInitialised != cellKey) {
-    $td.find(".gb-value").html(value);
+    $td.find(".gb-value").html(value[0]);
   }
 
   var student = instance.getDataAtCell(row, 0);
@@ -284,6 +284,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   GbGradeTable.domElement = $('#' + elementId);
   GbGradeTable.students = tableData.students;
   GbGradeTable.columns = tableData.columns;
+  GbGradeTable.settings = tableData.settings;
   GbGradeTable.grades = GbGradeTable.mergeColumns(GbGradeTable.unpack(tableData.serializedGrades,
                                                                       tableData.rowCount,
                                                                       tableData.columnCount),
@@ -381,7 +382,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     fixedColumnsLeft: 2,
     colHeaders: true,
     columns: GbGradeTable.getFilteredColumns(),
-    colWidths: [240,140].concat(GbGradeTable.columns.map(function () { return 230 })),
+    colWidths: GbGradeTable.getColumnWidths(),
     autoRowSize: false,
     autoColSize: false,
     height: $(window).height() * 0.5,
@@ -859,6 +860,22 @@ GbGradeTable.applyStudentFilter = function(data) {
   }
 };
 
+GbGradeTable.getColumnWidths = function() {
+  var studentColumnWidth = 240;
+  var courseGradeColumnWidth = 140;
+
+  // if showing course grade letter, percentage and points
+  // make column a touch wider
+  if (GbGradeTable.settings.isCourseLetterGradeDisplayed
+        && GbGradeTable.settings.isCoursePointsDisplayed
+        && GbGradeTable.settings.isCourseAverageDisplayed) {
+    courseGradeColumnWidth = 220;
+  }
+
+  return [studentColumnWidth, courseGradeColumnWidth].
+            concat(GbGradeTable.columns.map(function () { return 230 }));
+};
+
 GbGradeTable.setupToggleGradeItems = function() {
   var $panel = $("<div>").addClass("gb-toggle-grade-items-panel").hide();
   var $button = $("#toggleGradeItemsToolbarItem");
@@ -1194,13 +1211,8 @@ GbGradeTable.setupColumnSorting = function() {
   });
 };
 
-GbGradeTable.COURSE_GRADES = [].concat.apply([], "FEDCBA".split("").map(function(letter) {
-  return [letter + "-", letter, letter + "+"]
-}));
 
 GbGradeTable.sort = function(colIndex, direction) {
-  console.log(colIndex, direction);
-
   if (direction == null) {
     // reset the table data to default order
     GbGradeTable.instance.loadData(GbGradeTable.grades);
@@ -1223,10 +1235,13 @@ GbGradeTable.sort = function(colIndex, direction) {
       }
     // sort by course grade
     } else if (colIndex == 1) {
-      if ($.inArray(a, GbGradeTable.COURSE_GRADES) > $.inArray(b, GbGradeTable.COURSE_GRADES)) {
+      var a_points = parseFloat(a[1]);
+      var b_points = parseFloat(b[1]);
+
+      if (a_points > b_points) {
         return 1;
       }
-      if ($.inArray(a, GbGradeTable.COURSE_GRADES) < $.inArray(b, GbGradeTable.COURSE_GRADES)) {
+      if (a_points < b_points) {
         return -1;
       }
     } else {

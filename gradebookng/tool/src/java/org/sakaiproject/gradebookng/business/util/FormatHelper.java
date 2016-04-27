@@ -5,11 +5,19 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
 import lombok.extern.apachecommons.CommonsLog;
+import org.apache.wicket.model.StringResourceModel;
+import org.sakaiproject.gradebookng.business.GbCategoryType;
+import org.sakaiproject.gradebookng.business.GbRole;
+import org.sakaiproject.service.gradebook.shared.CourseGrade;
+import org.sakaiproject.service.gradebook.shared.GradebookInformation;
+import org.sakaiproject.tool.gradebook.Gradebook;
 
 @CommonsLog
 public class FormatHelper {
@@ -120,5 +128,72 @@ public class FormatHelper {
 	public static String formatDateTime(final Date date) {
 		final SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm"); // TODO needs to come from i18n
 		return df.format(date);
+	}
+
+	/**
+	 * Format a Course Grade based on the current settings
+	 *  e.g. A+ (95%) [133/140]
+	 *
+	 * @param courseGrade
+	 * @param showLetter
+	 * @param showOverride
+	 * @param showPercentage
+	 * @param showPoints
+	 * 
+	 * @return String
+	 */
+	public static String formatCourseGrade(final CourseGrade courseGrade, final boolean showLetter, final boolean showOverride, final boolean showPercentage, final boolean showPoints) {
+		final List<String> parts = new ArrayList<>();
+
+		// letter grade
+		if (showLetter) {
+			String letterGrade = null;
+			if (showOverride && StringUtils.isNotBlank(courseGrade.getEnteredGrade())) {
+				letterGrade = courseGrade.getEnteredGrade();
+			} else {
+				letterGrade = courseGrade.getMappedGrade();
+			}
+
+			if (StringUtils.isNotBlank(letterGrade)) {
+				parts.add(letterGrade);
+			}
+		}
+
+		// percentage
+		if (showPercentage) {
+			final String calculatedGrade = FormatHelper.formatStringAsPercentage(courseGrade.getCalculatedGrade());
+			if (StringUtils.isNotBlank(calculatedGrade)) {
+				if (parts.isEmpty()) {
+					parts.add(new StringResourceModel("coursegrade.display.percentage-first", null,
+						new Object[] { calculatedGrade }).getString());
+				} else {
+					parts.add(new StringResourceModel("coursegrade.display.percentage-second", null,
+						new Object[] { calculatedGrade }).getString());
+				}
+			}
+		}
+
+		// requested points
+		if (showPoints) {
+			final Double pointsEarned = courseGrade.getPointsEarned();
+			final Double totalPointsPossible = courseGrade.getTotalPointsPossible();
+
+			if (totalPointsPossible > 0) {
+				if (parts.isEmpty()) {
+					parts.add(new StringResourceModel("coursegrade.display.points-first", null,
+						new Object[]{pointsEarned, totalPointsPossible}).getString());
+				} else {
+					parts.add(new StringResourceModel("coursegrade.display.points-second", null,
+						new Object[]{pointsEarned, totalPointsPossible}).getString());
+				}
+			}
+		}
+
+		// if parts is empty, there are no grades, display a -
+		if (parts.isEmpty()) {
+			parts.add(new StringResourceModel("coursegrade.display.none", null).getString());
+		}
+
+		return String.join(" ", parts);
 	}
 }

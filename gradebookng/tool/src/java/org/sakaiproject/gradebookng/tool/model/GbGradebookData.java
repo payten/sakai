@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebookng.tool.model;
 
 import lombok.Value;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.util.StringUtil;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
@@ -15,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
+import org.sakaiproject.service.gradebook.shared.CourseGrade;
 import org.sakaiproject.service.gradebook.shared.GradebookInformation;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -117,20 +119,23 @@ public class GbGradebookData {
     private class DataSet {
         private List<StudentDefinition> students;
         private List<ColumnDefinition> columns;
-        private List<String> courseGrades;
+        private List<String[]> courseGrades;
         private String serializedGrades;
+        private Map<String, Object> settings;
 
         private int rowCount;
         private int columnCount;
 
         public DataSet(List<StudentDefinition> students,
                        List<ColumnDefinition> columns,
-                       List<String> courseGrades,
-                       String serializedGrades) {
+                       List<String[]> courseGrades,
+                       String serializedGrades,
+                       Map<String, Object> settings) {
             this.students = students;
             this.columns = columns;
             this.courseGrades = courseGrades;
             this.serializedGrades = serializedGrades;
+            this.settings = settings;
 
             this.rowCount = students.size();
             this.columnCount = columns.size();
@@ -163,7 +168,12 @@ public class GbGradebookData {
     public String toScript() {
         ObjectMapper mapper = new ObjectMapper();
 
-        DataSet dataset = new DataSet(this.students, this.columns, courseGrades(), serializeGrades(gradeList()));
+        DataSet dataset = new DataSet(
+            this.students, 
+            this.columns,
+            courseGrades(),
+            serializeGrades(gradeList()),
+            serializeSettings());
 
         try {
             return mapper.writeValueAsString(dataset);
@@ -245,6 +255,16 @@ public class GbGradebookData {
         }
     }
 
+    private Map<String, Object> serializeSettings() {
+        Map<String, Object> result = new HashedMap();
+
+        result.put("isCourseLetterGradeDisplayed", settings.isCourseLetterGradeDisplayed());
+        result.put("isCourseAverageDisplayed", settings.isCourseAverageDisplayed());
+        result.put("isCoursePointsDisplayed", settings.isCoursePointsDisplayed());
+
+        return result;
+    };
+
     private int decimalToInteger(double decimal, int places) {
         if ((int)decimal == decimal) {
             return (int)decimal;
@@ -259,13 +279,26 @@ public class GbGradebookData {
         }
     }
 
-    private List<String> courseGrades() {
-        List<String> result = new ArrayList<String>();
+    private List<String[]> courseGrades() {
+        List<String[]> result = new ArrayList<String[]>();
 
-        // FIXME: Reuse logic from existing code to get this.  Need to format
-        // the thing appropriately for the type of course grade.
         for (GbStudentGradeInfo studentGradeInfo : this.studentGradeInfoList) {
-            result.add(studentGradeInfo.getCourseGrade().getMappedGrade());
+            // String[0] = A+ (95%) [133/140] -- display string
+            // String[1] = 133 -- points for sorting
+            String[] gradeData = new String[2];
+
+            CourseGrade courseGrade = studentGradeInfo.getCourseGrade();
+
+            gradeData[0] = FormatHelper.formatCourseGrade(
+                courseGrade,
+                settings.isCourseLetterGradeDisplayed(),
+                true,
+                settings.isCourseAverageDisplayed(),
+                settings.isCoursePointsDisplayed());
+
+            gradeData[1] = FormatHelper.formatDoubleToTwoDecimalPlaces(courseGrade.getPointsEarned());
+
+            result.add(gradeData);
         }
 
         return result;

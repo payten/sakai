@@ -13,6 +13,7 @@ import org.sakaiproject.gradebookng.business.util.FormatHelper;
 import org.sakaiproject.gradebookng.tool.panels.GradeItemCellPanel;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.service.gradebook.shared.CourseGrade;
+import org.sakaiproject.service.gradebook.shared.GradebookInformation;
 
 public class GradeUpdateAction implements Action, Serializable {
 
@@ -26,9 +27,12 @@ public class GradeUpdateAction implements Action, Serializable {
     // FIXME: We'll use a proper ObjectMapper for these soon.
     private class GradeUpdateResponse implements ActionResponse {
         private String courseGrade;
+        private String points;
+        private boolean extraCredit;
 
-        public GradeUpdateResponse(String courseGrade) {
+        public GradeUpdateResponse(String courseGrade, String points, boolean extraCredit) {
             this.courseGrade = courseGrade;
+            this.points = points;
         }
 
         public String getStatus() {
@@ -36,7 +40,7 @@ public class GradeUpdateAction implements Action, Serializable {
         }
 
         public String toJson() {
-            return "{\"courseGrade\": \"" + courseGrade + "\"}";
+            return "{\"courseGrade\": [\"" + courseGrade + "\", \"" + points + "\"], \"extraCredit\": " + extraCredit + "}";
         }
     }
 
@@ -92,18 +96,27 @@ public class GradeUpdateAction implements Action, Serializable {
         final GradeSaveResponse result = businessService.saveGrade(Long.valueOf(assignmentId), studentUuid,
                 oldGrade, newGrade, params.get("comment").asText());
 
-        if (!result.equals(GradeSaveResponse.OK)) {
+        if (!result.equals(GradeSaveResponse.OK) && !result.equals(GradeSaveResponse.OVER_LIMIT)) {
             return new SaveGradeErrorResponse(result);
         }
 
-	CourseGrade studentCourseGrade = businessService.getCourseGrade(studentUuid);
+        CourseGrade studentCourseGrade = businessService.getCourseGrade(studentUuid);
 
         if (studentCourseGrade != null) {
-            String grade = studentCourseGrade.getMappedGrade();
+            final GradebookInformation settings = businessService.getGradebookSettings();
 
-            return new GradeUpdateResponse(grade);
+            String grade = FormatHelper.formatCourseGrade(
+                studentCourseGrade,
+                settings.isCourseLetterGradeDisplayed(),
+                true,
+                settings.isCourseAverageDisplayed(),
+                settings.isCoursePointsDisplayed());
+
+            String points = FormatHelper.formatDoubleToTwoDecimalPlaces(studentCourseGrade.getPointsEarned());
+
+            return new GradeUpdateResponse(grade, points, result.equals(GradeSaveResponse.OVER_LIMIT));
         } else {
-            return new GradeUpdateResponse("-");
+            return new GradeUpdateResponse("-", "0", result.equals(GradeSaveResponse.OVER_LIMIT));
         }
 
 
