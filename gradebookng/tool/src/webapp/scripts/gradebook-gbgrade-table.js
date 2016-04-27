@@ -578,6 +578,16 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     GbGradeTable.ajax({
       action: 'setZeroScore'
     });
+  }).
+  // View Course Grade Override Log
+  on("click", ".gb-dropdown-menu .gb-course-grade-override-log", function() {
+    var $dropdown = $(this).closest(".gb-dropdown-menu");
+    var $cell = $dropdown.data("cell");
+
+    GbGradeTable.ajax({
+      action: 'viewCourseGradeLog',
+      studentId: $cell.data("studentid")
+    });
   });
 
   GbGradeTable.setupToggleGradeItems();

@@ -394,6 +394,7 @@ public class GradebookPage extends BasePage {
 		gradeTable.addEventListener("editComment", new EditCommentAction(this.businessService));
 		gradeTable.addEventListener("viewGradeSummary", new ViewGradeSummaryAction(this.businessService));
 		gradeTable.addEventListener("setZeroScore", new SetZeroScoreAction());
+		gradeTable.addEventListener("viewCourseGradeLog", new ViewCourseGradeLogAction());
 
 		this.form.add(gradeTable);
 
