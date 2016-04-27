@@ -184,12 +184,12 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   var gbNotification = td.getElementsByClassName('gb-notification')[0];
   var cellDiv = td.getElementsByClassName('relative')[0];
 
-  /* var $flag = $td.find(".gb-notification");
-     var $td_div = $td.find(".relative:first"); */
   cellDiv.className = 'relative';
   var $cellDiv = $(cellDiv);
 
-  if (scoreState == "saved") {
+  if (column.externallyMaintained) {
+    $cellDiv.addClass("gb-read-only");
+  } else if (scoreState == "saved") {
     $cellDiv.addClass("gb-save-success");
     GbGradeTable.setScoreState(false, student.userId, column.assignmentId);
     setTimeout(function() {
@@ -792,9 +792,11 @@ GbGradeTable.getFilteredColumns = function() {
         _data_: column
       };
     } else {
+      var readonly = column.externallyMaintained;
+
       return {
         renderer: GbGradeTable.cellRenderer,
-        editor: GbGradeTableEditor,
+        editor: readonly ? false : GbGradeTableEditor,
         _data_: column
       };
     }

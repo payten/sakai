@@ -46,6 +46,12 @@
                     <wicket:message key="label.due"/> 
                     <span>${dueDate}</span>
                 </div>
+                {if externallyMaintained}
+                    <div class="gb-due-date">
+                        <wicket:message key="label.external"/> 
+                        <span>${externalAppName}</span>
+                    </div>
+                {/if}
                 <div class="gb-grade-item-flags">
                     {if released}<!-- TODO popover --><span class="gb-flag-is-released"></span>{/if}
                     {if includedInCourseGrade}<!-- TODO popover --><span class="gb-flag-not-counted"></span>{/if}
@@ -61,8 +67,10 @@
                         <!-- TODO --><li><a href="javascript:void(0);" class="move-assignment-left" role="menuitem"><wicket:message key="assignment.option.moveleft" /></a></li>
                         <!-- TODO --><li><a href="javascript:void(0);" class="move-assignment-right" role="menuitem"><wicket:message key="assignment.option.moveright" /></a></li>
                         <!-- TODO --><li><a href="javascript:void(0);" class="gb-hide-item" role="menuitem"><wicket:message key="assignment.option.hide" /></a></li>
-                        <li><a href="javascript:void(0);" class="gb-set-ungraded" role="menuitem"><wicket:message key="assignment.option.setungraded" /></a></li>
-                        <li><a href="javascript:void(0);" class="gb-delete-item" role="menuitem"><span class="text-danger"><wicket:message key="delete.label" /></span></a></li>
+                        {if !externallyMaintained}
+                            <li><a href="javascript:void(0);" class="gb-set-ungraded" role="menuitem"><wicket:message key="assignment.option.setungraded" /></a></li>
+                            <li><a href="javascript:void(0);" class="gb-delete-item" role="menuitem"><span class="text-danger"><wicket:message key="delete.label" /></span></a></li>
+                        {/if}
                     </ul>
                 </div>
             </div>

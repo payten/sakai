@@ -77,7 +77,6 @@
   white-space: normal;
   text-align: left;
   line-height: 1.2em;
-  padding-bottom: 4px;
   display: block;
   cursor: pointer;
 }
@@ -229,4 +228,12 @@
   font-family: "gradebook-icons";
   content: "\f071" !important;
   color: rgb(200,144,0) !important;
+}
+#gradeTable .gb-read-only {
+  color: #777;
+}
+#gradeTable .gb-read-only .gb-notification:before {
+  font-family: "gradebook-icons";
+  content: '\f023';
+  color: #DDD;
 }
