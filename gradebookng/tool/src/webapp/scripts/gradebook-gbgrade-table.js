@@ -369,12 +369,16 @@ GbGradeTable.renderTable = function (elementId, tableData) {
         if (!lastValidGrades[studentId][assignmentId]) {
           lastValidGrades[studentId][assignmentId] = oldScore;
         }
+      } else if (status == "nochange") {
+        // nothing to do!
       } else {
         console.log("Unhandled saveValue response: " + status);
       }
 
       // update the course grade cell
-      that.instance.setDataAtCell(row, 1, data.courseGrade);
+      if (data.courseGrade) {
+        that.instance.setDataAtCell(row, 1, data.courseGrade);
+      }
 
       // update the category average cell
       if (assignment.categoryId) {

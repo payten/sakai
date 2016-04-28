@@ -84,6 +84,16 @@ public class GradeUpdateAction implements Action, Serializable {
         }
     }
 
+    private class SaveGradeNoChangeResponse extends EmptyOkResponse {
+        public SaveGradeNoChangeResponse() {
+        }
+
+        @Override
+        public String getStatus() {
+            return "nochange";
+        }
+    }
+
     @Override
     public ActionResponse handleEvent(JsonNode params, AjaxRequestTarget target) {
         final String oldGrade = params.get("oldScore").asText();
@@ -105,6 +115,10 @@ public class GradeUpdateAction implements Action, Serializable {
         // for concurrency, get the original grade we have in the UI and pass it into the service as a check
         final GradeSaveResponse result = businessService.saveGrade(Long.valueOf(assignmentId), studentUuid,
                 oldGrade, newGrade, params.get("comment").asText());
+
+        if (result.equals(GradeSaveResponse.NO_CHANGE)) {
+            return new SaveGradeNoChangeResponse();
+        }
 
         if (!result.equals(GradeSaveResponse.OK) && !result.equals(GradeSaveResponse.OVER_LIMIT)) {
             return new SaveGradeErrorResponse(result);
