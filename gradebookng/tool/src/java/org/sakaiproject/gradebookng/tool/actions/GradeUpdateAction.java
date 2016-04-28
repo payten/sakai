@@ -5,6 +5,8 @@ import java.io.Serializable;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.lang.annotation.Target;
 import java.lang.Error;
+import java.text.Format;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.DoubleValidator;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -28,11 +30,14 @@ public class GradeUpdateAction implements Action, Serializable {
     private class GradeUpdateResponse implements ActionResponse {
         private String courseGrade;
         private String points;
+        private String categoryScore;
         private boolean extraCredit;
 
-        public GradeUpdateResponse(String courseGrade, String points, boolean extraCredit) {
+        public GradeUpdateResponse(boolean extraCredit, String courseGrade, String points, String categoryScore) {
             this.courseGrade = courseGrade;
+            this.categoryScore = categoryScore;
             this.points = points;
+            this.extraCredit = extraCredit;
         }
 
         public String getStatus() {
@@ -40,7 +45,11 @@ public class GradeUpdateAction implements Action, Serializable {
         }
 
         public String toJson() {
-            return "{\"courseGrade\": [\"" + courseGrade + "\", \"" + points + "\"], \"extraCredit\": " + extraCredit + "}";
+            return "{" +
+                        "\"courseGrade\": [\"" + courseGrade + "\"," + "\"" + points + "\"]," +
+                        "\"categoryScore\": \"" + categoryScore + "\"," +
+                        "\"extraCredit\": " + extraCredit +
+                    "}";
         }
     }
 
@@ -89,6 +98,7 @@ public class GradeUpdateAction implements Action, Serializable {
 
         String assignmentId = params.get("assignmentId").asText();
         String studentUuid = params.get("studentId").asText();
+        String categoryId = params.has("categoryId") ? params.get("categoryId").asText() : null; 
 
         final String newGrade = FormatHelper.formatGrade(rawNewGrade);
         
@@ -102,50 +112,33 @@ public class GradeUpdateAction implements Action, Serializable {
 
         CourseGrade studentCourseGrade = businessService.getCourseGrade(studentUuid);
 
+        String grade = "-";
+        String points = "0";
+
         if (studentCourseGrade != null) {
             final GradebookInformation settings = businessService.getGradebookSettings();
 
-            String grade = FormatHelper.formatCourseGrade(
+            grade = FormatHelper.formatCourseGrade(
                 studentCourseGrade,
                 settings.isCourseLetterGradeDisplayed(),
                 true,
                 settings.isCourseAverageDisplayed(),
                 settings.isCoursePointsDisplayed());
 
-            String points = FormatHelper.formatDoubleToTwoDecimalPlaces(studentCourseGrade.getPointsEarned());
-
-            return new GradeUpdateResponse(grade, points, result.equals(GradeSaveResponse.OVER_LIMIT));
-        } else {
-            return new GradeUpdateResponse("-", "0", result.equals(GradeSaveResponse.OVER_LIMIT));
+            points = FormatHelper.formatDoubleToTwoDecimalPlaces(studentCourseGrade.getPointsEarned());
         }
 
+        String categoryScore = "-";
 
-        // TODO here, add the message
-        // switch (result) {
-        // case OK:
-        //     markSuccessful(GradeItemCellPanel.this.gradeCell);
-        //     this.originalGrade = newGrade;
-        //     refreshCourseGradeAndCategoryAverages(target);
-        //     break;
-        // case ERROR:
-        //     markError(getComponent());
-        //     error(getString("message.edititem.error"));
-        //     break;
-        // case OVER_LIMIT:
-        //     markOverLimit(GradeItemCellPanel.this.gradeCell);
-        //     refreshCourseGradeAndCategoryAverages(target);
-        //     this.originalGrade = newGrade;
-        //     break;
-        // case NO_CHANGE:
-        //     handleNoChange(GradeItemCellPanel.this.gradeCell);
-        //     break;
-        // case CONCURRENT_EDIT:
-        //     mark
-        //     error(getString("error.concurrentedit"));
-        //     GradeItemCellPanel.this.notifications.add(GradeCellNotification.CONCURRENT_EDIT);
-        //     break;
-        // default:
-        //     throw new UnsupportedOperationException("The response for saving the grade is unknown.");
-        // }
+        if (categoryId != null) {
+            Double average = businessService.getCategoryScoreForStudent(Long.valueOf(categoryId), studentUuid);
+            categoryScore = FormatHelper.formatDoubleToTwoDecimalPlaces(average);
+        }
+
+        return new GradeUpdateResponse(
+            result.equals(GradeSaveResponse.OVER_LIMIT),
+            grade,
+            points,
+            categoryScore);
     }
 }

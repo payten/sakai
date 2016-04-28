@@ -54,7 +54,7 @@
                 {/if}
                 <div class="gb-grade-item-flags">
                     {if released}<!-- TODO popover --><span class="gb-flag-is-released"></span>{/if}
-                    {if includedInCourseGrade}<!-- TODO popover --><span class="gb-flag-not-counted"></span>{/if}
+                    {if !includedInCourseGrade}<!-- TODO popover --><span class="gb-flag-not-counted"></span>{/if}
                 </div>
                 <div class="btn-group">
                     <a class="btn btn-sm btn-default dropdown-toggle"

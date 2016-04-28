@@ -328,6 +328,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     var studentId = $td.data("studentid");
     var assignmentId = $td.data("assignmentid");
 
+    var assignment = GbGradeTable.colModelForAssignment(assignmentId);
+
     if (!lastValidGrades[studentId]) {
       lastValidGrades[studentId] = {};
     }
@@ -337,6 +339,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       action: 'setScore',
       studentId: studentId,
       assignmentId: assignmentId,
+      categoryId: assignment.categoryId,
       oldScore: (lastValidGrades[studentId][assignmentId] || oldScore),
       newScore: newScore,
       comment: ""
@@ -364,7 +367,14 @@ GbGradeTable.renderTable = function (elementId, tableData) {
         console.log("Unhandled saveValue response: " + status);
       }
 
+      // update the course grade cell
       that.instance.setDataAtCell(row, 1, data.courseGrade);
+
+      // update the category average cell
+      if (assignment.categoryId) {
+        var categoryScoreCol = GbGradeTable.colForCategoryScore(assignment.categoryId);
+        that.instance.setDataAtCell(row, categoryScoreCol, data.categoryScore);
+      }
     });
 
     Handsontable.editors.TextEditor.prototype.saveValue.apply(this, arguments);
@@ -682,6 +692,12 @@ GbGradeTable.modelForStudent = function(studentId) {
 GbGradeTable.colForAssignment = function(assignmentId) {
   return GbGradeTable.instance.view.settings.columns.findIndex(function(column, index, array) {
            return column._data_ && column._data_.assignmentId === parseInt(assignmentId);
+         });
+};
+
+GbGradeTable.colForCategoryScore = function(categoryId) {
+  return GbGradeTable.instance.view.settings.columns.findIndex(function(column, index, array) {
+           return column._data_ && column._data_.categoryId === parseInt(categoryId);
          });
 };
 
