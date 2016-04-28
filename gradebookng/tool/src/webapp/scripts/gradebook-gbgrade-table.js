@@ -335,16 +335,21 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       lastValidGrades[studentId] = {};
     }
 
-    // FIXME: We'll need to pass through the original comment text here.
-    GbGradeTable.ajax({
+    var postData = {
       action: 'setScore',
       studentId: studentId,
       assignmentId: assignmentId,
-      categoryId: assignment.categoryId,
       oldScore: (lastValidGrades[studentId][assignmentId] || oldScore),
       newScore: newScore,
       comment: ""
-    }, function (status, data) {
+    };
+
+    if (assignment.categoryId != null) {
+      postData['postData']= assignment.categoryId;
+    }
+
+    // FIXME: We'll need to pass through the original comment text here.
+    GbGradeTable.ajax(postData, function (status, data) {
       if (status == "OK") {
         GbGradeTable.setScoreState("saved", studentId, assignmentId);
         delete lastValidGrades[studentId][assignmentId];
