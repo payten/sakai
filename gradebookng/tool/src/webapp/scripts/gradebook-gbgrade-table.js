@@ -191,8 +191,9 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     $cellDiv.addClass("gb-read-only");
   } else if (scoreState == "saved") {
     $cellDiv.addClass("gb-save-success");
-    GbGradeTable.setScoreState(false, student.userId, column.assignmentId);
+
     setTimeout(function() {
+      GbGradeTable.setScoreState(false, student.userId, column.assignmentId);
       $cellDiv.removeClass("gb-save-success", 2000);
     }, 2000);
   } else if (scoreState == "error") {
