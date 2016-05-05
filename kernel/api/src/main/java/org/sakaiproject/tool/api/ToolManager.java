@@ -145,6 +145,14 @@ public interface ToolManager
 	 * @return <code>true</code> if the current placement is hidden.
 	 */
 	public boolean isHidden(Placement placement);
+
+	/**
+	 * Check if the placement is locked to users with site.upd only.
+	 * @param placement
+	 * @return <code>true</code> if the current placement is locked.
+	 */
+	public boolean isLocked(Placement placement);
+
 	/**
 	 * The optional tool configuration tag "functions.require" describes a
 	 * set of permission lists which decide the visibility of the tool link

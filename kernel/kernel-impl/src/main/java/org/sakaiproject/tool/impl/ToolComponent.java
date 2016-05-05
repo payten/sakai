@@ -743,6 +743,16 @@ public abstract class ToolComponent implements ToolManager
 		if (placement == null) return true;
 		String visibility = placement.getConfig().getProperty(PORTAL_VISIBLE);
 		if ( "false".equals(visibility) ) return true;
+		return isLocked(placement);
+	}
+
+	/**
+	 * Check if the placement is "locked" to users with site.upd
+	 * permission only
+	 * @param placement
+	 * @return <code>true</code> if current placement is locked
+	 */
+	public boolean isLocked(Placement placement) {
 		String requiredPermissionsString = StringUtils.trimToNull(placement.getConfig().getProperty(TOOLCONFIG_REQUIRED_PERMISSIONS));
 		if (requiredPermissionsString == null)
 			return false;

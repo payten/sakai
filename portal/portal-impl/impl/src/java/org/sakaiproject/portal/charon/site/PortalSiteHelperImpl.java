@@ -639,17 +639,25 @@ public class PortalSiteHelperImpl implements PortalSiteHelper
 				StringBuffer desc = new StringBuffer();
 
 				boolean hidden = false;
+				boolean locked = false;
 				if (pTools != null && pTools.size() > 0) {
 					firstTool = pTools.get(0);
 					hidden = true; // Only set the page to hidden when we have tools that might un-hide it.
+					locked = true; // Only set the page to locked when we have tools that might un-lock it.
 					Iterator<ToolConfiguration> tools = pTools.iterator();
 					//get the tool descriptions for this page, typically only one per page, execpt for the Home page
 					int tCount = 0;
 					while(tools.hasNext()){
 						ToolConfiguration t = tools.next();
-						if (hidden && !isHidden(t))
+						if (hidden)
 						{
-							hidden = false;
+							if (isHidden(t)) {
+								if (locked && !isLocked(t)) {
+									locked = false;
+								}
+							} else {
+								hidden = false;
+							}
 						}
 						if (tCount > 0){
 							desc.append(" | ");
@@ -693,6 +701,7 @@ public class PortalSiteHelperImpl implements PortalSiteHelper
 				String description = desc.toString().replace("\"","&quot;");
 				m.put("description",  description);
 				m.put("hidden", Boolean.valueOf(hidden));
+				m.put("locked", Boolean.valueOf(locked));
 				// toolsOnPage is always null
 				//if (toolsOnPage != null) m.put("toolsOnPage", toolsOnPage);
 				if (includeSummary) summarizePage(m, site, p);
@@ -1293,6 +1302,15 @@ public class PortalSiteHelperImpl implements PortalSiteHelper
 	{
 		return getToolManager().isHidden(placement);
 	}
+
+	/**
+	 * Check to see if a tool placement is locked.
+	 */
+	public boolean isLocked(Placement placement)
+	{
+		return getToolManager().isLocked(placement);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 

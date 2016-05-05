@@ -254,6 +254,16 @@ nav#subSites{
 						font-style: italic;
 					}
 				}
+				&.is-locked {
+					&:after {
+						@extend .fa-lg;
+						@extend .fa;
+						content: '\f023';
+						position: absolute;
+						top: 4px;
+						right: 4px;
+					}
+				}
 			}
 			&.is-current{
 				background: $background-color;
