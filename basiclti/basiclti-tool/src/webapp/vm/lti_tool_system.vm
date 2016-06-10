@@ -158,6 +158,7 @@ ${includeLatestJQuery}
 	                <td headers="site_id">
 	                	#set($siteId="<span style='display:none;'>zzzz</span>")
 	                	#set($siteId=$tool.get("SITE_ID"))
+	                	#set($siteId=$tool.get("site_id"))
 	                	$!siteId
 	                </td>
 	                #if ($isAdmin) <td headers="use"><a href="$sakai_ActionURL.setPanel("ToolSite").setParameter("sakai_action","doFilter").setQueryString("id=$tool.get('id')")">$tool.get("lti_content_count")</a></td> #end
