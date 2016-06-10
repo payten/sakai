@@ -37,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import org.apache.commons.lang.StringUtils;
 import org.sakaiproject.authz.api.*;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.component.cover.ComponentManager;
@@ -139,6 +140,19 @@ public abstract class BaseAuthzGroupService implements AuthzGroupService
 	{
 		if (!securityService().unlock(lock, resource))
 		{
+
+			//NYU mod - if permission is SECURE_REMOVE_AUTHZ_GROUP and it has failed, also check the parent site for that permission.
+			//See CLASSES-562.
+			//original resource is like: /realm//site/d964008d-a70a-410c-89f0-1c360de34f3c/group/54b1fb65-3d5a-4e81-a017-e638b7bbbd9a
+			if(StringUtils.equals(lock, SECURE_REMOVE_AUTHZ_GROUP)) {
+				String parentRealm = StringUtils.substringBefore(resource, "/group/");
+				log.warn("Checking parent realm: " + parentRealm + " with user: " + sessionManager().getCurrentSessionUserId() + " and permission: " + SECURE_REMOVE_AUTHZ_GROUP);
+
+				if(securityService().unlock(lock, parentRealm)) {
+					return true;
+				}
+			}
+
 			return false;
 		}
 
