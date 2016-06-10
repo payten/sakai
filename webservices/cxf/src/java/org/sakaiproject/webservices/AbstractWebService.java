@@ -48,6 +48,12 @@ import org.sakaiproject.shortenedurl.api.ShortenedUrlService;
 import org.sakaiproject.tool.assessment.samlite.api.SamLiteService;
 import org.sakaiproject.id.api.IdManager;
 import org.sakaiproject.tool.assessment.shared.api.questionpool.QuestionPoolServiceAPI;
+import org.sakaiproject.archive.api.ArchiveService;
+import org.sakaiproject.user.api.PreferencesService;
+import org.sakaiproject.memory.api.MemoryService;
+import org.sakaiproject.db.api.SqlService;
+import org.sakaiproject.importer.api.ImportService;
+import org.sakaiproject.api.app.syllabus.SyllabusManager;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -88,6 +94,12 @@ public class AbstractWebService {
     protected GradebookExternalAssessmentService gradebookExternalAssessmentService;
     protected ActivityService activityService;
     protected QuestionPoolServiceAPI questionPoolServiceImpl;
+    protected ArchiveService archiveService;
+    protected PreferencesService preferencesService;
+    protected MemoryService memoryService;
+    protected SqlService sqlService;
+    protected ImportService importService;
+    protected SyllabusManager syllabusManager;
 
     
     @WebMethod(exclude = true)
@@ -266,5 +278,34 @@ public class AbstractWebService {
     @WebMethod(exclude = true)
     public void setQuestionPoolServiceImpl(QuestionPoolServiceAPI questionPoolServiceImpl) {
         this.questionPoolServiceImpl = questionPoolServiceImpl;
+
+    @WebMethod(exclude = true)
+    public void setArchiveService(ArchiveService archiveService) {
+        this.archiveService = archiveService;
+    }
+    
+    @WebMethod(exclude = true)
+    public void setPreferencesService(PreferencesService preferencesService) {
+        this.preferencesService = preferencesService;
+    }
+    
+    @WebMethod(exclude = true)
+    public void setMemoryService(MemoryService memoryService) {
+        this.memoryService = memoryService;
+    }
+    
+    @WebMethod(exclude = true)
+    public void setSqlService(SqlService sqlService) {
+        this.sqlService = sqlService;
+    }
+    
+    @WebMethod(exclude = true)
+    public void setImportService(ImportService importService) {
+        this.importService = importService;
+    }
+    
+    @WebMethod(exclude = true)
+    public void setSyllabusManager(SyllabusManager syllabusManager) {
+        this.syllabusManager = syllabusManager;
     }
 }
