@@ -398,13 +398,20 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			if ( log.isDebugEnabled() ) {
 				log.debug("authenticateUser(): allocating connection for login [userLogin = " + userLogin + "]");
 			}
+
+			long _ldapStartTime = System.currentTimeMillis();
+
 			conn = ldapConnectionManager.getConnection();
+
+			long _ldapFinishedConnecting = System.currentTimeMillis();
 
 			// look up the end-user's DN, which could be nested at some 
 			// arbitrary depth below getBasePath().
 			// TODO: optimization opportunity if user entries are 
 			// directly below getBasePath()
 			final String endUserDN = lookupUserBindDn(userLogin, conn);
+
+			long _ldapFinishedLookupUserBindDn = System.currentTimeMillis();
 
 			if ( endUserDN == null ) {
 				if ( log.isDebugEnabled() ) {
@@ -422,12 +429,26 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 				log.debug("authenticateUser(): attempting to allocate bound connection [userLogin = " + 
 						userLogin + "][bind dn [" + endUserDN + "]");
 			}
+
+			long _ldapStartAttemptBind = System.currentTimeMillis();
+
 			conn = ldapConnectionManager.getBoundConnection(endUserDN, password);
 
 			if ( log.isDebugEnabled() ) {
 				log.debug("authenticateUser(): successfully allocated bound connection [userLogin = " + 
 						userLogin + "][bind dn [" + endUserDN + "]");
 			}
+
+
+			long _ldapFinishTime = System.currentTimeMillis();
+
+			log.info(String.format("[%s] Successful LDAP authentication (connection: %d; lookup: %d; bind: %d; total: %d)",
+					       Thread.currentThread().toString(),
+					       (_ldapFinishedConnecting - _ldapStartTime),
+					       (_ldapFinishedLookupUserBindDn - _ldapFinishedConnecting),
+					       (_ldapFinishTime - _ldapStartAttemptBind),
+					       (_ldapFinishTime - _ldapStartTime)));
+
 			return true;
 
 		}
@@ -648,6 +669,9 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			log.debug("getUsers(): [Collection size = " + users.size() + "]");
 		}
 
+		long _ldapStartGetUsers = System.currentTimeMillis();
+		int _usersSize = users.size();
+
 		LDAPConnection conn = null;
 		boolean abortiveSearch = false;
 		int maxQuerySize = getMaxObjectsToQueryFor();
@@ -740,6 +764,10 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			}
 		}
 
+		log.info(String.format("[%s] Looked up %d users (total: %d)",
+				       Thread.currentThread().toString(),
+				       _usersSize,
+				       (System.currentTimeMillis() - _ldapStartGetUsers)));
 	}
 
 	/**
@@ -810,8 +838,11 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	 */
 	protected LdapUserData getUserByEid(String eid, LDAPConnection conn) 
 	throws LDAPException {
+		long _ldapGetUserByEidStart = System.currentTimeMillis();
+
 		if ( log.isDebugEnabled() ) {
 			log.debug("getUserByEid(): [eid = " + eid + "]");
+
 		}
 
 		if ( !(isSearchableEid(eid)) ) {
@@ -829,9 +860,15 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			ldapAttributeMapper.getFindUserByEidFilter(eid);
 
 		// takes care of caching and everything
-		return (LdapUserData)searchDirectoryForSingleEntry(filter, 
+		LdapUserData result = (LdapUserData)searchDirectoryForSingleEntry(filter, 
 				conn, null, null, null);
 
+		log.info(String.format("[%s] Got entry for single user (total: %d)",
+				       Thread.currentThread().toString(),
+				       (System.currentTimeMillis() - _ldapGetUserByEidStart)));
+
+
+		return result;
 	}
 
 	/**
