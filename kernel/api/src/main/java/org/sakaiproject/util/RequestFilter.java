@@ -332,227 +332,241 @@ public class RequestFilter implements Filter
 		StringBuffer sb = null;
 		long startTime = System.currentTimeMillis();
 
-		// bind some preferences as "current"
-		Boolean curRemoteUser = (Boolean) ThreadLocalManager.get(CURRENT_REMOTE_USER);
-		Integer curHttpSession = (Integer) ThreadLocalManager.get(CURRENT_HTTP_SESSION);
-		String curContext = (String) ThreadLocalManager.get(CURRENT_CONTEXT);
-		ServletRequest curRequest = (ServletRequest) ThreadLocalManager.get(CURRENT_HTTP_REQUEST);
-		ServletResponse curResponse = (ServletResponse) ThreadLocalManager.get(CURRENT_HTTP_RESPONSE);
-		boolean cleared = false;
+		boolean threadRenamed = false;
+		String thisThreadName = Thread.currentThread().getName();
 
-		// keep track of temp files with this request that need to be deleted on the way out
-		List<FileItem> tempFiles = new ArrayList<FileItem>();
-
-		try
-		{
-			ThreadLocalManager.set(CURRENT_REMOTE_USER, Boolean.valueOf(m_sakaiRemoteUser));
-			ThreadLocalManager.set(CURRENT_HTTP_SESSION, Integer.valueOf(m_sakaiHttpSession));
-			ThreadLocalManager.set(CURRENT_CONTEXT, m_contextId);
-
-			// make the servlet context available
-			ThreadLocalManager.set(CURRENT_SERVLET_CONTEXT, m_servletContext);
-
-			// we are expecting HTTP stuff
-			if (!((requestObj instanceof HttpServletRequest) && (responseObj instanceof HttpServletResponse)))
-			{
-				// if not, just pass it through
-				chain.doFilter(requestObj, responseObj);
-				return;
+		try {
+			if (thisThreadName != null && thisThreadName.startsWith("http-nio")) {
+				threadRenamed = true;
+				Thread.currentThread().setName(thisThreadName + "::" + startTime);
 			}
 
-			HttpServletRequest req = (HttpServletRequest) requestObj;
-			HttpServletResponse resp = (HttpServletResponse) responseObj;
+			// bind some preferences as "current"
+			Boolean curRemoteUser = (Boolean) ThreadLocalManager.get(CURRENT_REMOTE_USER);
+			Integer curHttpSession = (Integer) ThreadLocalManager.get(CURRENT_HTTP_SESSION);
+			String curContext = (String) ThreadLocalManager.get(CURRENT_CONTEXT);
+			ServletRequest curRequest = (ServletRequest) ThreadLocalManager.get(CURRENT_HTTP_REQUEST);
+			ServletResponse curResponse = (ServletResponse) ThreadLocalManager.get(CURRENT_HTTP_RESPONSE);
+			boolean cleared = false;
 
-			// knl-640
-			// The AppDomain should reject:
-			// 1) all GET URL's starting with contentPaths
-			//
-			// The FileDomain should only accept:
-			// 1) any URL's in loginPath. We have to accept POST methods here
-			//    as well so folks can log in on this node.
-			// 2) any GET URL's from contentPaths (POST's any other methods not
-			//    allowed.
-			if (useContentHostingDomain) {
-				String requestURI = req.getRequestURI();
-				if(req.getQueryString() != null) requestURI += "?" + req.getQueryString();
-				if (startsWithAny(requestURI, contentPaths) && "GET".equalsIgnoreCase(req.getMethod())) {
-					if  (!req.getServerName().equals(chsDomain) && !(startsWithAny(requestURI, contentExceptions))) {
-						resp.sendRedirect(chsUrl+requestURI);
-						return;
-					}
-				}
-				else {
-					if (req.getServerName().equals(chsDomain) &&
-						!(startsWithAny(requestURI, contentPaths) && !"GET".equalsIgnoreCase(req.getMethod())) &&
-						!(startsWithAny(requestURI, loginPaths))) {
-						resp.sendRedirect(appUrl+requestURI);
-						return;
-					}
-				}
-			}
+			// keep track of temp files with this request that need to be deleted on the way out
+			List<FileItem> tempFiles = new ArrayList<FileItem>();
 
-			// check on file uploads and character encoding BEFORE checking if
-			// this request has already been filtered, as the character encoding
-			// and file upload handling are configurable at the tool level.
-			// so the 2nd invokation of the RequestFilter (at the tool level)
-			// may actually cause character encoding and file upload parsing
-			// to happen.
-
-			// handle character encoding
-			handleCharacterEncoding(req, resp);
-
-			// handle file uploads
-			req = handleFileUpload(req, resp, tempFiles);
-
-			// if we have already filtered this request, pass it on
-			if (req.getAttribute(ATTR_FILTERED) != null)
+			try
 			{
-				// set the request and response for access via the thread local
-				ThreadLocalManager.set(CURRENT_HTTP_REQUEST, req);
-				ThreadLocalManager.set(CURRENT_HTTP_RESPONSE, resp);
+				ThreadLocalManager.set(CURRENT_REMOTE_USER, Boolean.valueOf(m_sakaiRemoteUser));
+				ThreadLocalManager.set(CURRENT_HTTP_SESSION, Integer.valueOf(m_sakaiHttpSession));
+				ThreadLocalManager.set(CURRENT_CONTEXT, m_contextId);
 
-				chain.doFilter(req, resp);
-			}
+				// make the servlet context available
+				ThreadLocalManager.set(CURRENT_SERVLET_CONTEXT, m_servletContext);
 
-			// filter the request
-			else
-			{
-				if (M_log.isDebugEnabled())
+				// we are expecting HTTP stuff
+				if (!((requestObj instanceof HttpServletRequest) && (responseObj instanceof HttpServletResponse)))
 				{
-					sb = new StringBuffer("http-request: ");
-					sb.append(req.getMethod());
-					sb.append(" ");
-					sb.append(req.getRequestURL());
-					if (req.getQueryString() != null)
-					{
-						sb.append("?");
-						sb.append(req.getQueryString());
-					}
-					M_log.debug(sb);
+					// if not, just pass it through
+					chain.doFilter(requestObj, responseObj);
+					return;
 				}
 
-				try
+				HttpServletRequest req = (HttpServletRequest) requestObj;
+				HttpServletResponse resp = (HttpServletResponse) responseObj;
+
+				// knl-640
+				// The AppDomain should reject:
+				// 1) all GET URL's starting with contentPaths
+				//
+				// The FileDomain should only accept:
+				// 1) any URL's in loginPath. We have to accept POST methods here
+				//    as well so folks can log in on this node.
+				// 2) any GET URL's from contentPaths (POST's any other methods not
+				//    allowed.
+				if (useContentHostingDomain) {
+					String requestURI = req.getRequestURI();
+					if(req.getQueryString() != null) requestURI += "?" + req.getQueryString();
+					if (startsWithAny(requestURI, contentPaths) && "GET".equalsIgnoreCase(req.getMethod())) {
+						if  (!req.getServerName().equals(chsDomain) && !(startsWithAny(requestURI, contentExceptions))) {
+							resp.sendRedirect(chsUrl+requestURI);
+							return;
+						}
+					}
+					else {
+						if (req.getServerName().equals(chsDomain) &&
+								!(startsWithAny(requestURI, contentPaths) && !"GET".equalsIgnoreCase(req.getMethod())) &&
+								!(startsWithAny(requestURI, loginPaths))) {
+							resp.sendRedirect(appUrl+requestURI);
+							return;
+						}
+					}
+				}
+
+				// check on file uploads and character encoding BEFORE checking if
+				// this request has already been filtered, as the character encoding
+				// and file upload handling are configurable at the tool level.
+				// so the 2nd invokation of the RequestFilter (at the tool level)
+				// may actually cause character encoding and file upload parsing
+				// to happen.
+
+				// handle character encoding
+				handleCharacterEncoding(req, resp);
+
+				// handle file uploads
+				req = handleFileUpload(req, resp, tempFiles);
+
+				// if we have already filtered this request, pass it on
+				if (req.getAttribute(ATTR_FILTERED) != null)
 				{
-					// mark the request as filtered to avoid re-filtering it later in the request processing
-					req.setAttribute(ATTR_FILTERED, ATTR_FILTERED);
-
-					// some useful info
-					ThreadLocalManager.set(ServerConfigurationService.CURRENT_SERVER_URL, serverUrl(req));
-
-					// make sure we have a session
-					Session s = assureSession(req, resp);
-
-					// pre-process request
-					req = preProcessRequest(s, req);
-
-					// detect a tool placement and set the current tool session
-					detectToolPlacement(s, req);
-
-					// pre-process response
-					resp = preProcessResponse(s, req, resp);
-
 					// set the request and response for access via the thread local
 					ThreadLocalManager.set(CURRENT_HTTP_REQUEST, req);
 					ThreadLocalManager.set(CURRENT_HTTP_RESPONSE, resp);
 
-					// set the portal into thread local
-					if (m_contextId != null && m_contextId.length() > 0)
+					chain.doFilter(req, resp);
+				}
+
+				// filter the request
+				else
+				{
+					if (M_log.isDebugEnabled())
 					{
-						ThreadLocalManager.set(ServerConfigurationService.CURRENT_PORTAL_PATH, "/" + m_contextId);
+						sb = new StringBuffer("http-request: ");
+						sb.append(req.getMethod());
+						sb.append(" ");
+						sb.append(req.getRequestURL());
+						if (req.getQueryString() != null)
+						{
+							sb.append("?");
+							sb.append(req.getQueryString());
+						}
+						M_log.debug(sb);
 					}
 
-					// Only synchronize on session for Terracotta. See KNL-218, KNL-75.
-					if (TERRACOTTA_CLUSTER) {
-						synchronized(s) {
+					try
+					{
+						// mark the request as filtered to avoid re-filtering it later in the request processing
+						req.setAttribute(ATTR_FILTERED, ATTR_FILTERED);
+
+						// some useful info
+						ThreadLocalManager.set(ServerConfigurationService.CURRENT_SERVER_URL, serverUrl(req));
+
+						// make sure we have a session
+						Session s = assureSession(req, resp);
+
+						// pre-process request
+						req = preProcessRequest(s, req);
+
+						// detect a tool placement and set the current tool session
+						detectToolPlacement(s, req);
+
+						// pre-process response
+						resp = preProcessResponse(s, req, resp);
+
+						// set the request and response for access via the thread local
+						ThreadLocalManager.set(CURRENT_HTTP_REQUEST, req);
+						ThreadLocalManager.set(CURRENT_HTTP_RESPONSE, resp);
+
+						// set the portal into thread local
+						if (m_contextId != null && m_contextId.length() > 0)
+						{
+							ThreadLocalManager.set(ServerConfigurationService.CURRENT_PORTAL_PATH, "/" + m_contextId);
+						}
+
+						// Only synchronize on session for Terracotta. See KNL-218, KNL-75.
+						if (TERRACOTTA_CLUSTER) {
+							synchronized(s) {
+								// Pass control on to the next filter or the servlet
+								chain.doFilter(req, resp);
+
+								// post-process response
+								postProcessResponse(s, req, resp);
+							}
+						} else {
 							// Pass control on to the next filter or the servlet
 							chain.doFilter(req, resp);
 
 							// post-process response
 							postProcessResponse(s, req, resp);
 						}
-					} else {
-						// Pass control on to the next filter or the servlet
-						chain.doFilter(req, resp);
 
-						// post-process response
-						postProcessResponse(s, req, resp);
-					}
+						// Output client cookie if requested to do so
+						if (s != null && req.getAttribute(ATTR_SET_COOKIE) != null) {
 
-					// Output client cookie if requested to do so
-					if (s != null && req.getAttribute(ATTR_SET_COOKIE) != null) {
+							// check for existing cookie
+							String suffix = getCookieSuffix();
+							Cookie c = findCookie(req, cookieName, suffix);
 
-						// check for existing cookie
-						String suffix = getCookieSuffix();
-						Cookie c = findCookie(req, cookieName, suffix);
+							// the cookie value we need to use
+							String sessionId = s.getId() + DOT + suffix;
 
-						// the cookie value we need to use
-						String sessionId = s.getId() + DOT + suffix;
-
-						// set the cookie if necessary
-						if ((c == null) || (!c.getValue().equals(sessionId))) {
-							c = new Cookie(cookieName, sessionId);
-							c.setPath("/");
-							c.setMaxAge(-1);
-							if (cookieDomain != null)
-							{
-								c.setDomain(cookieDomain);
+							// set the cookie if necessary
+							if ((c == null) || (!c.getValue().equals(sessionId))) {
+								c = new Cookie(cookieName, sessionId);
+								c.setPath("/");
+								c.setMaxAge(-1);
+								if (cookieDomain != null)
+								{
+									c.setDomain(cookieDomain);
+								}
+								if (req.isSecure() == true)
+								{
+									c.setSecure(true);
+								}
+								addCookie(resp, c);
 							}
-							if (req.isSecure() == true)
-							{
-								c.setSecure(true);
-							}
-							addCookie(resp, c);
 						}
+
+
 					}
+					catch (ClosingException se) {
+						closingRedirect(req, resp);
+					}
+					catch (RuntimeException t)
+					{
+						M_log.error("", t);
+						throw t;
+					}
+					catch (IOException ioe)
+					{
+						M_log.error("", ioe);
+						throw ioe;
+					}
+					catch (ServletException se)
+					{
+						M_log.error(se.getMessage(), se);
+						throw se;
+					}
+					finally
+					{
+						// clear any bound current values
+						ThreadLocalManager.clear();
+						cleared = true;
+					}
+				}
 
+			}
+			finally
+			{
+				if (!cleared)
+				{
+					// restore the "current" bindings
+					ThreadLocalManager.set(CURRENT_REMOTE_USER, curRemoteUser);
+					ThreadLocalManager.set(CURRENT_HTTP_SESSION, curHttpSession);
+					ThreadLocalManager.set(CURRENT_CONTEXT, curContext);
+					ThreadLocalManager.set(CURRENT_HTTP_REQUEST, curRequest);
+					ThreadLocalManager.set(CURRENT_HTTP_RESPONSE, curResponse);
+				}
 
-				}
-				catch (ClosingException se) {
-					closingRedirect(req, resp);
-				}
-				catch (RuntimeException t)
+				// delete any temp files
+				deleteTempFiles(tempFiles);
+
+				if (M_log.isDebugEnabled() && sb != null)
 				{
-					M_log.error("", t);
-					throw t;
-				}
-				catch (IOException ioe)
-				{
-					M_log.error("", ioe);
-					throw ioe;
-				}
-				catch (ServletException se)
-				{
-					M_log.error(se.getMessage(), se);
-					throw se;
-				}
-				finally
-				{
-					// clear any bound current values
-					ThreadLocalManager.clear();
-					cleared = true;
+					long elapsedTime = System.currentTimeMillis() - startTime;
+					M_log.debug("request timing (ms): " + elapsedTime + " for " + sb);
 				}
 			}
-
-		}
-		finally
-		{
-			if (!cleared)
-			{
-				// restore the "current" bindings
-				ThreadLocalManager.set(CURRENT_REMOTE_USER, curRemoteUser);
-				ThreadLocalManager.set(CURRENT_HTTP_SESSION, curHttpSession);
-				ThreadLocalManager.set(CURRENT_CONTEXT, curContext);
-				ThreadLocalManager.set(CURRENT_HTTP_REQUEST, curRequest);
-				ThreadLocalManager.set(CURRENT_HTTP_RESPONSE, curResponse);
-			}
-
-			// delete any temp files
-			deleteTempFiles(tempFiles);
-
-			if (M_log.isDebugEnabled() && sb != null)
-			{
-				long elapsedTime = System.currentTimeMillis() - startTime;
-				M_log.debug("request timing (ms): " + elapsedTime + " for " + sb);
+		} finally {
+			if (threadRenamed) {
+				Thread.currentThread().setName(thisThreadName);
 			}
 		}
 	}
