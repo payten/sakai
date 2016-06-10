@@ -53,6 +53,7 @@
                 <module>chat</module>
                 <module>citations</module>
                 <module>cmprovider</module>
+                <module>clickers</module>
                 <module>common</module>
                 <module>commons</module>
                 <module>common/import-parsers/blackboard_6</module>
