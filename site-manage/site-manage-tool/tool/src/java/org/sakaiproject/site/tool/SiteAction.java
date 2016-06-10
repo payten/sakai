@@ -4223,6 +4223,7 @@ public class SiteAction extends PagedResourceActionII {
 		context.put("sites", SiteService.getSites(
 				org.sakaiproject.site.api.SiteService.SelectionType.UPDATE,
 				ownTypeOnly?site.getType():null, null, null, SortType.TITLE_ASC, null));
+    context.put("academicSessions", cms.getAcademicSessions());
 	}
 
 	/**
