@@ -187,7 +187,8 @@ public class BltiPickerProducer implements ViewComponentProducer, NavigationCase
 			UICommand.make(tofill, "cancel", messageLocator.getMessage("simplepage.cancel"), "#{simplePageBean.cancel}");
 
 			// only show manage link if we aren't simulating a native tool
-			if (bltiTool == null) {
+			// CLASSES-1847 Don't show manage LTI form bits
+			if (false && bltiTool == null) {
 			    UIOutput.make(tofill, "manageblti");
 			    if (mainLink != null) {
 				UILink.make(tofill, "blti-main-link", mainLink.label, mainLink.Url)
