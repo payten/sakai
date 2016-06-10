@@ -2527,6 +2527,11 @@ public class SimplePageBean {
 	}
 
 
+	public OrphanPageFinder getOrphanFinder(String siteId) {
+		return new OrphanPageFinder(siteId, simplePageToolDao, pagePickerProducer());
+	}
+
+
 	public String deleteOrphanPages() {
 	    if (getEditPrivs() != 0)
 	    	return "permission-failed";
@@ -2556,6 +2561,23 @@ public class SimplePageBean {
 		pagePickerProducer().findAllPages(sitePageItem, entries, pageMap, topLevelPages, sharedPages, 0, true, true);
 	    }
 		    
+	    OrphanPageFinder orphanFinder = getOrphanFinder(getCurrentSiteId());
+
+	    // FIXME: very temporary
+	    try {
+		    FileWriter fh = new FileWriter("/var/tmp/orphan_list_" + getCurrentSiteId() + ".txt");
+	    
+		    for (Long pageId : orphanFinder.getOrphanPageIds()) {
+			    fh.write(String.valueOf(pageId));
+			    fh.write("\n");
+		    }
+
+		    fh.close();
+	    } catch (IOException e) {
+		    throw new RuntimeException(e);
+	    }
+
+
 	    // everything we didn't find should be deleted. It's items remaining in pagemap
 	    List<String> orphans = new ArrayList<String>();
 	    if (pageMap.size() > 0) {
@@ -2565,10 +2587,24 @@ public class SimplePageBean {
 			orphans.add(Long.toString(p.getPageId()));
 		    }
 		}
-		// do the deletetion
-		// selectedEntities is the argument for deletePages
-		selectedEntities = orphans.toArray(selectedEntities);
-		deletePages();
+
+		if (orphans.size() != orphanFinder.getOrphanPageIds().size()) {
+			throw new RuntimeException("Mismatch in orphan counts");
+		}
+
+		for (String oid : orphans) {
+			if (!orphanFinder.isOrphan(new Long(oid))) {
+				throw new RuntimeException("Orphan missed!");
+			}
+		}
+
+		// FIXME: disabled temporarily
+		if (1 == 0) {
+			// do the deletetion
+			// selectedEntities is the argument for deletePages
+			selectedEntities = orphans.toArray(selectedEntities);
+			deletePages();
+		}
 	    }	    
 	    return "success";
 	}
