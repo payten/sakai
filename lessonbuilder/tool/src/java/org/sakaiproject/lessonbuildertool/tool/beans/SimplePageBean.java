@@ -2538,75 +2538,20 @@ public class SimplePageBean {
 	    	return "permission-failed";
 	    if (!checkCsrf())
 		return "permission-failed";
-
-	    // code is mostly from PagePickerProducer
-	    // list we're going to display
-	    List<PagePickerProducer.PageEntry> entries = new ArrayList<PagePickerProducer.PageEntry> ();
-	    // build map of all pages, so we can see if any are left over
-	    Map<Long,SimplePage> pageMap = new HashMap<Long,SimplePage>();
-	    Set<Long> sharedPages = new HashSet<Long>();
-
-	    // all pages
-	    List<SimplePage> pages = simplePageToolDao.getSitePages(getCurrentSiteId());
-	    for (SimplePage p: pages)
-		pageMap.put(p.getPageId(), p);
-
-	    List<SimplePageItem> sitePages =  simplePageToolDao.findItemsInSite(getCurrentSiteId());
-	    Set<Long> topLevelPages = new HashSet<Long>();
-	    for (SimplePageItem i : sitePages)
-		topLevelPages.add(Long.valueOf(i.getSakaiId()));
-
-	    // this adds everything you can find from top level pages to entries
-	    for (SimplePageItem sitePageItem : sitePages) {
-		// System.out.println("findallpages " + sitePageItem.getName() + " " + true);
-		pagePickerProducer().findAllPages(sitePageItem, entries, pageMap, topLevelPages, sharedPages, 0, true, true);
-	    }
-		    
+	    
 	    OrphanPageFinder orphanFinder = getOrphanFinder(getCurrentSiteId());
 
-	    // FIXME: very temporary
-	    try {
-		    FileWriter fh = new FileWriter("/var/tmp/orphan_list_" + getCurrentSiteId() + ".txt");
-	    
-		    for (Long pageId : orphanFinder.getOrphanPageIds()) {
-			    fh.write(String.valueOf(pageId));
-			    fh.write("\n");
-		    }
+	    List<String> orphans = new ArrayList<String>();
 
-		    fh.close();
-	    } catch (IOException e) {
-		    throw new RuntimeException(e);
+	    for (Long id : orphanFinder.getOrphanPageIds()) {
+		orphans.add(id.toString());
 	    }
 
+	    if (!orphans.isEmpty()) {
+		selectedEntities = orphans.toArray(selectedEntities);
+		deletePages();
+	    }
 
-	    // everything we didn't find should be deleted. It's items remaining in pagemap
-	    List<String> orphans = new ArrayList<String>();
-	    if (pageMap.size() > 0) {
-		for (SimplePage p: pageMap.values()) {
-		    // non-null owner are student pages
-		    if(p.getOwner() == null) {
-			orphans.add(Long.toString(p.getPageId()));
-		    }
-		}
-
-		if (orphans.size() != orphanFinder.getOrphanPageIds().size()) {
-			throw new RuntimeException("Mismatch in orphan counts");
-		}
-
-		for (String oid : orphans) {
-			if (!orphanFinder.isOrphan(new Long(oid))) {
-				throw new RuntimeException("Orphan missed!");
-			}
-		}
-
-		// FIXME: disabled temporarily
-		if (1 == 0) {
-			// do the deletetion
-			// selectedEntities is the argument for deletePages
-			selectedEntities = orphans.toArray(selectedEntities);
-			deletePages();
-		}
-	    }	    
 	    return "success";
 	}
 
