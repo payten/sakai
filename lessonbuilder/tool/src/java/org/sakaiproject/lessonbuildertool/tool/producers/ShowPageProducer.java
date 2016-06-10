@@ -1269,6 +1269,7 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 				case SimplePageItem.ANNOUNCEMENTS: itemClassName += "announcementsType"; break;
 				case SimplePageItem.CALENDAR: itemClassName += "calendar"; break;
 				case SimplePageItem.CHECKLIST: itemClassName += "checklistType"; break;
+				case SimplePageItem.SCORM: itemClassName = "scormType"; break;
 				}
 
 				// inline LTI. Our code calls all BLTI items listItem, but the inline version really isn't
@@ -1347,6 +1348,9 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 						break;
 					    case SimplePageItem.BLTI:
 						itemicon.decorate(new UIStyleDecorator("fa-globe"));
+						break;
+					    case SimplePageItem.SCORM:
+						itemicon.decorate(new UIFreeAttributeDecorator("src", "/library/image/silk/application_go.png"));
 						break;
 					    case SimplePageItem.PAGE:
 						itemicon.decorate(new UIStyleDecorator("fa-folder-open-o"));
@@ -1519,6 +1523,11 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 							else if (blti.notPublished())
 							    notPublished = true;
 						    }
+						} else if (i.getType() == SimplePageItem.SCORM) {
+							UIOutput.make(tableRow, "type", "scorm");
+							UIOutput.make(tableRow, "scormGraded", i.getAttribute("scormGraded"));
+							UIOutput.make(tableRow, "scormRequired", String.valueOf(i.isRequired()));
+							UIOutput.make(tableRow, "scormPrerequisite", String.valueOf(i.isPrerequisite()));
 						} else if (i.getType() == SimplePageItem.FORUM) {
 							UIOutput.make(tableRow, "extra-info");
 							UIOutput.make(tableRow, "type", "8");
@@ -3520,6 +3529,7 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		createDeleteItemDialog(tofill, currentPage);
 		createAnnouncementsDialog(tofill, currentPage);
 		createColumnDialog(tofill, currentPage);
+		createAddScormDialog(tofill, currentPage, pageItem);
 	}
 
     // get encrypted version of session id. This is our equivalent of session.id, except that we
@@ -3846,6 +3856,21 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 			    fake = true; // need to set this in case it's available for missing entity
 			}
 		    }
+		} else if (i.getType() == SimplePageItem.SCORM) {
+			if (i.isPrerequisite()) {
+				simplePageBean.checkItemPermissions(i, true);
+			}
+
+			GeneralViewParameters view = new GeneralViewParameters(ShowScormProducer.VIEW_ID);
+			view.setSendingPage(currentPage.getPageId());
+			view.setItemId(i.getId());
+			UILink link = UIInternalLink.make(container, "link", view);
+			link.decorate(new UIFreeAttributeDecorator("lessonbuilderitem", itemString));
+
+			if (!simplePageBean.canEditPage()) {
+				// Someone without edit access is going to be shown a launch URL, so we'll launch in a new window here.
+				link.decorate(new UIFreeAttributeDecorator("target", "_blank"));
+			}
 		}
 
 		String note = null;
@@ -4075,6 +4100,11 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		//		return ieVersion;
 	}
 
+	private boolean scormEnabledForSite() {
+		return (ServerConfigurationService.getBoolean("scormcloudservice.enable-for-all-sites", false) ||
+				simplePageBean.getCurrentSite().getProperties().getProperty("enable-scorm-cloud") != null);
+	}
+
 	private void createToolBar(UIContainer tofill, SimplePage currentPage, boolean isStudent) {
 		UIBranchContainer toolBar = UIBranchContainer.make(tofill, "tool-bar:");
 		boolean studentPage = simplePageBean.isStudentPage(currentPage);
@@ -4112,6 +4142,11 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		UIOutput.make(tofill, "add-break3");
 		UIOutput.make(tofill, "add-break4");
 		UIOutput.make(tofill, "add-break5");
+
+		if (scormEnabledForSite()) {
+			createFilePickerToolBarLink(ResourcePickerProducer.VIEW_ID, tofill, "add-scorm", "simplepage.scorm", true, false, currentPage, "simplepage.scorm.tooltip");
+			UIOutput.make(tofill, "scorm-li");
+		}
 
 		// content menu not on students
 		if (!studentPage) {
@@ -5047,6 +5082,7 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		UICommand.make(form, "cancel-question", messageLocator.getMessage("simplepage.cancel"), null);
 	}
 
+
 	private void createDeleteItemDialog(UIContainer tofill, SimplePage currentPage) {
 		UIForm form = UIForm.make(tofill, "delete-item-form");
 		makeCsrf(form, "csrf22");
@@ -5058,6 +5094,30 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		UIForm form = UIForm.make(tofill, "column-dialog-form");
 		UICommand.make(form, "column-submit", messageLocator.getMessage("simplepage.save"), null);
 		UICommand.make(form, "column-cancel", messageLocator.getMessage("simplepage.cancel"), null);
+	}
+
+	private void createAddScormDialog(UIContainer tofill, SimplePage currentPage, SimplePageItem pageItem) {
+		UIOutput.make(tofill, "add-scorm-dialog").decorate(new UIFreeAttributeDecorator("title", messageLocator.getMessage("simplepage.resource")));
+
+		UIForm form = UIForm.make(tofill, "add-scorm-form");
+		makeCsrf(form, "csrf22");
+
+		UIOutput.make(form, "scormtitle-label", messageLocator.getMessage("simplepage.pageTitle_label"));
+		UIInput.make(form, "scorm-title", "#{simplePageBean.scormTitle}");
+		UIOutput.make(form, "scorm-file-label", messageLocator.getMessage("simplepage.upload_label"));
+
+		UIBoundBoolean.make(form, "scorm-required", "#{simplePageBean.required}");
+		UIBoundBoolean.make(tofill, "edit-scorm-required", "#{simplePageBean.required}");
+
+		UIBoundBoolean.make(form, "scorm-prerequisite", "#{simplePageBean.prerequisite}");
+		UIBoundBoolean.make(tofill, "edit-scorm-prerequisite", "#{simplePageBean.prerequisite}");
+
+		UIBoundBoolean.make(form, "scorm-sync-to-gradebook", "#{simplePageBean.graded}");
+		UIBoundBoolean.make(tofill, "edit-scorm-sync-to-gradebook", "#{simplePageBean.graded}");
+
+		UICommand.make(form, "scorm-add-item", messageLocator.getMessage("simplepage.save_message"), "#{simplePageBean.addScorm}");
+		UIInput.make(form, "scorm-item-id", "#{simplePageBean.itemId}");
+		UICommand.make(form, "scorm-cancel", messageLocator.getMessage("simplepage.cancel"), null);
 	}
 
 
