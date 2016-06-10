@@ -15803,6 +15803,9 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		//get the first sectionEid attached to this site
 		String sectionEid = getFirstSectionEid(params);
 		String prop_school = null;
+		String prop_department = null;
+		String prop_location = null;
+		
 		if(StringUtils.isNotBlank(sectionEid)){
 
 			log.debug("sectionEid to retrieve data for this site:" + sectionEid);
@@ -15817,19 +15820,19 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			log.debug("Short description: " + short_description);
 
 			//other properties set as site properties
-			String prop_department = nyuDbHelper.getSiteDepartment(sectionEid);
-			if(StringUtils.isNotBlank(prop_department)) {
-				siteInfo.addProperty("Department", prop_department);
-				log.debug("Department: " + prop_department);
-			}
-
 			prop_school = nyuDbHelper.getSiteSchool(sectionEid);
 			if(StringUtils.isNotBlank(prop_school)) {
 				siteInfo.addProperty("School", prop_school);
 				log.debug("School: " + prop_school);
 			}
 
-			String prop_location = nyuDbHelper.getSiteLocation(sectionEid);
+			prop_department = nyuDbHelper.getSiteDepartment(sectionEid);
+			if(StringUtils.isNotBlank(prop_department)) {
+				siteInfo.addProperty("Department", prop_department);
+				log.debug("Department: " + prop_department);
+			}
+			
+			prop_location = nyuDbHelper.getSiteLocation(sectionEid);
 			if(StringUtils.isNotBlank(prop_location)) {
 				siteInfo.addProperty("Location", prop_location);
 				log.debug("Location: " + prop_location);
@@ -15843,7 +15846,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		state.setAttribute(STATE_SITE_INFO, siteInfo);
 
 		//CLASSES-494, get template site if it exists
-		String templateSiteId = nyuDbHelper.getSiteTemplateForSchoolCode(prop_school);
+		String templateSiteId = nyuDbHelper.getSiteTemplateForSchoolCode(prop_school, prop_department, prop_location);
 
 		//check siteid supplied is an actual site
 		if(SiteService.siteExists(templateSiteId)) {
@@ -15851,7 +15854,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			associateWithSiteTemplate(state, templateSiteId);
 		} else {
 			//otherwise set the default tool list
-			M_log.debug("No valid template site found for: " + prop_school + ", using defaults.");
+			log.debug("No valid template site found for (school,department,location) (" + prop_school + "," + prop_department + "," + prop_location + "), using defaults.");
 
 			//default tool list
 			String type = (String) state.getAttribute(STATE_SITE_TYPE);
