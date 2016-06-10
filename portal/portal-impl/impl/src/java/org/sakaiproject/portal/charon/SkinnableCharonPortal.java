@@ -1792,7 +1792,13 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 			rcontext.put("bottomNavCopyright", copyright);
 			rcontext.put("bottomNavServiceVersion", serviceVersion);
 			rcontext.put("bottomNavSakaiVersion", sakaiVersion);
-			rcontext.put("bottomNavServer", server);
+
+			String sanitizedServer = ServerConfigurationService.getString("nyu.serveralias."+server);
+			if (sanitizedServer != null) {
+				rcontext.put("bottomNavServer", sanitizedServer);
+			} else {
+				rcontext.put("bottomNavServer", server);
+			}
 
 			boolean useBullhornAlerts = ServerConfigurationService.getBoolean("portal.bullhorns.enabled", false);
 			rcontext.put("useBullhornAlerts", useBullhornAlerts);
