@@ -106,7 +106,8 @@ import org.sakaiproject.portal.util.URLUtils;
 import org.sakaiproject.portal.util.CSSUtils;
 import org.sakaiproject.portal.util.ToolUtils;
 import org.sakaiproject.portal.util.PortalUtils;
-import org.sakaiproject.portal.util.ExternalHelpSystem;
+import edu.nyu.classes.externalhelp.api.ExternalHelpSystem;
+import edu.nyu.classes.externalhelp.api.ExternalHelp;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
 import org.sakaiproject.site.api.ToolConfiguration;
@@ -722,8 +723,8 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 			}
 
 
-			ExternalHelpSystem.ExternalHelp help = externalHelpSystem.getHelp(placement.getToolId(), userRole);
-			ExternalHelpSystem.ExternalHelp news = externalHelpSystem.getNews(placement.getToolId(), userRole);
+			ExternalHelp help = externalHelpSystem.getHelp(placement.getToolId(), userRole);
+			ExternalHelp news = externalHelpSystem.getNews(placement.getToolId(), userRole);
 
 			toolMap.put("usingExternalHelp", Boolean.valueOf(true));
 			toolMap.put("externalHelp", help);
@@ -2093,7 +2094,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 		// warning messages will appear, but the end state will be the same.
 		portalService.addPortal(this);
 
-		externalHelpSystem = new ExternalHelpSystem();
+		externalHelpSystem = (ExternalHelpSystem) ComponentManager.get("edu.nyu.classes.externalhelp.api.ExternalHelpSystem");
 
 		worksiteHandler = new WorksiteHandler();
 		siteHandler = new SiteHandler();
