@@ -3648,6 +3648,7 @@ public class SimplePageBean {
 	       case SimplePageItem.QUESTION:
 	       case SimplePageItem.TWITTER:
 	       case SimplePageItem.STUDENT_CONTENT:
+	       case SimplePageItem.SCORM:
 		   return getLBItemGroups(i); // for all native LB objects
 	       default:
 	    	   return null;
@@ -3872,6 +3873,7 @@ public class SimplePageBean {
 	   case SimplePageItem.TWITTER:
 	   case SimplePageItem.QUESTION:
 	   case SimplePageItem.STUDENT_CONTENT:
+	   case SimplePageItem.SCORM:
 	       return setLBItemGroups(i, groups);
 	   case SimplePageItem.BREAK:
 	       return null;  // better not actually happen
