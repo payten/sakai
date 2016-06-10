@@ -1278,7 +1278,8 @@ public class PrivateMessageManagerImpl extends HibernateDaoSupport implements
 	  StringBuilder body = new StringBuilder(message.getBody());
 	  
 	  StringBuilder fromString = new StringBuilder();
-	  fromString.append("<p>");
+	  fromString.append("<br>");
+
 	  if (ServerConfigurationService.getBoolean("msg.displayEid", true)) {
 	      fromString.append(getResourceBundleString("pvt_email_from_with_eid", 
                       new Object[] {currentUser.getDisplayName(), currentUser.getEid(), currentUser.getEmail() }));
@@ -1287,8 +1288,6 @@ public class PrivateMessageManagerImpl extends HibernateDaoSupport implements
 	              new Object[] {currentUser.getDisplayName(), currentUser.getEmail() }));
 	  }
 	  
-	  fromString.append("</p>");
-
 	  body.insert(0, fromString.toString());
 
 	  // need to determine if there are "hidden" recipients to this message.
@@ -1339,7 +1338,53 @@ public class PrivateMessageManagerImpl extends HibernateDaoSupport implements
 	      }
 	  }
 
-	  body.insert(0, "<p>" + getResourceBundleString("pvt_email_to", new Object[] {sendToString}) + "<p/>");
+	  body.insert(0, getResourceBundleString("pvt_email_to", new Object[] {sendToString}));
+
+
+          // NYU modification
+
+          // This bit of logic duplicated from below (just to keep the diff small)
+	  String nyuSiteTitle = null;
+	  try{
+              nyuSiteTitle = SiteService.getSite(getContextId()).getTitle();
+	  }
+	  catch (IdUnusedException e){
+              LOG.error(e.getMessage(), e);
+	  }
+
+          // More duplication here.  Sorry.
+	  String nyuThisPageId = "";
+	  ToolSession ts = sessionManager.getCurrentToolSession();
+	  if (ts != null)
+	  {
+		  ToolConfiguration tool = SiteService.findTool(ts.getPlacementId());
+		  if (tool != null)
+		  {
+			  nyuThisPageId = tool.getPageId();
+		  }
+	  }
+
+
+	  String msgLink = ServerConfigurationService.getPortalUrl() + 
+              "/site/" + ToolManager.getCurrentPlacement().getContext() +
+              "/page/" + nyuThisPageId;
+
+
+	  String header = ("<p>" +
+                           "The following message was sent via " +
+                           ServerConfigurationService.getString("ui.service") +
+                           " from the <a href=\"" + msgLink + "\">" + nyuSiteTitle + "</a> site.</p>" +
+                           "<hr>");
+
+
+          // Indent the original message body
+          header = header + "<div style=\"padding-left: 1em\">";
+
+	  body.insert(0, header);
+
+          // End of NYU modification
+
+
 
 	  if (message.getAttachments() != null && message.getAttachments().size() > 0) {
 
@@ -1361,32 +1406,42 @@ public class PrivateMessageManagerImpl extends HibernateDaoSupport implements
 		  LOG.error(e.getMessage(), e);
 	  }
 
-	  String thisToolId = "";
-	  ToolSession ts = sessionManager.getCurrentToolSession();
-	  if (ts != null)
+	  String thisPageId = "";
+	  ToolSession nyuts = sessionManager.getCurrentToolSession();
+	  if (nyuts != null)
 	  {
-		  ToolConfiguration tool = SiteService.findTool(ts.getPlacementId());
+		  ToolConfiguration tool = SiteService.findTool(nyuts.getPlacementId());
 		  if (tool != null)
 		  {
 			  thisToolId = tool.getId();
 		  }
 	  }
 
-	  String footer = "<p>----------------------<br>" +
-	      getResourceBundleString(EMAIL_FOOTER1) + " " + ServerConfigurationService.getString("ui.service","Sakai") +
-	  " " + getResourceBundleString(EMAIL_FOOTER2) + " \"" +
-	  siteTitle + "\" " + getResourceBundleString(EMAIL_FOOTER3) + "\n" +
-	  getResourceBundleString(EMAIL_FOOTER4) +
-	  " <a href=\"" +
-	  ServerConfigurationService.getPortalUrl() + 
-	  "/site/" + ToolManager.getCurrentPlacement().getContext() +
-	  "/tool/" + thisToolId+
-	  (message!=null?"/privateMsg/pvtMsgDirectAccess?current_msg_detail="+message.getId():"")+
-	  "\">";
-
-
-	  footer += siteTitle + "</a>.</p>";                      
+          // NYU modification
+	  String footer = ("</div><p>" +
+			   "If you wish to keep a record of your reply to this message within the " +
+			   "\"" + nyuSiteTitle + "\" site, " +
+			   "<a href=\"" + msgLink + "\">click here</a> to reply via the Messages tool in NYU Classes." +
+			   "</p>");
 	  body.append(footer);
+
+
+	  // String footer = "<p>----------------------<br>" +
+	  //     getResourceBundleString(EMAIL_FOOTER1) + " " + ServerConfigurationService.getString("ui.service","Sakai") +
+	  // " " + getResourceBundleString(EMAIL_FOOTER2) + " \"" +
+	  // siteTitle + "\" " + getResourceBundleString(EMAIL_FOOTER3) + "\n" +
+	  // getResourceBundleString(EMAIL_FOOTER4) +
+	  // " <a href=\"" +
+	  // ServerConfigurationService.getPortalUrl() + 
+	  // "/site/" + ToolManager.getCurrentPlacement().getContext() +
+	  // "/page/" + thisPageId+
+	  // "\">";
+
+	  // footer += siteTitle + "</a>.</p>";                      
+	  // body.append(footer);
+
+          // End of NYU modification
+
 
 	  String bodyString = body.toString();
 	  return bodyString;
