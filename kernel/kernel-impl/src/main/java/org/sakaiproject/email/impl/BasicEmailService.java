@@ -70,6 +70,9 @@ import org.sakaiproject.email.api.EmailService;
 import org.sakaiproject.email.api.NoRecipientsException;
 import org.sakaiproject.user.api.User;
 
+import org.sakaiproject.email.api.NYUEmailUtils;
+
+
 /**
  * <p>
  * BasicEmailService implements the EmailService.
@@ -490,6 +493,8 @@ public class BasicEmailService implements EmailService
 
 		Properties props = createMailSessionProperties();
 
+                NYUEmailUtils.conditionalSmtpFromRewrite(additionalHeaders, props, from.getAddress());
+
 		Session session = Session.getInstance(props);
 
 		// see if we have a message-id in the additional headers
@@ -624,6 +629,8 @@ public class BasicEmailService implements EmailService
 				M_log.debug((String)allHeaders.nextElement());
 			}
 		}
+
+                NYUEmailUtils.conditionalFromAddressRewrite(additionalHeaders, msg);
 
 		sendMessageAndLog(from, to, subject, headerTo, start, msg, session);
 			}
@@ -839,10 +846,14 @@ public class BasicEmailService implements EmailService
 		// get a session for our smtp setup, include host, port, reverse-path, and set partial delivery
 		Properties props = createMailSessionProperties();
 
+                NYUEmailUtils.conditionalSmtpFromRewrite(headers, props);
+
 		Session session = Session.getInstance(props);
 
 		// form our Message
 		MimeMessage msg = new MyMessage(session, headers, message);
+
+		NYUEmailUtils.conditionalFromAddressRewrite(headers, msg);
 
 		// fix From and ReplyTo if necessary
 		checkFrom(msg);
