@@ -380,8 +380,20 @@
 					$!siteCreationDate
 				</td>
 			</tr> 
+                        #if ($!owner)
+			<tr>
+				<th>
+					Created by
+				</th>
+				<td>
+					$!owner
+				</td>
+			</tr> 
+                        #end
 		
 		#if ($!isCourseSite)
+                <!-- Hidden by NYU -->
+                <!--
 			<tr>
 				<th>
 					$tlang.getString("sitegen.siteinfolist.app")
@@ -390,6 +402,7 @@
 					$!siteUnit
 				</td>
 			</tr>
+                -->
 		#else
 			#if ($!siteIcon)
 				<tr>
