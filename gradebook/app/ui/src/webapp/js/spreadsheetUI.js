@@ -90,6 +90,14 @@ function gethandles(){
       $(mainwrap).css("max-width", maxwidth);
    }
    
+   var q4s_height = $(q4s).height();
+   var q4_table_height = $(q4_table).height();
+
+   if(q4_table_height < q4s_height){  
+      q3s = $("#q3");   
+      $(q3s).height($(q3s).height() - (q4s_height - q4_table_height) + 15);
+      $(q4_div).height($(q4_div).height() - (q4s_height - q4_table_height) + 15);
+   }
    //end check if we need scrollbars - SAK-9969
 
 
@@ -120,14 +128,14 @@ $(function () {
       var q3_div = $('#q3 > div');
       var q4_div = $('#q4 > div');
 
-      if (q4_div.height() === q4_div[0].clientHeight) {
+      if (q4_div.height() === q4_div[0].clientHeight ||
+          q3_div.height() > q4_div.height()) {
         // what a world.
         q3_div.height(q4_div.height());
       }
     };
-
-    reset_row_heights();
-
+     
+   reset_row_heights();
 
     var divToScroll = $('#q4 > div');
 
@@ -153,7 +161,7 @@ $(function () {
         if (event.deltaX) {
           divToScroll.scrollLeft(leftPosition + (event.deltaX * event.deltaFactor));
         }
-
+        
         if (event.deltaY) {
           divToScroll.scrollTop(topPosition - (event.deltaY * event.deltaFactor));
         }
