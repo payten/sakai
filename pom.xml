@@ -47,6 +47,7 @@
                 <module>archive</module>
                 <module>assignment</module>
                 <module>basiclti</module>
+                <module>bbb-tool</module>
                 <module>blogwow</module>
                 <module>calendar</module>
                 <module>chat</module>
