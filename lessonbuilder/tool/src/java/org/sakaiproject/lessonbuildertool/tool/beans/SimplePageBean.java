@@ -264,6 +264,7 @@ public class SimplePageBean {
     public String questionText, questionCorrectText, questionIncorrectText;
     public String questionAnswer;
     public Boolean questionShowPoll;
+    public Boolean questionShowCorrectAnswers; /* CLASSES-1606 */
     private HashMap<Integer, String> questionAnswers = null;
     
     public Long questionId;
@@ -7361,6 +7362,7 @@ public class SimplePageBean {
 		item.setAttribute("questionText", questionText);
 		item.setAttribute("questionCorrectText", questionCorrectText);
 		item.setAttribute("questionIncorrectText", questionIncorrectText);
+		item.setAttribute("questionShowCorrectAnswers", String.valueOf(questionShowCorrectAnswers)); /* CLASSES-1606 */
 		item.setAttribute("questionType", questionType);
 		
 		if(questionType.equals("shortanswer")) {

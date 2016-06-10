@@ -98,6 +98,7 @@ simplePageBean.questionAnswer,
 simplePageBean.questionResponse,
 simplePageBean.questionId,
 simplePageBean.questionShowPoll,
+simplePageBean.questionShowCorrectAnswers, <!-- CLASSES-1606 -->
 simplePageBean.hasReleaseDate,
 simplePageBean.height,
 simplePageBean.hidePage,
