@@ -94,6 +94,12 @@
             <artifactId>samigo-services</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.sakaiproject.scormcloudservice</groupId>
+            <artifactId>scormcloud-service-api</artifactId>
+            <scope>provided</scope>
+            <version>${sakai.version}</version>
+        </dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>
