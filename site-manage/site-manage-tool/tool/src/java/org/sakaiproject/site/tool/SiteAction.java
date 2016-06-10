@@ -4955,6 +4955,9 @@ public class SiteAction extends PagedResourceActionII {
 				courseList.add(courseListString);
 			}
 			
+			// CLASSES-2030 Ensure course list is ordered alphabetically
+			Collections.sort(courseList);
+			
 			if (state_attribute_string.equals(STATE_CM_REQUESTED_SECTIONS))
 			{
 				// need to construct the list of SectionObjects
