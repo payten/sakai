@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +61,7 @@ import org.sakaiproject.javax.PagingPosition;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.tool.api.ToolManager;
+import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserNotDefinedException;
 import org.sakaiproject.user.api.UserDirectoryService;
@@ -148,11 +150,39 @@ public class RealmsAction extends PagedResourceActionII
 		// state.setAttribute(STATE_OBSERVER, new EventObservingCourier(deliveryId, elementId, pattern));
 		// }
 
+
 	} // initState
 
-	/**
-	 * build the context
-	 */
+
+	private boolean isServiceTeamUser()
+	{
+		User user = userDirectoryService.getCurrentUser();
+		
+		String serviceTeamRole = ServerConfigurationService.getString("nyu.serviceteam.role");
+		String adminSite = ServerConfigurationService.getString("nyu.serviceteam.adminSite");
+		
+               if (adminSite == null) {
+                       log.warn("chef", "nyu.serviceteam.adminSite property wasn't set.  Granting FULL permission!");
+                       return false;
+               }
+
+               if (serviceTeamRole == null) {
+                       log.warn("chef", "nyu.serviceteam.role property wasn't set.  Granting FULL permission!");
+                       return false;
+               }
+
+
+               List adminSiteList = new Vector();
+               adminSiteList.add(adminSite);
+               Map<String,String> roles = authzGroupService.getUserRoles(user.getId(), adminSiteList);
+
+               return (serviceTeamRole.equals(roles.get(adminSite)));
+       }
+
+
+       /**
+        * build the context
+        */
 	public String buildMainPanelContext(VelocityPortlet portlet, Context context, RunData rundata, SessionState state)
 	{
 		context.put("tlang", rb);
@@ -178,6 +208,11 @@ public class RealmsAction extends PagedResourceActionII
 		else if ("edit".equals(mode))
 		{
 			template = buildEditContext(state, context);
+			
+			//security catch, if serviceAdmin gets here they have modified the URL. Throw them out.
+			if(isServiceTeamUser()) {
+				template = buildViewContext(state, context);
+			}
 		}
 		else if ("confirm".equals(mode))
 		{
@@ -195,6 +230,11 @@ public class RealmsAction extends PagedResourceActionII
 		else if ("editRole".equals(mode))
 		{
 			template = buildEditRoleContext(state, context);
+			
+			//security catch, if serviceAdmin gets here they have modified the URL. Throw them out.
+			if(isServiceTeamUser()) {
+				template = buildViewRoleContext(state, context);
+			}
 		}
 		else if ("saveasRole".equals(mode))
 		{
@@ -247,7 +287,7 @@ public class RealmsAction extends PagedResourceActionII
 
 		// build the menu
 		Menu bar = new MenuImpl();
-		if (authzGroupService.allowAdd(""))
+		if (authzGroupService.allowAdd("") && !isServiceTeamUser())
 		{
 			bar.add(new MenuEntry(rb.getString("realm.new"), "doNew"));
 		}
@@ -267,6 +307,7 @@ public class RealmsAction extends PagedResourceActionII
 		}
 		
 		context.put("viewAllowed", isAccessAllowed());
+		context.put("serviceTeam", isServiceTeamUser());
 
 
 		// inform the observing courier that we just updated the page...

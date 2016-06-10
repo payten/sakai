@@ -70,7 +70,7 @@
 	#foreach ($realm in $realms)
 			<tr>
 				<td headers="Id">
-						#if ($service.allowUpdate($realm.Id))
+						#if ($service.allowUpdate($realm.Id) && !$serviceTeam)
 							<a href="#toolLinkParam("$action" "doEdit" "id=$validator.escapeUrl($realm.Id)")" title="$tlang.getString("realm.edit.edit") $validator.escapeHtml($realm.Id)">
 								$validator.escapeHtml($realm.Id)
 							</a>
