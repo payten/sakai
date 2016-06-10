@@ -133,6 +133,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>edu.nyu.classes.saml</groupId>
+            <artifactId>saml-api</artifactId>
+            <version>10.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito2</artifactId>
             <scope>test</scope>
