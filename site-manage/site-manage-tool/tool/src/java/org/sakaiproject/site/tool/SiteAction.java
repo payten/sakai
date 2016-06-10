@@ -4801,6 +4801,10 @@ public class SiteAction extends PagedResourceActionII {
 				}
 			}
 			context.put("providerCourseTitles", sectionTitles);
+
+                        // CLASSES-455 NYU Change - sort course list by id
+                        Collections.sort(providerCourseList);
+
 			context.put("providerCourseList", providerCourseList);
 		}
 
