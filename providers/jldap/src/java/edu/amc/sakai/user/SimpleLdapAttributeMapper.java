@@ -44,6 +44,9 @@ import org.apache.commons.lang.StringUtils;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.user.api.UserEdit;
 
+import edu.nyu.classes.providers.NYULdapAttributeMapper;
+
+
 /**
  * Implements LDAP attribute mappings and filter generations using
  * an attribute map keyed by constants in 
