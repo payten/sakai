@@ -131,6 +131,7 @@
                 <module>web</module>
                 <module>webjars</module>
                 <module>webservices</module>
+                <module>wiris</module>
             </modules>
         </profile>
         <profile>
