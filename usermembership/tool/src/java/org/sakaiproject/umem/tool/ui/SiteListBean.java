@@ -45,6 +45,7 @@ import javax.faces.event.ActionEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang.StringUtils;
 import org.sakaiproject.authz.api.AuthzGroup;
 import org.sakaiproject.authz.api.AuthzGroupService;
 import org.sakaiproject.authz.api.AuthzPermissionException;
@@ -53,6 +54,7 @@ import org.sakaiproject.authz.api.Role;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.component.cover.ComponentManager;
 import org.sakaiproject.db.api.SqlService;
+import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
@@ -285,7 +287,7 @@ public class SiteListBean {
 			if(refreshQuery){
 				log.debug("Refreshing query...");
 				try{
-					doSearch();
+					doSearch2();
 				}catch(SQLException e){
 					log.warn("Failed to perform search on usermembership", e);
 				}
@@ -376,7 +378,7 @@ public class SiteListBean {
 		Iterator i = siteList.iterator();
 		while (i.hasNext()){
 			Site s = (Site) i.next();
-			UserSitesRow row = new UserSitesRow(s, getGroups(userId, s.getId()), getActiveUserRoleInSite(userId, s));
+			UserSitesRow row = new UserSitesRow(s, getGroups(userId, s), getActiveUserRoleInSite(userId, s));
 			userSitesRows.add(row);
 		}
 		long end = (new Date()).getTime();
@@ -434,7 +436,7 @@ public class SiteListBean {
 	}
 
 	/**
-	 * Uses Sakai API for getting group membership (very very slow).
+	 * Uses Sakai API for getting group membership
 	 * @param userId The user ID.
 	 * @param site The Site object
 	 * @return A String with group list.
@@ -447,6 +449,14 @@ public class SiteListBean {
 			Group g = (Group) ig.next();
 			if(groups.length() != 0) groups.append(", ");
 			groups.append(g.getTitle());
+			
+			//NYU mod, get the sections_eid property for the group
+			ResourceProperties props = g.getProperties();
+
+			String sectionEid = (String) props.getProperty("sections_eid");
+			if(StringUtils.isNotBlank(sectionEid)) {
+					groups.append("("+sectionEid+")");
+			}
 		}
 		long end = (new Date()).getTime();
 		timeSpentInGroups += (end - start);
