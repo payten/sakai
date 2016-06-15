@@ -1,0 +1,205 @@
+/* Global namespace */
+
+//$namespace : "Mrphs-";
+//$skin-name : "morpheus-default"; // This is used for bootstrap font behaviour.
+
+//$break-small-end: 	800px;
+//$break-medium-end: 	1030px;
+
+//$phone  :       "only screen and (max-width : #{ $break-small-end })";
+//$tablet :       "only screen and (max-width : #{ $break-medium-end })";
+//$desktop:       "only screen and (min-width : #{ $break-medium-end + 1 })";
+//$nonPhone:      "only screen and (min-width : #{ $break-small-end + 1 })";
+
+// For the "More Sites" drawer, just use one column if there's not
+// enough room to show two side-by-side.
+//$break-more-sites-single-column: 1200px;
+//$more-sites-single-column: "only screen and (max-width : #{ $break-more-sites-single-column })";
+
+/* Typography*/
+
+// No Google fonts for us, but let's include any NYU specific fonts
+$font-family-url: "nyu_fonts.css";
+
+//Typography variables
+$font-family: "Helvetica Neue", Arial, sans-serif;
+
+$default-font-size: 14px;
+$default-font-weight: 400;										// 300, 400 or 700 as you wish
+$header-font-family: $font-family;
+$header-font-weight: 700;										// 300, 400 or 700 as you wish
+
+/* Color palette */
+$background-color: 			 #FFFFFF;
+$background-color-secondary: #57068C;
+
+$tool-background-color:		 $background-color;
+$toolMenuBGColor:			 #F8F8F8;
+$toolMenuColor: 			 #424242;
+$toolTabBGColor: 			 #F8F8F8;
+$toolBorderColor:			 #F0F0F0;
+
+$primary-color:    			 #2A94C0;
+$secondary-color:  			 #F00;
+$alt-colour: 				 #d36f00;
+
+$text-color:				 #212121;
+
+$breadcrumbs-color:			 $text-color;
+$breadcrumbs-tool-color:		 #185878;
+$breadcrumbs-hover-color:		 #0F4461;
+
+/* Link colors */
+$link-color: #3698DB;
+$link-active-color: #3698DB;
+$link-hover-color: #3698DB;
+$link-background-color: transparent;
+$link-active-background-color: transparent;
+$link-hover-background-color: transparent;
+
+/* Linknav button colors */
+$button-text-color:	 #777;
+$button-border-color: #C0C0C0;
+$button-background-color: #F0F0F0;
+$button-background-secondary-color: #FFF;
+/* General button colors */
+$button-color-text-color: #FFF;
+$button-color-border-color: #4a8db3;
+$button-color-background-color: $primary-color;
+$button-color-background-secondary-color: #276488;
+/* ///////////// */
+
+$okcolor: 					 #3c763d;
+$errorcolor: 			 	 #f2dede;
+$warncolor: 			 	 #F6ECB7;
+
+$swapped-view-primary: 		 #bf360c;
+$swapped-view-text-color:	 #414141;
+
+/* This is the gradient in the header of the page */
+$header-gradient-a: #b6c3d4;
+$header-gradient-b: #d9cdcd;
+$header-gradient-c: #c4ccd7;
+$header-gradient-d: #a6c2df;
+
+/* Main Menu */
+$header-size : 3.8em;
+
+/* Tool Menu */
+$tool-menu-width: 7.5em;
+
+/* Navigation Hierarchy */
+$hierarchy-size: 3.5em;
+
+/* Golden Ratio width for 16px font http://www.pearsonified.com/typography/ */
+$measure: 960px;
+
+/* Logo location */
+$logo: 'images/nyu.png';
+$logo-height: auto;
+$logo-width: auto;
+
+.#{$namespace}mainHeader{
+  .#{$namespace}headerLogo{
+    .#{$namespace}headerLogo--institution{
+      background-image: none !important;
+    }
+    .#{$namespace}headerLogo--institution:before{
+      font-family: 'nyu-classes-icons';
+      content: '\e000';
+      color: #FFFFFF;
+      font-size: 70px;
+      line-height: 60px;
+    }
+  }
+}
+
+/* Tool icons */
+$skin-with-icons: true;
+$icon-size: 20px;
+
+
+// Custom Styles
+body {
+  background: #F8F8F8 !important;
+}
+.#{$namespace}mainContent {
+  background: #FFFFFF !important;
+}
+.#{$namespace}topHeader{
+  display: block !important;
+}
+##{$namespace}sites-nav{
+  background: #F8f8f8 !important;
+}
+#linkNav ul li.#{$namespace}sitesNav__menuitem a {
+  border: 1px solid #DDD !important;
+}
+.#{$namespace}topHeader .#{$namespace}loginNav {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+#linkNav ul li.#{$namespace}sitesNav__menuitem.#{$namespace}sitesNav__menuitem--myworkspace:not(.is-selected) a {
+  color: $text-color !important;
+  border-color: transparent !important;
+}
+#linkNav ul li.#{$namespace}sitesNav__menuitem.is-selected a {
+  border-color: $primary-color !important;
+}
+.#{$namespace}siteHierarchy {
+  background: #F0F0F0 !important;
+  //box-shadow: none !important;
+}
+.#{$namespace}mainContent{
+  border-top: 1px solid #EEE;
+  border-bottom: 1px solid #EEE;
+}
+.#{$namespace}container--footer {
+  background: #F8F8F8 !important;
+}
+.#{$namespace}footer {
+  margin: 0 !important;
+  color: #414141 !important;
+}
+.#{$namespace}toolsNav__menuitem--icon {
+  display: inline-block !important;
+  vertical-align: 0 !important;
+}
+.#{$namespace}toolsNav__menuitem--title {
+  width: auto !important;
+  display: inline-block !important;
+}
+body.#{$namespace}toolMenu-collapsed #toolMenu ul li .#{$namespace}toolsNav__menuitem--title,
+body.#{$namespace}toolMenu-collapsed ul#subSites ul li .#{$namespace}toolsNav__menuitem--title {
+  display: none !important;
+}
+body.#{$namespace}toolMenu-collapsed #toolMenu ul li a,
+body.#{$namespace}toolMenu-collapsed ul#subSites ul li a {
+  text-align: center !important;
+}
+#toolMenuWrap {
+  width: 12em !important;
+  -webkit-flex-basis: 12em !important;
+  flex-basis: 12em !important;
+  text-align: left !important;
+}
+
+#toolMenu ul li a,
+#subSites ul li a {
+  border-left: 4px solid transparent;
+  border-bottom-color: #F0F0F0 !important;
+}
+#toolMenu ul li a:hover,
+#subSites ul li a:hover {
+  border-bottom-color: $primary-color !important;
+}
+#toolMenu ul li.is-current a,
+#subSites ul li.is-current a {
+  //border-bottom-color: $primary-color !important;
+}
+
+.#{$namespace}toolsNav__menuitem--link {
+  text-align: left !important;
+  padding: 0.75em 0.5em !important;
+}
