@@ -51,8 +51,6 @@ public class StudentGradeSummaryGradesPanel extends Panel {
 	boolean categoriesEnabled = false;
 	boolean isAssignmentsDisplayed = false;
 
-	CourseGradeFormatter courseGradeFormatter;
-
 	public StudentGradeSummaryGradesPanel(final String id, final IModel<Map<String, Object>> model) {
 		super(id, model);
 	}
@@ -72,13 +70,6 @@ public class StudentGradeSummaryGradesPanel extends Panel {
 		this.isGroupedByCategory =  groupedByCategoryByDefault && this.configuredCategoryType != GbCategoryType.NO_CATEGORY;
 		this.categoriesEnabled = this.configuredCategoryType != GbCategoryType.NO_CATEGORY;
 		this.isAssignmentsDisplayed = gradebook.isAssignmentsDisplayed();
-
-		courseGradeFormatter = new CourseGradeFormatter(
-			gradebook,
-			GbRole.STUDENT,
-			gradebook.isCourseGradeDisplayed(),
-			gradebook.isCoursePointsDisplayed(),
-			true);
 	}
 
 	@Override
@@ -288,9 +279,17 @@ public class StudentGradeSummaryGradesPanel extends Panel {
 		addOrReplace(noAssignments);
 
 		// course grade, via the formatter
+		final Gradebook gradebook = this.businessService.getGradebook();
 		final CourseGrade courseGrade = this.businessService.getCourseGrade(userId);
 
-		addOrReplace(new Label("courseGrade", this.courseGradeFormatter.format(courseGrade)).setEscapeModelStrings(false));
+		final CourseGradeFormatter courseGradeFormatter = new CourseGradeFormatter(
+			gradebook,
+			GbRole.STUDENT,
+			gradebook.isCourseGradeDisplayed(),
+			gradebook.isCoursePointsDisplayed(),
+			true);
+
+		addOrReplace(new Label("courseGrade", courseGradeFormatter.format(courseGrade)).setEscapeModelStrings(false));
 
 		add(new AttributeModifier("data-studentid", userId));
 	}
