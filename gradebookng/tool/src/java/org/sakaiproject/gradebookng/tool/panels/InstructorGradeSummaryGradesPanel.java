@@ -125,6 +125,10 @@ public class InstructorGradeSummaryGradesPanel extends Panel {
 			public void onClick(AjaxRequestTarget target) {
 				InstructorGradeSummaryGradesPanel.this.isGroupedByCategory = !InstructorGradeSummaryGradesPanel.this.isGroupedByCategory;
 
+				GradebookUiSettings settings = gradebookPage.getUiSettings();
+				settings.setSummaryGroupedByCategory(InstructorGradeSummaryGradesPanel.this.isGroupedByCategory);
+				gradebookPage.setUiSettings(settings);
+
 				target.add(InstructorGradeSummaryGradesPanel.this);
 				target.appendJavaScript(
 					String.format("new GradebookGradeSummary($(\"#%s\"), %s);",

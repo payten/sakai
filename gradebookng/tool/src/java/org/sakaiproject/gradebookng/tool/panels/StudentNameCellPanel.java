@@ -58,7 +58,7 @@ public class StudentNameCellPanel extends Panel {
 				final GradebookUiSettings settings = gradebookPage.getUiSettings();
 
 				final Map<String, Object> windowModel = new HashMap<>(StudentNameCellPanel.this.model.getObject());
-				windowModel.put("groupedByCategoryByDefault", settings.isCategoriesEnabled());
+				windowModel.put("groupedByCategoryByDefault", settings.isSummaryGroupedByCategory());
 
 				final Component content = new StudentGradeSummaryPanel(window.getContentId(), Model.ofMap(windowModel), window);
 

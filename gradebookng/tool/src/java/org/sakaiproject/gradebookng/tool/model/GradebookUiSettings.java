@@ -44,7 +44,6 @@ public class GradebookUiSettings implements Serializable {
 	private GbAssignmentGradeSortOrder assignmentSortOrder;
 
 	@Getter
-	@Setter
 	private boolean categoriesEnabled;
 
 	private final Map<Long, Boolean> assignmentVisibility;
@@ -85,6 +84,10 @@ public class GradebookUiSettings implements Serializable {
 	@Setter
 	private Boolean showPoints;
 
+	@Getter
+	@Setter
+	private boolean summaryGroupedByCategory;
+
 	public GradebookUiSettings() {
 		// defaults. Note there is no default for assignmentSortOrder as that
 		// requires an assignmentId which will differ between gradebooks
@@ -98,6 +101,8 @@ public class GradebookUiSettings implements Serializable {
 
 		this.categoryColors = new HashMap<String, String>();
 		this.showPoints = false;
+
+		this.summaryGroupedByCategory = false;
 	}
 
 	public boolean isAssignmentVisible(final Long assignmentId) {
@@ -179,6 +184,11 @@ public class GradebookUiSettings implements Serializable {
 		this.categorySortOrder = null;
 		this.assignmentSortOrder = null;
 		this.studentSortOrder = null;
+	}
+
+	public void setCategoriesEnabled(boolean categoriesEnabled) {
+		this.categoriesEnabled = categoriesEnabled;
+		this.summaryGroupedByCategory = categoriesEnabled;
 	}
 
 	@Override
