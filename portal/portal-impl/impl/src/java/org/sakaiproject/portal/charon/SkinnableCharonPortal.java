@@ -713,7 +713,8 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 		// For JSR-168 portlets - this gets the content
 		// For legacy tools, this returns the "<iframe" bit
 		// For buffered legacy tools - the buffering is done outside of this
-		RenderResult result = ToolRenderService.render(this, placement, req, res,
+		RenderResult result = ToolRenderService.render(this,placement, req, res,
+				getServletContext());
 
                 if (externalHelpSystem.isActive()) {
 			String userRole = "student";
@@ -731,9 +732,6 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 			toolMap.put("externalNews", news);
                 }
 
-
-		RenderResult result = ToolRenderService.render(this,placement, req, res,
-				getServletContext());
 
 		if (result.getJSR168HelpUrl() != null)
 		{
