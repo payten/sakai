@@ -99,7 +99,6 @@ public class AbstractWebService {
     protected QuestionPoolServiceAPI questionPoolServiceImpl;
     protected LessonBuilderAccessAPI lessonBuilderAccessAPI;
     protected ArchiveService archiveService;
-    protected PreferencesService preferencesService;
     protected MemoryService memoryService;
     protected SqlService sqlService;
     protected ImportService importService;
@@ -287,15 +286,11 @@ public class AbstractWebService {
     @WebMethod(exclude = true)
     public void setQuestionPoolServiceImpl(QuestionPoolServiceAPI questionPoolServiceImpl) {
         this.questionPoolServiceImpl = questionPoolServiceImpl;
+    }
 
     @WebMethod(exclude = true)
     public void setArchiveService(ArchiveService archiveService) {
         this.archiveService = archiveService;
-    }
-    
-    @WebMethod(exclude = true)
-    public void setPreferencesService(PreferencesService preferencesService) {
-        this.preferencesService = preferencesService;
     }
     
     @WebMethod(exclude = true)
