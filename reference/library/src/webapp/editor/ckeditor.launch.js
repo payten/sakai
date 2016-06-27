@@ -258,6 +258,68 @@ sakai.editor.editors.ckeditor.launch = function(targetId, config, w, h) {
           }
 
       });
+
+      // CLASSES-1355 Monkey patch the contextMenu plugin to switch the right-click menu
+      // to be browser by default and the CKEditor menu when CTRL/META is pressed
+      CKEDITOR.on('instanceReady', function() {
+        CKEDITOR.plugins.contextMenu.prototype.addTarget = function( element, nativeContextMenuOnCtrl ) {
+            element.on( 'contextmenu', function( event ) {
+              var domEvent = event.data,
+                isCtrlKeyDown =
+                  // Safari on Windows always show 'ctrlKey' as true in 'contextmenu' event,
+                  // which make this property unreliable. (#4826)
+                  ( CKEDITOR.env.webkit ? holdCtrlKey : ( CKEDITOR.env.mac ? domEvent.$.metaKey : domEvent.$.ctrlKey ) );
+
+              // THIS IS THE LINE CHANGED TO SWITCH THE MENU
+              //if ( nativeContextMenuOnCtrl && isCtrlKeyDown )
+              if (!nativeContextMenuOnCtrl || !isCtrlKeyDown)
+                return;
+
+              // Cancel the browser context menu.
+              domEvent.preventDefault();
+
+              // Fix selection when non-editable element in Webkit/Blink (Mac) (#11306).
+              if ( CKEDITOR.env.mac && CKEDITOR.env.webkit ) {
+                var editor = this.editor,
+                  contentEditableParent = new CKEDITOR.dom.elementPath( domEvent.getTarget(), editor.editable() ).contains( function( el ) {
+                    // Return when non-editable or nested editable element is found.
+                    return el.hasAttribute( 'contenteditable' );
+                  }, true ); // Exclude editor's editable.
+
+                // Fake selection for non-editables only (to exclude nested editables).
+                if ( contentEditableParent && contentEditableParent.getAttribute( 'contenteditable' ) == 'false' )
+                  editor.getSelection().fake( contentEditableParent );
+              }
+
+              var doc = domEvent.getTarget().getDocument(),
+                offsetParent = domEvent.getTarget().getDocument().getDocumentElement(),
+                fromFrame = !doc.equals( CKEDITOR.document ),
+                scroll = doc.getWindow().getScrollPosition(),
+                offsetX = fromFrame ? domEvent.$.clientX : domEvent.$.pageX || scroll.x + domEvent.$.clientX,
+                offsetY = fromFrame ? domEvent.$.clientY : domEvent.$.pageY || scroll.y + domEvent.$.clientY;
+
+              CKEDITOR.tools.setTimeout( function() {
+                this.open( offsetParent, null, offsetX, offsetY );
+
+                // IE needs a short while to allow selection change before opening menu. (#7908)
+              }, CKEDITOR.env.ie ? 200 : 0, this );
+            }, this );
+
+            if ( CKEDITOR.env.webkit ) {
+              var holdCtrlKey,
+                onKeyDown = function( event ) {
+                  holdCtrlKey = CKEDITOR.env.mac ? event.data.$.metaKey : event.data.$.ctrlKey;
+                },
+                resetOnKeyUp = function() {
+                  holdCtrlKey = 0;
+                };
+
+              element.on( 'keydown', onKeyDown );
+              element.on( 'keyup', resetOnKeyUp );
+              element.on( 'contextmenu', resetOnKeyUp );
+            }
+          }
+      });
 }
 
 sakai.editor.launch = sakai.editor.editors.ckeditor.launch;
