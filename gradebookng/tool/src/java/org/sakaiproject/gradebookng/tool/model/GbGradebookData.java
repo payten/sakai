@@ -5,6 +5,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.util.StringUtil;
 import org.sakaiproject.gradebookng.business.GbCategoryType;
+import org.sakaiproject.gradebookng.business.GbGradingType;
 import org.sakaiproject.gradebookng.business.model.GbCourseGrade;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.service.gradebook.shared.Assignment;
@@ -263,6 +264,8 @@ public class GbGradebookData {
         result.put("isCourseLetterGradeDisplayed", settings.isCourseLetterGradeDisplayed());
         result.put("isCourseAverageDisplayed", settings.isCourseAverageDisplayed());
         result.put("isCoursePointsDisplayed", settings.isCoursePointsDisplayed());
+        result.put("isPointsGradeEntry", GbGradingType.valueOf(settings.getGradeType()).equals(GbGradingType.POINTS));
+        result.put("isPercentageGradeEntry", GbGradingType.valueOf(settings.getGradeType()).equals(GbGradingType.PERCENTAGE));
         result.put("isCategoriesEnabled", GbCategoryType.valueOf(settings.getCategoryType()) != GbCategoryType.NO_CATEGORY);
 
         return result;

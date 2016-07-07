@@ -158,6 +158,10 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   if (column.type === "assignment") {
     $.data(td, "assignmentid", column.assignmentId);
     $.removeData(td, "categoryId");
+
+    if (GbGradeTable.settings.isPercentageGradeEntry && value != null && value != "") {
+      GbGradeTable.replaceContents(valueCell, document.createTextNode('' + value + '%'));
+    }
   } else if (column.type === "category") {
     $.data(td, "categoryId", column.categoryId);
     $.removeData(td, "assignmentid");
@@ -201,7 +205,15 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   } else if (scoreState == "invalid") {
     $cellDiv.addClass("gb-save-invalid");
   }
-  if (parseFloat(value) > parseFloat(column.points)) {
+  var isExtraCredit = false;
+
+  if (GbGradeTable.settings.isPointsGradeEntry) {
+    isExtraCredit = parseFloat(value) > parseFloat(column.points);
+  } else if (GbGradeTable.settings.isPercentageGradeEntry) {
+    isExtraCredit = parseFloat(value) > 100;
+  }
+
+  if (isExtraCredit) {
     $cellDiv.addClass("gb-extra-credit");
     $(gbNotification).addClass("gb-flag-extra-credit");
   } else {
@@ -311,9 +323,14 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     Handsontable.editors.TextEditor.prototype.beginEditing.apply(this, arguments);
 
     var col = this.instance.getSelected()[1];
-    var assignment = GbGradeTable.columns[col - 2];
-    var points = assignment.points;
-    $(this.TEXTAREA_PARENT).find(".out-of").html("/" + points);
+
+    if (GbGradeTable.settings.isPercentageGradeEntry) {
+      $(this.TEXTAREA_PARENT).find(".out-of").html("100%");
+    } else if (GbGradeTable.settings.isPointsGradeEntry) {
+      var assignment = GbGradeTable.columns[col - 2];
+      var points = assignment.points;
+      $(this.TEXTAREA_PARENT).find(".out-of").html("/" + points);
+    }
 
     if ($(this.TEXTAREA).val().length > 0) {
       $(this.TEXTAREA).select();
