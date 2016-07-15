@@ -53,7 +53,7 @@
 }
 #gradeTable .handsontable th > .relative,
 #gradeTable .handsontable td > .relative {
-  padding: 0 4px;
+  padding: 2px 4px 0;
 }
 
 #gradeTable .handsontable th {
@@ -157,6 +157,10 @@
   margin-right: 4px;
   box-shadow: 1px 1px 2px #CCC;
 }
+#gradeTable .gb-category-weight {
+  color: #999;
+  font-weight: normal;
+}
 #gradeTable .gb-uncategorized {
   text-align: left;
   color: #999;
@@ -204,6 +208,9 @@
 .gb-flag-extra-credit:before {
   content: '\f0fe';
   color: rgb(200,144,0);
+}
+#gradeTable th .gb-flag-extra-credit:before {
+  color: #999;
 }
 #gradeTable .gb-save-success {
   background-color: #DFF0D8 !important;

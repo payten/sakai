@@ -91,6 +91,8 @@ public class GbGradebookData {
     private class CategoryAverageDefinition implements ColumnDefinition {
         private Long categoryId;
         private String title;
+        private String weight;
+        private boolean isExtraCredit; 
         private String color;
 
         @Override
@@ -267,6 +269,7 @@ public class GbGradebookData {
         result.put("isPointsGradeEntry", GbGradingType.valueOf(settings.getGradeType()).equals(GbGradingType.POINTS));
         result.put("isPercentageGradeEntry", GbGradingType.valueOf(settings.getGradeType()).equals(GbGradingType.PERCENTAGE));
         result.put("isCategoriesEnabled", GbCategoryType.valueOf(settings.getCategoryType()) != GbCategoryType.NO_CATEGORY);
+        result.put("isCategoryTypeWeighted", GbCategoryType.valueOf(settings.getCategoryType()) == GbCategoryType.WEIGHTED_CATEGORY);
 
         return result;
     };
@@ -357,6 +360,11 @@ public class GbGradebookData {
             Assignment a1 = assignments.get(i);
             Assignment a2 = ((i + 1) < assignments.size()) ? assignments.get(i + 1) : null;
 
+            String categoryWeight = null;
+            if (a1.getWeight() != null) {
+                categoryWeight = FormatHelper.formatDoubleAsPercentage(a1.getWeight() * 100);
+            }
+
             result.add(new AssignmentDefinition(a1.getId(),
                                                 a1.getName(),
                                                 a1.getPoints().toString(),
@@ -372,7 +380,7 @@ public class GbGradebookData {
                                                 nullable(a1.getCategoryId()),
                                                 a1.getCategoryName(),
                                                 userSettings.getCategoryColor(a1.getCategoryName()),
-                                                nullable(a1.getWeight()),
+                                                nullable(categoryWeight),
                                                 a1.isCategoryExtraCredit()));
 
 
@@ -383,6 +391,8 @@ public class GbGradebookData {
                 (a2 == null || !a1.getCategoryId().equals(a2.getCategoryId()))) {
                 result.add(new CategoryAverageDefinition(a1.getCategoryId(),
                                                          a1.getCategoryName(),
+                                                         nullable(categoryWeight),
+                                                         a1.isCategoryExtraCredit(),
                                                          userSettings.getCategoryColor(a1.getCategoryName())));
             }
         }
@@ -392,9 +402,15 @@ public class GbGradebookData {
         if (!userSettings.isGroupedByCategory()) {
             for (CategoryDefinition category : categories) {
                 if (!category.getAssignmentList().isEmpty()) {
+                    String categoryWeight = null;
+                    if (category.getWeight() != null) {
+                        categoryWeight = FormatHelper.formatDoubleAsPercentage(category.getWeight() * 100);
+                    }
                     result.add(new CategoryAverageDefinition(
                         category.getId(),
                         category.getName(),
+                        nullable(categoryWeight),
+                        category.isExtraCredit(),
                         userSettings.getCategoryColor(category.getName())));
                 }
             }
