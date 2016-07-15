@@ -57,6 +57,7 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +130,9 @@ public class GradebookPage extends BasePage {
 
 		this.form = new Form<Void>("form");
 		add(this.form);
+
+		form.add(new AttributeModifier("data-siteid", businessService.getCurrentSiteId()));
+		form.add(new AttributeModifier("data-gradestimestamp", new Date().getTime()));
 
 		/**
 		 * Note that SEMI_TRANSPARENT has a 100% black background and TRANSPARENT is overridden to 10% opacity
