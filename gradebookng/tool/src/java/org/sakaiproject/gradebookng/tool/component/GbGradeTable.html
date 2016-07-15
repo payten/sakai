@@ -24,13 +24,24 @@
         <script id="assignmentHeaderTemplate" type="text/template">
             <span class="colHeader hide">${col}</span>
             <div class="relative">
-                <a class="gb-title">${title}</a>
+                <a class="gb-title">
+                    {if extraCredit}
+                        <span class="gb-flag-extra-credit"></span>
+                    {/if}
+                    ${title}
+                </a>
                 {if settings.isCategoriesEnabled}
                     {if categoryId}
                         <div class="gb-category">
-                            <wicket:message key="label.category"/> 
+                            <wicket:message key="label.category"/>
+                            {if categoryExtraCredit}
+                                <span class="gb-flag-extra-credit"></span>
+                            {/if}
                             <span class="swatch" style="background-color: #${categoryColor}"></span>
                             <span>${categoryName}</span>
+                            {if settings.isCategoryTypeWeighted}
+                                <span class="gb-category-weight">[${categoryWeight}]</span>
+                            {/if}
                         </div>
                     {else}
                         <div class="gb-uncategorized">
@@ -39,8 +50,12 @@
                     {/if}
                 {/if}
                 <div class="gb-grade-section">
-                    <wicket:message key="label.total"/>
-                    <span class="gb-total-points" data-outof-label="/${points}">
+                    {if settings.isPercentageGradeEntry}
+                        <wicket:message key="label.relativeweight"/>
+                    {else}
+                        <wicket:message key="label.total"/>
+                    {/if}
+                    <span class="gb-total-points">
                         ${points}
                     </span>
                 </div>
@@ -78,8 +93,16 @@
             <span class="colHeader hide">${col}</span>
             <div class="relative">
                 <a class="gb-title">
-                    <span class="swatch" style="background-color: #${color}"></span>
-                    ${title}
+                    <span class="gb-category">
+                        {if extraCredit}
+                            <span class="gb-flag-extra-credit"></span>
+                        {/if}
+                        <span class="swatch" style="background-color: #${color}"></span>
+                        ${title}
+                        {if settings.isCategoryTypeWeighted}
+                            <span class="gb-category-weight">[${weight}]</span>
+                        {/if}
+                    </span>
                 </a>
             </div>
         </script>
