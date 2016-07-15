@@ -15,11 +15,14 @@ public class GbGradeTableData {
     private List<GbStudentGradeInfo> grades;
     private List<CategoryDefinition> categories;
     private GradebookInformation gradebookInformation;
+    private GradebookUiSettings uiSettings;
 
     public GbGradeTableData(GradebookNgBusinessService businessService,
                             GradebookUiSettings settings) {
         final GbStopWatch stopwatch = new GbStopWatch();
         stopwatch.time("GbGradeTableData init", stopwatch.getTime());
+
+        uiSettings = settings;
 
         SortType sortBy = SortType.SORT_BY_SORTING;
         if (settings.isCategoriesEnabled()) {
@@ -56,5 +59,9 @@ public class GbGradeTableData {
 
     public GradebookInformation getGradebookInformation() {
         return gradebookInformation;
+    }
+
+    public GradebookUiSettings getUiSettings() {
+        return uiSettings;
     }
 }

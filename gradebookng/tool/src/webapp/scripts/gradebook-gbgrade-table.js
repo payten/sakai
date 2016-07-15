@@ -227,9 +227,9 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
 GbGradeTable.headerRenderer = function (col, column) {
   if (col == 0) {
-    return GbGradeTable.templates.studentHeader.process({col: col});
+    return GbGradeTable.templates.studentHeader.process({col: col, settings: GbGradeTable.settings});
   } else if (col == 1) {
-    return GbGradeTable.templates.courseGradeHeader.process({col: col});
+    return GbGradeTable.templates.courseGradeHeader.process({col: col, settings: GbGradeTable.settings});
   }
 
   var templateData = $.extend({
@@ -251,7 +251,11 @@ GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value,
 
   $td.attr("scope", "row").attr("role", "rowHeader");
 
-  var html = GbGradeTable.templates.studentCell.process(value);
+  var data = $.extend({
+    settings: GbGradeTable.settings
+  }, value);
+
+  var html = GbGradeTable.templates.studentCell.process(data);
   $td.html(html);
 
   $td.data("studentid", value.userId);
@@ -655,6 +659,15 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       action: 'setUngraded',
       assignmentId: $cell.data("assignmentid")
     });
+  }).
+  // Student name sort order
+  on("click", ".gb-student-name-order-toggle", function() {
+    var $action = $(this);
+
+        GbGradeTable.ajax({
+          action: 'setStudentNameOrder',
+          orderby: $action.data("order-by")
+        });
   });
 
   GbGradeTable.setupToggleGradeItems();
@@ -1279,12 +1292,8 @@ GbGradeTable.sort = function(colIndex, direction) {
 
     // sort by students
     if (colIndex == 0) {
-      if (a.eid > b.eid) {
-        return 1;
-      }
-      if (a.eid < b.eid) {
-        return -1;
-      }
+      return GbGradeTable.studentSorter(a, b);
+
     // sort by course grade
     } else if (colIndex == 1) {
       var a_points = parseFloat(a[1]);
@@ -1339,4 +1348,30 @@ GbGradeTable.getScoreState = function(studentId, assignmentId) {
   } else {
     return false;
   }
+};
+
+GbGradeTable.studentSorter = function(a, b) {
+  function generateSortStrings(student) {
+    if (GbGradeTable.settings.isStudentOrderedByLastName) {
+      return [student.lastName.toLowerCase(), student.firstName.toLowerCase(), student.eid];
+    } else {
+      return [student.firstName.toLowerCase(), student.lastName.toLowerCase(), student.eid];
+    }
+  }
+
+  var sort_strings_a = generateSortStrings(a);
+  var sort_strings_b = generateSortStrings(b);
+
+  for (var i = 0; i < sort_strings_a.length; i++) {
+    var sort_a = sort_strings_a[i];
+    var sort_b = sort_strings_b[i];
+
+    if (sort_a < sort_b) {
+      return 1;
+    } else if (sort_a > sort_b) {
+      return -1;
+    }
+  }
+
+  return 0;
 };

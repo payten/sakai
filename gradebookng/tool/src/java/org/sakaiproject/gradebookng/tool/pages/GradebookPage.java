@@ -33,6 +33,7 @@ import org.sakaiproject.gradebookng.tool.actions.EditCommentAction;
 import org.sakaiproject.gradebookng.tool.actions.GradeUpdateAction;
 import org.sakaiproject.gradebookng.tool.actions.OverrideCourseGradeAction;
 import org.sakaiproject.gradebookng.tool.actions.SetScoreForUngradedAction;
+import org.sakaiproject.gradebookng.tool.actions.SetStudentNameOrderAction;
 import org.sakaiproject.gradebookng.tool.actions.SetZeroScoreAction;
 import org.sakaiproject.gradebookng.tool.actions.ViewAssignmentStatisticsAction;
 import org.sakaiproject.gradebookng.tool.actions.ViewCourseGradeLogAction;
@@ -244,6 +245,7 @@ public class GradebookPage extends BasePage {
 		gradeTable.addEventListener("viewCourseGradeLog", new ViewCourseGradeLogAction());
 		gradeTable.addEventListener("deleteAssignment", new DeleteAssignmentAction());
 		gradeTable.addEventListener("setUngraded", new SetScoreForUngradedAction());
+		gradeTable.addEventListener("setStudentNameOrder", new SetStudentNameOrderAction());
 
 		this.form.add(gradeTable);
 
