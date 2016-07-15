@@ -122,7 +122,8 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   // otherwise it won't rerender when those values change
   var hasComment = column.type === "assignment" ? GbGradeTable.hasComment(student, column.assignmentId) : false;
   var scoreState = column.type === "assignment" ? GbGradeTable.getScoreState(student.userId, column.assignmentId) : false;
-  var keyValues = [row, index, value, student.eid, hasComment, column.type, scoreState];
+  var hasConcurrentEdit = column.type === "assignment" ? GbGradeTable.hasConcurrentEdit(student, column.assignmentId) : false;
+  var keyValues = [row, index, value, student.eid, hasComment, hasConcurrentEdit, column.type, scoreState];
   var cellKey = keyValues.join(",");
 
   var wasInitialised = $.data(td, 'cell-initialised');
@@ -184,6 +185,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     }
   }
 
+
   // other notifications
   var gbNotification = td.getElementsByClassName('gb-notification')[0];
   var cellDiv = td.getElementsByClassName('relative')[0];
@@ -200,6 +202,8 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
       GbGradeTable.setScoreState(false, student.userId, column.assignmentId);
       $cellDiv.removeClass("gb-save-success", 2000);
     }, 2000);
+  } else if (hasConcurrentEdit) {
+    $cellDiv.addClass("gb-concurrent-edit");
   } else if (scoreState == "error") {
     $cellDiv.addClass("gb-save-error");
   } else if (scoreState == "invalid") {
@@ -672,6 +676,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
   GbGradeTable.setupToggleGradeItems();
   GbGradeTable.setupColumnSorting();
+  GbGradeTable.setupConcurrencyCheck();
 
   // Patch HandsonTable getWorkspaceWidth for improved scroll performance on big tables
   var origGetWorkspaceWidth = WalkontableViewport.prototype.getWorkspaceWidth;
@@ -776,6 +781,42 @@ GbGradeTable.updateHasComment = function(student, assignmentId, comment) {
   var assignmentIndex = $.inArray(GbGradeTable.colModelForAssignment(assignmentId), GbGradeTable.columns);
 
   student.hasComments = hasComments.substr(0, assignmentIndex) + flag + hasComments.substr(assignmentIndex+1);
+}
+
+
+GbGradeTable.hasConcurrentEdit = function(student, assignmentId) {
+  if (student.hasConcurrentEdit == null) {
+    student.hasConcurrentEdit = "";
+    for(var i=0; i < GbGradeTable.columns.length; i++) {
+      student.hasConcurrentEdit += "0";
+    };
+    return false;
+  }
+
+  var assignmentIndex = $.inArray(GbGradeTable.colModelForAssignment(assignmentId), GbGradeTable.columns);
+  return student.hasConcurrentEdit[assignmentIndex] === "1";
+};
+
+
+GbGradeTable.setHasConcurrentEdit = function(conflict) {
+  var student = GbGradeTable.modelForStudent(conflict.studentUuid);
+
+  if (GbGradeTable.hasConcurrentEdit(student, conflict.assignmentId)) {
+    // already marked grade as out of date
+    return;
+  }
+
+  var hasConcurrentEdit = student.hasConcurrentEdit;
+
+  var row = GbGradeTable.rowForStudent(conflict.studentUuid);
+  var col = GbGradeTable.colForAssignment(conflict.assignmentId);
+
+  var assignmentIndex = $.inArray(GbGradeTable.colModelForAssignment(conflict.assignmentId), GbGradeTable.columns);
+
+  student.hasConcurrentEdit = hasConcurrentEdit.substr(0, assignmentIndex) + "1" + hasConcurrentEdit.substr(assignmentIndex+1);
+
+  GbGradeTable.instance.setDataAtCell(row, 0, student);
+  GbGradeTable.redrawCell(row, col);
 }
 
 
@@ -1374,4 +1415,93 @@ GbGradeTable.studentSorter = function(a, b) {
   }
 
   return 0;
+};
+
+
+GbGradeTable.setupConcurrencyCheck = function() {
+  var self = this;
+
+  function showConcurrencyNotification(data) {
+    $.each(data, function(i, conflict) {
+      console.log("CONFLICT!");
+      console.log(conflict);
+
+      GbGradeTable.setHasConcurrentEdit(conflict)
+    });
+  };
+
+  function hideConcurrencyNotification() {
+    GbGradeTable.container.find(".gb-cell-out-of-date").removeClass("gb-cell-out-of-date");
+  };
+
+  function handleConcurrencyCheck(data) {
+    if ($.isEmptyObject(data) || $.isEmptyObject(data.gbng_collection)) {
+      // nobody messing with my..
+      hideConcurrencyNotification();
+      return;
+    }
+
+    // there are *other* people doing things!
+    showConcurrencyNotification(data.gbng_collection);
+  };
+
+  function performConcurrencyCheck() {
+    GradebookAPI.isAnotherUserEditing(
+        GbGradeTable.container.data("siteid"),
+        GbGradeTable.container.data("gradestimestamp"),
+        handleConcurrencyCheck);
+  };
+
+  // Check for concurrent editors.. and again every 10 seconds
+  // (note: there's a 10 second cache)
+  performConcurrencyCheck();
+  var concurrencyCheckInterval = setInterval(performConcurrencyCheck, 10 * 1000);
+
+
+  $("#gradeItemsConcurrentUserWarning").on("click", ".gb-message-close", function() {
+    // dismiss the message
+    $("#gradeItemsConcurrentUserWarning").addClass("hide");
+    // and stop checking (they know!)
+    clearInterval(concurrencyCheckInterval);
+  });
+};
+
+
+/**************************************************************************************
+ * GradebookAPI - all the GradebookNG entity provider calls in one happy place
+ */
+GradebookAPI = {};
+
+
+GradebookAPI.isAnotherUserEditing = function(siteId, timestamp, onSuccess, onError) {
+  var endpointURL = "/direct/gbng/isotheruserediting/" + siteId + ".json";
+  var params = {
+    since: timestamp
+  };
+  GradebookAPI._GET(endpointURL, params, onSuccess, onError);
+};
+
+
+GradebookAPI._GET = function(url, data, onSuccess, onError, onComplete) {
+  $.ajax({
+    type: "GET",
+    url: url,
+    data: data,
+    cache: false,
+    success: onSuccess || $.noop,
+    error: onError || $.noop,
+    complete: onComplete || $.noop
+  });
+};
+
+
+GradebookAPI._POST = function(url, data, onSuccess, onError, onComplete) {
+  $.ajax({
+    type: "POST",
+    url: url,
+    data: data,
+    success: onSuccess || $.noop,
+    error: onError || $.noop,
+    complete: onComplete || $.noop
+  });
 };
