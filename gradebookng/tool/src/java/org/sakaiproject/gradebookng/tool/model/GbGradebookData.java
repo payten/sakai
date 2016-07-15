@@ -7,6 +7,7 @@ import org.apache.poi.util.StringUtil;
 import org.sakaiproject.gradebookng.business.GbCategoryType;
 import org.sakaiproject.gradebookng.business.GbGradingType;
 import org.sakaiproject.gradebookng.business.model.GbCourseGrade;
+import org.sakaiproject.gradebookng.business.model.GbStudentNameSortOrder;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
@@ -152,6 +153,7 @@ public class GbGradebookData {
     private List<GbStudentGradeInfo> studentGradeInfoList;
     private List<CategoryDefinition> categories;
     private GradebookInformation settings;
+    private GradebookUiSettings uiSettings;
 
     private Component parent;
 
@@ -159,10 +161,12 @@ public class GbGradebookData {
                            List<Assignment> assignments,
                            List<CategoryDefinition> categories,
                            GradebookInformation settings,
+                           GradebookUiSettings uiSettings,
                            Component parentComponent) {
         this.parent = parentComponent;
         this.categories = categories;
         this.settings = settings;
+        this.uiSettings = uiSettings;
 
         this.studentGradeInfoList = studentGradeInfoList;
 
@@ -270,6 +274,8 @@ public class GbGradebookData {
         result.put("isPercentageGradeEntry", GbGradingType.valueOf(settings.getGradeType()).equals(GbGradingType.PERCENTAGE));
         result.put("isCategoriesEnabled", GbCategoryType.valueOf(settings.getCategoryType()) != GbCategoryType.NO_CATEGORY);
         result.put("isCategoryTypeWeighted", GbCategoryType.valueOf(settings.getCategoryType()) == GbCategoryType.WEIGHTED_CATEGORY);
+        result.put("isStudentOrderedByLastName", uiSettings.getNameSortOrder() == GbStudentNameSortOrder.LAST_NAME);
+        result.put("isStudentOrderedByFirstName", uiSettings.getNameSortOrder() == GbStudentNameSortOrder.FIRST_NAME);
 
         return result;
     };
