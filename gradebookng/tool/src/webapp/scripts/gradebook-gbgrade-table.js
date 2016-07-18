@@ -566,6 +566,9 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     filterTimeout = setTimeout(function() {
       GbGradeTable.redrawTable(true);
     }, 500);
+  }).on("focus", function() {
+    // deselect the table so subsequent keyboard entry isn't entered into cells
+    GbGradeTable.instance.deselectCell();
   });
 
   // Setup menu event bindings
@@ -1469,6 +1472,17 @@ GbGradeTable.setupConcurrencyCheck = function() {
 
 
 GbGradeTable.setupKeyboardNavigation = function() {
+  // add grade table to the tab flow
+  $(GbGradeTable.instance.rootElement).attr("tabindex", 0);
+
+  // enter handsontable upon return
+  $(GbGradeTable.instance.rootElement).on("keydown", function(event) {
+    if ($(this).is(":focus") && event.keyCode == 13) {
+      $(this).blur();
+      GbGradeTable.instance.selectCell(0,0);
+    }
+  });
+
   GbGradeTable.instance.addHook("beforeKeyDown", function(event) {
     function iGotThis(allowDefault) {
       event.stopImmediatePropagation();
@@ -1478,8 +1492,14 @@ GbGradeTable.setupKeyboardNavigation = function() {
     }
 
     var $current = $(GbGradeTable.instance.rootElement).find("td.current");
+    var $focus = $(":focus");
 
     if ($current.length > 0) {
+      // Allow accessibility shortcuts (no conflicts they said.. sure..)
+      if (event.altKey && event.ctrlKey) {
+        return iGotThis(true);
+      }
+
       // space - open menu
       if (event.keyCode == 32) {
         iGotThis();
@@ -1489,24 +1509,23 @@ GbGradeTable.setupKeyboardNavigation = function() {
           $(".dropdown-menu:visible a:first").focus();
         })
       }
-      // menu focused
-      if ($(":focus").closest(".dropdown-menu ").length > 0) {
-        var $menuItem = $(":focus");
 
+      // menu focused
+      if ($focus.closest(".dropdown-menu ").length > 0) {
         // up arrow
         if (event.keyCode == 38) {
-          if ($menuItem.closest("li").index() == 0) {
+          if ($focus.closest("li").index() == 0) {
             // first item, so close the menu
             $(".btn-group.open .dropdown-toggle").dropdown("toggle");
             $current.focus();
           } else {
-            $menuItem.closest("li").prev().find("a").focus();
+            $focus.closest("li").prev().find("a").focus();
           }
         }
         // down arrow
         if (event.keyCode == 40) {
           iGotThis();
-          $menuItem.closest("li").next().find("a").focus();
+          $focus.closest("li").next().find("a").focus();
         }
         // esc
         if (event.keyCode == 27) {
@@ -1520,10 +1539,14 @@ GbGradeTable.setupKeyboardNavigation = function() {
           GbGradeTable.instance.deselectCell();
         }
       }
-    } else {
-    }
 
-    return false;
+      // escape - return focus to table if not currently editing a grade
+      if ((GbGradeTable.instance.getActiveEditor() == null || !GbGradeTable.instance.getActiveEditor()._opened)
+            && event.keyCode == 27) {
+          GbGradeTable.instance.deselectCell();
+          GbGradeTable.instance.rootElement.focus();
+      }
+    }
   });
 };
 
