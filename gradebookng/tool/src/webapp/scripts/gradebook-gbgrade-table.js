@@ -677,6 +677,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   GbGradeTable.setupToggleGradeItems();
   GbGradeTable.setupColumnSorting();
   GbGradeTable.setupConcurrencyCheck();
+  GbGradeTable.setupKeyboardNavigation();
 
   // Patch HandsonTable getWorkspaceWidth for improved scroll performance on big tables
   var origGetWorkspaceWidth = WalkontableViewport.prototype.getWorkspaceWidth;
@@ -1463,6 +1464,66 @@ GbGradeTable.setupConcurrencyCheck = function() {
     $("#gradeItemsConcurrentUserWarning").addClass("hide");
     // and stop checking (they know!)
     clearInterval(concurrencyCheckInterval);
+  });
+};
+
+
+GbGradeTable.setupKeyboardNavigation = function() {
+  GbGradeTable.instance.addHook("beforeKeyDown", function(event) {
+    function iGotThis(allowDefault) {
+      event.stopImmediatePropagation();
+      if (!allowDefault) {
+        event.preventDefault();
+      }
+    }
+
+    var $current = $(GbGradeTable.instance.rootElement).find("td.current");
+
+    if ($current.length > 0) {
+      // space - open menu
+      if (event.keyCode == 32) {
+        iGotThis();
+
+        $current.find(".dropdown-toggle").trigger("click");
+        setTimeout(function() {
+          $(".dropdown-menu:visible a:first").focus();
+        })
+      }
+      // menu focused
+      if ($(":focus").closest(".dropdown-menu ").length > 0) {
+        var $menuItem = $(":focus");
+
+        // up arrow
+        if (event.keyCode == 38) {
+          if ($menuItem.closest("li").index() == 0) {
+            // first item, so close the menu
+            $(".btn-group.open .dropdown-toggle").dropdown("toggle");
+            $current.focus();
+          } else {
+            $menuItem.closest("li").prev().find("a").focus();
+          }
+        }
+        // down arrow
+        if (event.keyCode == 40) {
+          iGotThis();
+          $menuItem.closest("li").next().find("a").focus();
+        }
+        // esc
+        if (event.keyCode == 27) {
+          $(".btn-group.open .dropdown-toggle").dropdown("toggle");
+          $current.focus();
+        }
+        // enter
+        if (event.keyCode == 13) {
+          iGotThis(true);
+          // deselect cell so keyboard focus is given to the menu's action
+          GbGradeTable.instance.deselectCell();
+        }
+      }
+    } else {
+    }
+
+    return false;
   });
 };
 
