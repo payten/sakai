@@ -62,7 +62,9 @@ $(document).ready(function() {
     studentHeader: TrimPath.parseTemplate(
         $("#studentHeaderTemplate").html().trim().toString()),
     studentCell: TrimPath.parseTemplate(
-        $("#studentCellTemplate").html().trim().toString())
+        $("#studentCellTemplate").html().trim().toString()),
+    metadata: TrimPath.parseTemplate(
+        $("#metadataTemplate").html().trim().toString())
   };
 
 });
@@ -124,7 +126,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   var scoreState = column.type === "assignment" ? GbGradeTable.getScoreState(student.userId, column.assignmentId) : false;
   var hasConcurrentEdit = column.type === "assignment" ? GbGradeTable.hasConcurrentEdit(student, column.assignmentId) : false;
   var keyValues = [row, index, value, student.eid, hasComment, hasConcurrentEdit, column.type, scoreState];
-  var cellKey = keyValues.join(",");
+  var cellKey = keyValues.join("_");
 
   var wasInitialised = $.data(td, 'cell-initialised');
 
@@ -166,7 +168,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   } else if (column.type === "category") {
     $.data(td, "categoryId", column.categoryId);
     $.removeData(td, "assignmentid");
-    if (value != null && (value+"").length > 0) {
+    if (value != null && (value+"").length > 0 && value != "-") {
       GbGradeTable.replaceContents(valueCell, document.createTextNode('' + value + '%'));
     } else {
       GbGradeTable.replaceContents(valueCell, document.createTextNode('-'));
@@ -175,11 +177,18 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     throw "column.type not supported: " + column.type;
   }
 
+  // collect all the notification
+  var notifications = [];
+
   // comment notification
   var commentNotification = td.getElementsByClassName("gb-comment-notification")[0];
   if (commentNotification) {
     if (hasComment) {
       commentNotification.style.display = 'block';
+      notifications.push({
+        type: 'comment',
+        comment: "PANTS"
+      });
     } else {
       commentNotification.style.display = 'none';
     }
@@ -195,6 +204,11 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
   if (column.externallyMaintained) {
     $cellDiv.addClass("gb-read-only");
+      notifications.push({
+        type: 'external',
+        externalId: column.externalId,
+        externalAppName: column.externalAppName,
+      });
   } else if (scoreState == "saved") {
     $cellDiv.addClass("gb-save-success");
 
@@ -204,10 +218,20 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
     }, 2000);
   } else if (hasConcurrentEdit) {
     $cellDiv.addClass("gb-concurrent-edit");
+    notifications.push({
+      type: 'concurrent-edit',
+      conflict: $.data(td, "concurrent-edit")
+    });
   } else if (scoreState == "error") {
     $cellDiv.addClass("gb-save-error");
+    notifications.push({
+      type: 'save-error'
+    });
   } else if (scoreState == "invalid") {
     $cellDiv.addClass("gb-save-invalid");
+    notifications.push({
+      type: 'save-invalid'
+    });
   }
   var isExtraCredit = false;
 
@@ -220,9 +244,26 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   if (isExtraCredit) {
     $cellDiv.addClass("gb-extra-credit");
     $(gbNotification).addClass("gb-flag-extra-credit");
+    notifications.push({
+      type: 'extra-credit'
+    });
   } else {
     $(gbNotification).removeClass("gb-flag-extra-credit");
     $cellDiv.removeClass("gb-extra-credit");
+  }
+
+  // create notification tooltip
+  if (column.type == 'assignment') {
+    $.data(td, "metadata", {
+      id: cellKey,
+      student: student,
+      value: value,
+      assignment: column,
+      notifications: notifications
+    });
+  } else {
+    td.removeAttribute('aria-describedby');
+    $.data(td, "metadata", null);
   }
 
   $.data(td, 'cell-initialised', cellKey);
@@ -681,6 +722,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   GbGradeTable.setupColumnSorting();
   GbGradeTable.setupConcurrencyCheck();
   GbGradeTable.setupKeyboardNavigation();
+  GbGradeTable.setupCellMetaDataSummary();
 
   // Patch HandsonTable getWorkspaceWidth for improved scroll performance on big tables
   var origGetWorkspaceWidth = WalkontableViewport.prototype.getWorkspaceWidth;
@@ -697,7 +739,6 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     }
   }());
 };
-
 
 GbGradeTable.viewGradeSummary = function(studentId) {
   GbGradeTable.ajax({
@@ -813,7 +854,9 @@ GbGradeTable.setHasConcurrentEdit = function(conflict) {
   var hasConcurrentEdit = student.hasConcurrentEdit;
 
   var row = GbGradeTable.rowForStudent(conflict.studentUuid);
-  var col = GbGradeTable.colForAssignment(conflict.assignmentId);
+  var col = GbGradeTable.colForAssignment(conflict.assignmentId);con
+
+  $.data(GbGradeTable.instance.getCell(row, col), "concurrent-edit", conflict);
 
   var assignmentIndex = $.inArray(GbGradeTable.colModelForAssignment(conflict.assignmentId), GbGradeTable.columns);
 
@@ -1488,7 +1531,7 @@ GbGradeTable.setupKeyboardNavigation = function() {
     // handled by handsontable plugin
     setTimeout(function() {
       GbGradeTable.instance.rootElement.blur();
-    })
+    });
   });
 
   GbGradeTable.instance.addHook("beforeKeyDown", function(event) {
@@ -1577,6 +1620,31 @@ GbGradeTable.setupKeyboardNavigation = function() {
         GbGradeTable.instance.deselectCell();
         GbGradeTable.instance.rootElement.focus();
       }
+    }
+  });
+};
+
+
+GbGradeTable.setupCellMetaDataSummary= function() {
+  GbGradeTable.instance.addHook("afterSelection", function(r, c) {
+    var cell = GbGradeTable.instance.getCell(r,c);
+    var cellKey = $.data(cell, 'cell-initialised');
+
+    var metadata = $.data(cell, 'metadata'); 
+
+    $(".gb-metadata").hide();
+
+    if (metadata) {
+      $("#"+cellKey).remove();
+
+      $(cell).attr("aria-describedby", cellKey);
+
+      $(GbGradeTable.instance.rootElement).after(
+        GbGradeTable.templates.metadata.process(metadata)
+      );
+
+      $("#"+cellKey).show();
+
     }
   });
 };

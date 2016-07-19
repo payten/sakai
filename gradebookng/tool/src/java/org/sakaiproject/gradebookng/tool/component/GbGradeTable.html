@@ -193,5 +193,66 @@
                 </div>
             </div>
         </script>
+        <script id="metadataTemplate" type="text/template">
+            <div id="${id}" class="gb-metadata">
+                <div class="col-sm-6">
+                    <h4 class="sr-only"><wicket:message key="metadata.header" /></h4>
+                    <dl class="dl-horizontal">
+                        <dt><wicket:message key="metadata.student" /></dt>
+                        <dd>${student.lastName}, ${student.firstName} (${student.eid})</dd>
+                        <dt><wicket:message key="metadata.assignment" /></dt>
+                        <dd>${assignment.title}</dd>
+                        <dt><wicket:message key="metadata.score" /></dt>
+                        <dd>${value}</dd>
+                    </dl>
+                </div>
+                <div class="col-sm-6">
+                    {if notifications.length > 0}
+                        <p><wicket:message key="metadata.flags" /></p>
+                        <ul>
+                            {for notification in notifications}
+                                {if notification.type == 'comment'}
+                                    <li>
+                                        <span class="gb-flag-comment"></span> <wicket:message key="grade.notifications.hascomment"/>
+                                        <blockquote>${notification.comment}</blockquote>
+                                    </li>
+                                {elseif notification.type == 'extra-credit'}
+                                    <li>
+                                        <span class="gb-flag-extra-credit"></span> <wicket:message key="grade.notifications.overlimit"/>
+                                    </li>
+                                {elseif notification.type == 'save-error'}
+                                    <li>
+                                        <span class="gb-flag-save-error"></span> <wicket:message key="grade.notifications.haserror"/>
+                                    </li>
+                                    <li>
+                                        <span class="gb-flag-save-invalid"></span> <wicket:message key="grade.notifications.invalid"/>
+                                    </li>
+                                {elseif notification.type == 'save-invalid'}
+                                    <li>
+                                        <span class="gb-flag-save-invalid"></span> <wicket:message key="grade.notifications.invalid"/>
+                                    </li>
+                                {elseif notification.type == 'concurrent-edit'}
+                                    <li>
+                                        <span class="gb-flag-concurrent-edit"></span> <wicket:message key="grade.notifications.concurrentedit"/>
+                                        <pre>${JSON.stringify(notification.conflict)}</pre>
+                                    </li>
+                                {elseif notification.type == 'external'}
+                                    <li>
+                                        <span class="gb-flag-read-only"></span> <wicket:message key="grade.notifications.readonly"/>
+                                    </li>
+                                    <li>
+                                        <span class="gb-flag-external"></span> <wicket:message key="grade.notifications.isexternal"/>
+                                    </li>
+                                {else}
+                                    <li>
+                                        <span class="gb-flag-${notification.type}"></span> ${notification.type}
+                                    </li>
+                                {/if}
+                            {/for}
+                        </ul>
+                    {/if}
+                </div>
+            </div>
+        </script>
     </wicket:panel>
 </html>
