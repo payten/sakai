@@ -73,7 +73,7 @@ GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value
 
   var $td = $(td);
   var cellKey = (row + ',' + col + ',' + value);
-  var wasInitialised = $td.data('cell-initialised');
+  var wasInitialised = $.data(td, 'cell-initialised');
 
   if (wasInitialised === cellKey) {
     return;
@@ -86,13 +86,14 @@ GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value
 
     td.innerHTML = html;
   } else if (wasInitialised != cellKey) {
-    $td.find(".gb-value").html(value[0]);
+    var valueCell = td.getElementsByClassName('gb-value')[0];
+    GbGradeTable.replaceContents(valueCell, document.createTextNode(value[0]));
   }
 
   var student = instance.getDataAtCell(row, 0);
 
-  $td.data('studentid', student.userId);
-  $td.data('cell-initialised', cellKey);
+  $.data(td, 'studentid', student.userId);
+  $.data(td, 'cell-initialised', cellKey);
 };
 
 GbGradeTable.replaceContents = function (elt, newContents) {
@@ -301,9 +302,9 @@ GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value,
   }, value);
 
   var html = GbGradeTable.templates.studentCell.process(data);
-  $td.html(html);
+  td.innerHTML = html;
 
-  $td.data("studentid", value.userId);
+  $.data(td, "studentid", value.userId);
 
   // If this cell gets reused for a score display, it'll need to be fully
   // reinitialised before use.
@@ -374,11 +375,11 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     var col = this.instance.getSelected()[1];
 
     if (GbGradeTable.settings.isPercentageGradeEntry) {
-      $(this.TEXTAREA_PARENT).find(".out-of").html("100%");
+      $(this.TEXTAREA_PARENT).find(".out-of")[0].innerHTML = "100%";
     } else if (GbGradeTable.settings.isPointsGradeEntry) {
       var assignment = GbGradeTable.columns[col - 2];
       var points = assignment.points;
-      $(this.TEXTAREA_PARENT).find(".out-of").html("/" + points);
+      $(this.TEXTAREA_PARENT).find(".out-of")[0].innerHTML = "/" + points;
     }
 
     if ($(this.TEXTAREA).val().length > 0) {
@@ -397,8 +398,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
     var oldScore = this.originalValue;
     var newScore = $(this.TEXTAREA).val();
-    var studentId = $td.data("studentid");
-    var assignmentId = $td.data("assignmentid");
+    var studentId = $.data(this.TD, "studentid");
+    var assignmentId = $.data(this.TD, "assignmentid");
 
     var assignment = GbGradeTable.colModelForAssignment(assignmentId);
 
@@ -620,8 +621,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
     GbGradeTable.ajax({
       action: 'viewLog',
-      studentId: $cell.data("studentid"),
-      assignmentId: $cell.data("assignmentid")
+      studentId: $.data($cell[0], "studentid"),
+      assignmentId: $.data($cell[0], "assignmentid")
     });
   }).
   // Edit Assignment
@@ -631,7 +632,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
     GbGradeTable.ajax({
       action: 'editAssignment',
-      assignmentId: $cell.data("assignmentid")
+      assignmentId: $.data($cell[0], "assignmentid")
     });
   }).
   // View Assignment Statistics
@@ -641,7 +642,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
     GbGradeTable.ajax({
       action: 'viewStatistics',
-      assignmentId: $cell.data("assignmentid")
+      assignmentId: $.data($cell[0], "assignmentid")
     });
   }).
   // Override Course Grade
@@ -651,7 +652,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
     GbGradeTable.ajax({
       action: 'overrideCourseGrade',
-      studentId: $cell.data("studentid")
+      studentId: $.data($cell[0], "studentid")
     });
   }).
   // Edit Comment
@@ -661,8 +662,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
     GbGradeTable.ajax({
       action: 'editComment',
-      assignmentId: $cell.data("assignmentid"),
-      studentId: $cell.data("studentid")
+      assignmentId: $.data($cell[0], "assignmentid"),
+      studentId: $.data($cell[0], "studentid")
     });
   }).
   // View Grade Summary
@@ -670,7 +671,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     var $dropdown = $(this).closest(".gb-dropdown-menu");
     var $cell = $dropdown.data("cell");
 
-    GbGradeTable.viewGradeSummary($cell.data("studentid"));
+    GbGradeTable.viewGradeSummary($.data($cell[0], "studentid"));
   }).
   // Set Zero Score for Empty Cells
   on("click", ".gb-dropdown-menu .gb-set-zero-score", function() {
@@ -685,7 +686,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
     GbGradeTable.ajax({
       action: 'viewCourseGradeLog',
-      studentId: $cell.data("studentid")
+      studentId: $.data($cell[0], "studentid")
     });
   }).
   // Delete Grade Item
@@ -695,7 +696,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
     GbGradeTable.ajax({
       action: 'deleteAssignment',
-      assignmentId: $cell.data("assignmentid")
+      assignmentId: $.data($cell[0], "assignmentid")
     });
   }).
   // Set ungraded values for assignment
@@ -705,7 +706,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
 
     GbGradeTable.ajax({
       action: 'setUngraded',
-      assignmentId: $cell.data("assignmentid")
+      assignmentId: $.data($cell[0], "assignmentid")
     });
   }).
   // Student name sort order
@@ -1627,24 +1628,26 @@ GbGradeTable.setupKeyboardNavigation = function() {
 
 GbGradeTable.setupCellMetaDataSummary= function() {
   GbGradeTable.instance.addHook("afterSelection", function(r, c) {
-    var cell = GbGradeTable.instance.getCell(r,c);
-    var cellKey = $.data(cell, 'cell-initialised');
+    // only care about data cells (not headers)
+    if (r >= 0 && c >= 0) {
+      var cell = GbGradeTable.instance.getCell(r,c);
+      var cellKey = $.data(cell, 'cell-initialised');
 
-    var metadata = $.data(cell, 'metadata'); 
+      var metadata = $.data(cell, 'metadata');
 
-    $(".gb-metadata").hide();
+      $(".gb-metadata").hide();
 
-    if (metadata) {
-      $("#"+cellKey).remove();
+      if (metadata) {
+        $("#"+cellKey).remove();
 
-      $(cell).attr("aria-describedby", cellKey);
+        $(cell).attr("aria-describedby", cellKey);
 
-      $(GbGradeTable.instance.rootElement).after(
-        GbGradeTable.templates.metadata.process(metadata)
-      );
+        $(GbGradeTable.instance.rootElement).after(
+          GbGradeTable.templates.metadata.process(metadata)
+        );
 
-      $("#"+cellKey).show();
-
+        $("#"+cellKey).show();
+      }
     }
   });
 };
