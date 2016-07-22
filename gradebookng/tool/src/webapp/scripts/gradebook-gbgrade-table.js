@@ -125,8 +125,9 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   // otherwise it won't rerender when those values change
   var hasComment = column.type === "assignment" ? GbGradeTable.hasComment(student, column.assignmentId) : false;
   var scoreState = column.type === "assignment" ? GbGradeTable.getScoreState(student.userId, column.assignmentId) : false;
+  var isReadOnly = column.type === "assignment" ? GbGradeTable.isReadOnly(student, column.assignmentId) : false;
   var hasConcurrentEdit = column.type === "assignment" ? GbGradeTable.hasConcurrentEdit(student, column.assignmentId) : false;
-  var keyValues = [row, index, value, student.eid, hasComment, hasConcurrentEdit, column.type, scoreState];
+  var keyValues = [row, index, value, student.eid, hasComment, isReadOnly, hasConcurrentEdit, column.type, scoreState];
   var cellKey = keyValues.join("_");
 
   var wasInitialised = $.data(td, 'cell-initialised');
@@ -205,11 +206,16 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
 
   if (column.externallyMaintained) {
     $cellDiv.addClass("gb-read-only");
-      notifications.push({
-        type: 'external',
-        externalId: column.externalId,
-        externalAppName: column.externalAppName,
-      });
+    notifications.push({
+      type: 'external',
+      externalId: column.externalId,
+      externalAppName: column.externalAppName,
+    });
+  } else if (isReadOnly) {
+    $cellDiv.addClass("gb-read-only");
+    notifications.push({
+      type: 'readonly'
+    });
   } else if (scoreState == "saved") {
     $cellDiv.addClass("gb-save-success");
 
@@ -819,6 +825,16 @@ GbGradeTable.colModelForAssignment = function(assignmentId) {
 GbGradeTable.hasComment = function(student, assignmentId) {
   var assignmentIndex = $.inArray(GbGradeTable.colModelForAssignment(assignmentId), GbGradeTable.columns);
   return student.hasComments[assignmentIndex] === "1";
+};
+
+
+GbGradeTable.isReadOnly = function(student, assignmentId) {
+  if (student.readonly == null) {
+    return false;
+  }
+
+  var assignmentIndex = $.inArray(GbGradeTable.colModelForAssignment(assignmentId), GbGradeTable.columns);
+  return student.readonly[assignmentIndex] === "1";
 };
 
 

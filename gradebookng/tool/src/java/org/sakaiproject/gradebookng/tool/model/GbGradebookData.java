@@ -1,11 +1,14 @@
 package org.sakaiproject.gradebookng.tool.model;
 
+import lombok.Data;
+import lombok.Setter;
 import lombok.Value;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.util.StringUtil;
 import org.sakaiproject.gradebookng.business.GbCategoryType;
 import org.sakaiproject.gradebookng.business.GbGradingType;
+import org.sakaiproject.gradebookng.business.GbRole;
 import org.sakaiproject.gradebookng.business.model.GbCourseGrade;
 import org.sakaiproject.gradebookng.business.model.GbStudentNameSortOrder;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
@@ -33,7 +36,7 @@ public class GbGradebookData {
 
     private int NULL_SENTINEL = 127;
 
-    @Value
+    @Data
     private class StudentDefinition {
         private String eid;
         private String userId;
@@ -41,11 +44,12 @@ public class GbGradebookData {
         private String lastName;
 
         private String hasComments;
+        private String readonly;
     }
 
     private interface ColumnDefinition {
         public String getType();
-        public String getValueFor(GbStudentGradeInfo studentGradeInfo);
+        public Score getValueFor(GbStudentGradeInfo studentGradeInfo, boolean isInstructor);
     }
 
     @Value
@@ -74,7 +78,7 @@ public class GbGradebookData {
         }
 
         @Override
-        public String getValueFor(GbStudentGradeInfo studentGradeInfo) {
+        public Score getValueFor(GbStudentGradeInfo studentGradeInfo, boolean isInstructor) {
             Map<Long, GbGradeInfo> studentGrades = studentGradeInfo.getGrades();
 
             GbGradeInfo gradeInfo = studentGrades.get(assignmentId);
@@ -83,7 +87,12 @@ public class GbGradebookData {
                 return null;
             } else {
                 String grade = gradeInfo.getGrade();
-                return grade;
+
+                if (isInstructor || gradeInfo.isGradeable()) {
+                    return new EditableScore(grade);
+                } else {
+                    return new ReadOnlyScore(grade);
+                }
             }
         }
     }
@@ -102,7 +111,7 @@ public class GbGradebookData {
         }
 
         @Override
-        public String getValueFor(GbStudentGradeInfo studentGradeInfo) {
+        public Score getValueFor(GbStudentGradeInfo studentGradeInfo, boolean isInstructor) {
             Map<Long, Double> categoryAverages = studentGradeInfo.getCategoryAverages();
 
             Double average = categoryAverages.get(categoryId);
@@ -110,13 +119,13 @@ public class GbGradebookData {
             if (average == null) {
                 return null;
             } else {
-		final NumberFormat df = NumberFormat.getInstance();
-		df.setMinimumFractionDigits(0);
-		df.setMaximumFractionDigits(2);
-		df.setGroupingUsed(false);
-		df.setRoundingMode(RoundingMode.HALF_DOWN);
-
-		return df.format(average);
+                final NumberFormat df = NumberFormat.getInstance();
+                df.setMinimumFractionDigits(0);
+                df.setMaximumFractionDigits(2);
+                df.setGroupingUsed(false);
+                df.setRoundingMode(RoundingMode.HALF_DOWN);
+        
+                return new ReadOnlyScore(df.format(average));
             }
         }
     }
@@ -154,6 +163,7 @@ public class GbGradebookData {
     private List<CategoryDefinition> categories;
     private GradebookInformation settings;
     private GradebookUiSettings uiSettings;
+    private GbRole role;
 
     private Component parent;
 
@@ -162,11 +172,13 @@ public class GbGradebookData {
                            List<CategoryDefinition> categories,
                            GradebookInformation settings,
                            GradebookUiSettings uiSettings,
+                           GbRole role,
                            Component parentComponent) {
         this.parent = parentComponent;
         this.categories = categories;
         this.settings = settings;
         this.uiSettings = uiSettings;
+        this.role = role;
 
         this.studentGradeInfoList = studentGradeInfoList;
 
@@ -177,11 +189,27 @@ public class GbGradebookData {
     public String toScript() {
         ObjectMapper mapper = new ObjectMapper();
 
+        List<Score> grades = gradeList();
+
+        // if we can't edit one of the items,
+        // we need to serialize this into the data
+        if (!isInstructor() && grades.parallelStream().anyMatch(g -> !g.canEdit())) {
+            int i = 0;
+            for(StudentDefinition student : this.students) {
+                String readonly = "";
+                for (ColumnDefinition column : this.columns) {
+                    readonly += grades.get(i).canEdit() ? "0" : "1";
+                    i = i + 1;
+                }
+                student.setReadonly(readonly);
+            }
+        }
+
         DataSet dataset = new DataSet(
             this.students, 
             this.columns,
             courseGrades(),
-            serializeGrades(gradeList()),
+            serializeGrades(grades),
             serializeSettings());
 
         try {
@@ -212,17 +240,17 @@ public class GbGradebookData {
     // Having all the data available up front helps keep the scroll performance
     // fast.
     //
-    private String serializeGrades(List<String> gradeList) {
+    private String serializeGrades(List<Score> gradeList) {
         StringBuilder sb = new StringBuilder();
 
-        for (String gradeString : gradeList) {
-            if (gradeString.isEmpty()) {
+        for (Score score : gradeList) {
+            if (score == null) {
                 // No grade set.  Use a sentinel value.
                 sb.appendCodePoint(NULL_SENTINEL);
                 continue;
             }
 
-            double grade = Double.valueOf(gradeString);
+            double grade = Double.valueOf(score.getScore());
 
             boolean hasFraction = ((int)grade != grade);
 
@@ -316,15 +344,15 @@ public class GbGradebookData {
     }
 
 
-    private List<String> gradeList() {
-        List<String> result = new ArrayList<String>();
+    private List<Score> gradeList() {
+        List<Score> result = new ArrayList<Score>();
 
         for (GbStudentGradeInfo studentGradeInfo : this.studentGradeInfoList) {
             for (ColumnDefinition column : this.columns) {
-                String grade = column.getValueFor(studentGradeInfo);
+                Score grade = column.getValueFor(studentGradeInfo, isInstructor());
 
                 if (grade == null) {
-                    result.add("");
+                    result.add(null);
                 } else {
                     result.add(grade);
                 }
@@ -343,11 +371,14 @@ public class GbGradebookData {
         List<StudentDefinition> result = new ArrayList<StudentDefinition>();
 
         for (GbStudentGradeInfo student : studentInfo) {
-            result.add(new StudentDefinition(student.getStudentEid(),
-                    student.getStudentUuid(),
-                    student.getStudentFirstName(),
-                    student.getStudentLastName(),
-                    formatCommentData(student)));
+            StudentDefinition studentDefinition = new StudentDefinition();
+            studentDefinition.setEid(student.getStudentEid());
+            studentDefinition.setUserId(student.getStudentUuid());
+            studentDefinition.setFirstName(student.getStudentFirstName());
+            studentDefinition.setLastName(student.getStudentLastName());
+            studentDefinition.setHasComments(formatCommentData(student));
+
+            result.add(studentDefinition);
         }
 
         return result;
@@ -453,4 +484,43 @@ public class GbGradebookData {
         }
     }
 
+    private boolean isInstructor() {
+        return GbRole.INSTRUCTOR.equals(role);
+    }
+
+    private abstract class Score {
+        private String score;
+
+        public Score(String score) {
+            this.score = score;
+        }
+
+        abstract boolean canEdit();
+
+        public String getScore() {
+            return score;
+        };
+    }
+
+    private class EditableScore extends Score {
+        public EditableScore(String score) {
+            super(score);
+        }
+
+        @Override
+        public boolean canEdit() {
+            return true;
+        }
+    }
+
+    private class ReadOnlyScore extends Score {
+        public ReadOnlyScore(String score) {
+            super(score);
+        }
+
+        @Override
+        public boolean canEdit() {
+            return false;
+        }
+    }
 }
