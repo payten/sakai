@@ -80,7 +80,6 @@
   display: block;
   cursor: pointer;
 }
-
 #gradeTable .gb-title:hover:after {
   font-family: 'gradebook-icons';
   content: '\f0dc';
@@ -102,7 +101,12 @@
   right: 5px;
   top: 5px;
 }
-
+#gradeTable .gb-title .gb-category {
+  font-style: italic;
+}
+#gradeTable .gb-title .gb-category .gb-category-weight {
+  font-style: normal;
+}
 #gradeTable .gb-grade-section,
 #gradeTable .gb-due-date,
 #gradeTable .gb-category {
