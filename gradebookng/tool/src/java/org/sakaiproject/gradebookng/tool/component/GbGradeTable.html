@@ -243,6 +243,13 @@
                                     <li>
                                         <span class="gb-flag-external"></span> <wicket:message key="grade.notifications.isexternal"/>
                                     </li>
+                                {elseif notification.type == 'readonly'}
+                                    <li>
+                                        <span class="gb-flag-read-only"></span> <wicket:message key="grade.notifications.readonly"/>
+                                    </li>
+                                    <li>
+                                        <span class="gb-flag-read-only"></span> <wicket:message key="grade.notifications.privileges"/>
+                                    </li>
                                 {else}
                                     <li>
                                         <span class="gb-flag-${notification.type}"></span> ${notification.type}

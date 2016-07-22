@@ -109,6 +109,7 @@ public class GbGradeTable extends Panel implements IHeaderContributor {
 				gbGradeTableData.getCategories(),
 				gbGradeTableData.getGradebookInformation(),
 				gbGradeTableData.getUiSettings(),
+				gbGradeTableData.getRole(),
 				this);
 
 		response.render(OnDomReadyHeaderItem.forScript(String.format("var tableData = %s", gradebookData.toScript())));

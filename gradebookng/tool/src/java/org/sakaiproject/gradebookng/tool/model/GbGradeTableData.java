@@ -2,6 +2,7 @@ package org.sakaiproject.gradebookng.tool.model;
 
 import java.util.List;
 
+import org.sakaiproject.gradebookng.business.GbRole;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.util.GbStopWatch;
@@ -16,6 +17,7 @@ public class GbGradeTableData {
     private List<CategoryDefinition> categories;
     private GradebookInformation gradebookInformation;
     private GradebookUiSettings uiSettings;
+    private GbRole role;
 
     public GbGradeTableData(GradebookNgBusinessService businessService,
                             GradebookUiSettings settings) {
@@ -29,6 +31,8 @@ public class GbGradeTableData {
             // Pre-sort assignments by the categorized sort order
             sortBy = SortType.SORT_BY_CATEGORY;
         }
+
+        role = businessService.getUserRole();
 
         assignments = businessService.getGradebookAssignments(sortBy);
         stopwatch.time("getGradebookAssignments", stopwatch.getTime());
@@ -63,5 +67,9 @@ public class GbGradeTableData {
 
     public GradebookUiSettings getUiSettings() {
         return uiSettings;
+    }
+
+    public GbRole getRole() {
+        return role;
     }
 }
