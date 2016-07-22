@@ -14,6 +14,7 @@ import org.sakaiproject.gradebookng.business.GbRole;
 import org.sakaiproject.gradebookng.business.GradeSaveResponse;
 import org.sakaiproject.gradebookng.business.util.CourseGradeFormatter;
 import org.sakaiproject.gradebookng.business.util.FormatHelper;
+import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.gradebookng.tool.panels.GradeItemCellPanel;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.service.gradebook.shared.CourseGrade;
@@ -99,6 +100,8 @@ public class GradeUpdateAction implements Action, Serializable {
 
     @Override
     public ActionResponse handleEvent(JsonNode params, AjaxRequestTarget target) {
+        final GradebookPage page = (GradebookPage) target.getPage();
+
         final String oldGrade = params.get("oldScore").asText();
         final String rawNewGrade = params.get("newScore").asText();
 
@@ -106,6 +109,8 @@ public class GradeUpdateAction implements Action, Serializable {
         final DoubleValidator validator = new DoubleValidator();
 
         if (StringUtils.isNotBlank(rawNewGrade) && (!validator.isValid(rawNewGrade) || Double.parseDouble(rawNewGrade) < 0)) {
+            target.add(page.updateLiveGradingMessage(page.getString("feedback.error")));
+
             return new ArgumentErrorResponse("Grade not valid");
         }
 
@@ -120,10 +125,14 @@ public class GradeUpdateAction implements Action, Serializable {
                 oldGrade, newGrade, params.get("comment").asText());
 
         if (result.equals(GradeSaveResponse.NO_CHANGE)) {
+            target.add(page.updateLiveGradingMessage(page.getString("feedback.saved")));
+
             return new SaveGradeNoChangeResponse();
         }
 
         if (!result.equals(GradeSaveResponse.OK) && !result.equals(GradeSaveResponse.OVER_LIMIT)) {
+            target.add(page.updateLiveGradingMessage(page.getString("feedback.error")));
+
             return new SaveGradeErrorResponse(result);
         }
 
@@ -152,6 +161,8 @@ public class GradeUpdateAction implements Action, Serializable {
             Double average = businessService.getCategoryScoreForStudent(Long.valueOf(categoryId), studentUuid);
             categoryScore = FormatHelper.formatDoubleToTwoDecimalPlaces(average);
         }
+
+        target.add(page.updateLiveGradingMessage(page.getString("feedback.saved")));
 
         return new GradeUpdateResponse(
             result.equals(GradeSaveResponse.OVER_LIMIT),

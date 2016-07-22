@@ -420,6 +420,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
       postData['postData']= assignment.categoryId;
     }
 
+    GbGradeTable.setLiveFeedbackAsSaving();
+
     // FIXME: We'll need to pass through the original comment text here.
     GbGradeTable.ajax(postData, function (status, data) {
       if (status == "OK") {
@@ -1652,6 +1654,12 @@ GbGradeTable.setupCellMetaDataSummary= function() {
   });
 };
 
+
+GbGradeTable.setLiveFeedbackAsSaving = function() {
+  var $liveFeedback = $(".gb-live-feedback");
+  $liveFeedback.html($liveFeedback.data("saving-message"));
+  $liveFeedback.show()
+};
 
 /**************************************************************************************
  * GradebookAPI - all the GradebookNG entity provider calls in one happy place
