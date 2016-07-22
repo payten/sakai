@@ -417,7 +417,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     };
 
     if (assignment.categoryId != null) {
-      postData['postData']= assignment.categoryId;
+      postData['categoryId']= assignment.categoryId;
     }
 
     GbGradeTable.setLiveFeedbackAsSaving();
