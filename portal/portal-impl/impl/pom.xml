@@ -128,7 +128,7 @@
         <dependency>
       		<groupId>edu.nyu.classes.saml</groupId>
       		<artifactId>saml-api</artifactId>
-      		<version>11-SNAPSHOT</version>
+      		<version>11.0</version>
       		<scope>provided</scope>
     	</dependency>
 
