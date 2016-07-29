@@ -244,7 +244,7 @@ public class GbGradebookData {
         StringBuilder sb = new StringBuilder();
 
         for (Score score : gradeList) {
-            if (score == null) {
+            if (score == null || score.isNull()) {
                 // No grade set.  Use a sentinel value.
                 sb.appendCodePoint(NULL_SENTINEL);
                 continue;
@@ -351,7 +351,7 @@ public class GbGradebookData {
             for (ColumnDefinition column : this.columns) {
                 Score grade = column.getValueFor(studentGradeInfo, isInstructor());
 
-                if (grade == null) {
+                if (grade == null || grade.isNull()) {
                     result.add(null);
                 } else {
                     result.add(grade);
@@ -500,6 +500,10 @@ public class GbGradebookData {
         public String getScore() {
             return score;
         };
+
+        public boolean isNull() {
+            return score == null;
+        }
     }
 
     private class EditableScore extends Score {
