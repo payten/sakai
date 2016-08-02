@@ -63,8 +63,8 @@ public class GradebookNgApplication extends WebApplication {
 		getRequestCycleListeners().add(new AbstractRequestCycleListener() {
 			@Override
 			public IRequestHandler onException(final RequestCycle cycle, final Exception e) {
-				if (GradebookNgApplication.this.getConfigurationType().equals(RuntimeConfigurationType.DEVELOPMENT) &&
-				    e instanceof ClassCastException) {
+                            // FIXME: Disable this for production
+				if (e instanceof ClassCastException) {
 					System.err.println("INVALIDATING DUD SESSION");
 					sessionStore.invalidate(cycle.getRequest());
 				}
