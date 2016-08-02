@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class GbGradebookData {
 
@@ -193,7 +194,7 @@ public class GbGradebookData {
 
         // if we can't edit one of the items,
         // we need to serialize this into the data
-        if (!isInstructor() && grades.parallelStream().anyMatch(g -> !g.canEdit())) {
+        if (!isInstructor() && grades.stream().anyMatch(g -> !g.canEdit())) {
             int i = 0;
             for(StudentDefinition student : this.students) {
                 String readonly = "";
@@ -220,6 +221,25 @@ public class GbGradebookData {
         }
     }
 
+    private String serializeGrades(List<Score> gradeList) {
+        if (gradeList.stream().anyMatch(score -> score.isLarge())) {
+            return "json:" + serializeLargeGrades(gradeList);
+        } else {
+            return "packed:" + serializeSmallGrades(gradeList);
+        }
+    }
+
+    private String serializeLargeGrades(List<Score> gradeList) {
+        List<Double> scores = gradeList.stream().map(score -> score.isNull() ? -1 : score.getScore()).collect(Collectors.toList());
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(scores);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     ///
     // Pack our list of scores into as little space as possible.
     //
@@ -241,7 +261,7 @@ public class GbGradebookData {
     // Having all the data available up front helps keep the scroll performance
     // fast.
     //
-    private String serializeGrades(List<Score> gradeList) {
+    private String serializeSmallGrades(List<Score> gradeList) {
         StringBuilder sb = new StringBuilder();
 
         for (Score score : gradeList) {
@@ -251,7 +271,7 @@ public class GbGradebookData {
                 continue;
             }
 
-            double grade = Double.valueOf(score.getScore());
+            double grade = score.getScore();
 
             boolean hasFraction = ((int)grade != grade);
 
@@ -493,12 +513,17 @@ public class GbGradebookData {
 
         abstract boolean canEdit();
 
-        public String getScore() {
-            return score;
+        // We assume you'll check isNull() prior to calling this
+        public double getScore() {
+            return Double.valueOf(score);
         };
 
         public boolean isNull() {
             return score == null;
+        }
+
+        public boolean isLarge() {
+            return score != null && Double.valueOf(score) > 16384;
         }
     }
 

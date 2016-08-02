@@ -1,49 +1,78 @@
 GbGradeTable = {};
 
 GbGradeTable.unpack = function (s, rowCount, columnCount) {
-  var blob = atob(s);
+  if (/^packed:/.test(s)) {
+      return GbGradeTable.unpackPackedScores(s, rowCount, columnCount);
+  } else if (/^json:/.test(s)) {
+      return GbGradeTable.unpackJsonScores(s, rowCount, columnCount);
+  } else {
+      console.log("Unknown data format");
+  }
+};
 
-  // Our result will be an array of Float64Array rows
-  var result = [];
-
-  // The byte from our blob we're currently working on
-  var readIndex = 0;
-
-  for (var row = 0; row < rowCount; row++) {
-    var writeIndex = 0;
+GbGradeTable.unpackJsonScores = function (s, rowCount, columnCount) {
+    var parsedArray = JSON.parse(s.substring('json:'.length));
+    var result = [];
     var currentRow = [];
 
-    for (var column = 0; column < columnCount; column++) {
-      if (blob[readIndex].charCodeAt() == 127) {
-        // This is a sentinel value meaning "null"
-        currentRow[writeIndex] = "";
-	readIndex += 1;
-      } else if (blob[readIndex].charCodeAt() & 128) {
-        // If the top bit is set, we're reading a two byte integer
-        currentRow[writeIndex] = (((blob[readIndex].charCodeAt() & 63) << 8) | blob[readIndex + 1].charCodeAt());
-
-        // If the second-from-left bit is set, there's a fraction too
-        if (blob[readIndex].charCodeAt() & 64) {
-	  // third byte is a fraction
-	  var fraction = blob[readIndex + 2].charCodeAt();
-	  currentRow[writeIndex] += (fraction / Math.pow(10, Math.ceil(Math.log10(fraction))));
-	  readIndex += 1;
+    for (var i = 0; i < parsedArray.length; i++) {
+        if (i > 0 && (i % columnCount) == 0) {
+            result.push(currentRow);
+            currentRow = []
         }
 
-        readIndex += 2;
-      } else {
-        // a one byte integer and no fraction
-        currentRow[writeIndex] = blob[readIndex].charCodeAt();
-        readIndex += 1;
-      }
-
-      writeIndex += 1;
-    };
+        currentRow.push(parsedArray[i] < 0 ? "" : parsedArray[i]);
+    }
 
     result.push(currentRow);
-  }
 
-  return result;
+    return result;
+}
+
+GbGradeTable.unpackPackedScores = function (s, rowCount, columnCount) {
+    var blob = atob(s.substring('packed:'.length));
+
+    // Our result will be an array of Float64Array rows
+    var result = [];
+
+    // The byte from our blob we're currently working on
+    var readIndex = 0;
+
+    for (var row = 0; row < rowCount; row++) {
+        var writeIndex = 0;
+        var currentRow = [];
+
+        for (var column = 0; column < columnCount; column++) {
+            if (blob[readIndex].charCodeAt() == 127) {
+                // This is a sentinel value meaning "null"
+                currentRow[writeIndex] = "";
+                readIndex += 1;
+            } else if (blob[readIndex].charCodeAt() & 128) {
+                // If the top bit is set, we're reading a two byte integer
+                currentRow[writeIndex] = (((blob[readIndex].charCodeAt() & 63) << 8) | blob[readIndex + 1].charCodeAt());
+
+                // If the second-from-left bit is set, there's a fraction too
+                if (blob[readIndex].charCodeAt() & 64) {
+                    // third byte is a fraction
+                    var fraction = blob[readIndex + 2].charCodeAt();
+                    currentRow[writeIndex] += (fraction / Math.pow(10, Math.ceil(Math.log10(fraction))));
+                    readIndex += 1;
+                }
+
+                readIndex += 2;
+            } else {
+                // a one byte integer and no fraction
+                currentRow[writeIndex] = blob[readIndex].charCodeAt();
+                readIndex += 1;
+            }
+
+            writeIndex += 1;
+        };
+
+        result.push(currentRow);
+    }
+
+    return result;
 };
 
 $(document).ready(function() {
