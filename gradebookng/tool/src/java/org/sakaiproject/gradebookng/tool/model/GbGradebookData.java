@@ -84,7 +84,7 @@ public class GbGradebookData {
             GbGradeInfo gradeInfo = studentGrades.get(assignmentId);
 
             if (gradeInfo == null) {
-                return null;
+                return new ReadOnlyScore(null);
             } else {
                 String grade = gradeInfo.getGrade();
 
@@ -117,7 +117,7 @@ public class GbGradebookData {
             Double average = categoryAverages.get(categoryId);
 
             if (average == null) {
-                return null;
+                return new ReadOnlyScore(null);
             } else {
                 final NumberFormat df = NumberFormat.getInstance();
                 df.setMinimumFractionDigits(0);
@@ -198,7 +198,8 @@ public class GbGradebookData {
             for(StudentDefinition student : this.students) {
                 String readonly = "";
                 for (ColumnDefinition column : this.columns) {
-                    readonly += grades.get(i).canEdit() ? "0" : "1";
+                    Score score = grades.get(i);
+                    readonly += score.canEdit() ? "0" : "1";
                     i = i + 1;
                 }
                 student.setReadonly(readonly);
@@ -350,12 +351,7 @@ public class GbGradebookData {
         for (GbStudentGradeInfo studentGradeInfo : this.studentGradeInfoList) {
             for (ColumnDefinition column : this.columns) {
                 Score grade = column.getValueFor(studentGradeInfo, isInstructor());
-
-                if (grade == null || grade.isNull()) {
-                    result.add(null);
-                } else {
-                    result.add(grade);
-                }
+                result.add(grade);
             }
         }
 
