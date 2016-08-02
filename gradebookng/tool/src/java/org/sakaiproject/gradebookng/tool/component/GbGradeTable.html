@@ -1,5 +1,9 @@
 <html>
     <wicket:panel xmlns:wicket="http://wicket.apache.org">
+        <div id="gradeTableSummary">
+            <div class="gb-student-summary pull-left"></div>
+            <div class="gb-grade-item-summary pull-right"></div>
+        </div>
         <div wicket:id="gradeTable" id="gradeTable"></div>
 
         <script id="courseGradeHeaderTemplate" type="text/template">
@@ -260,6 +264,12 @@
                     {/if}
                 </div>
             </div>
+        </script>
+        <script id="studentSummaryTemplate" type="text/template">
+            <wicket:message key="label.toolbar.studentsummary"/>
+        </script>
+        <script id="gradeItemSummaryTemplate" type="text/template">
+            <wicket:message key="label.toolbar.gradeitemsummary"/>
         </script>
     </wicket:panel>
 </html>

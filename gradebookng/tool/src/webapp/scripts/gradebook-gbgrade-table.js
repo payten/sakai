@@ -93,7 +93,12 @@ $(document).ready(function() {
     studentCell: TrimPath.parseTemplate(
         $("#studentCellTemplate").html().trim().toString()),
     metadata: TrimPath.parseTemplate(
-        $("#metadataTemplate").html().trim().toString())
+        $("#metadataTemplate").html().trim().toString()),
+    studentSummary: TrimPath.parseTemplate(
+        $("#studentSummaryTemplate").html().trim().toString()),
+    gradeItemSummary: TrimPath.parseTemplate(
+        $("#gradeItemSummaryTemplate").html().trim().toString())
+
   };
 
 });
@@ -781,6 +786,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   GbGradeTable.setupConcurrencyCheck();
   GbGradeTable.setupKeyboardNavigation();
   GbGradeTable.setupCellMetaDataSummary();
+  GbGradeTable.refreshSummaryLabels();
 
   // Patch HandsonTable getWorkspaceWidth for improved scroll performance on big tables
   var origGetWorkspaceWidth = WalkontableViewport.prototype.getWorkspaceWidth;
@@ -992,6 +998,7 @@ GbGradeTable.redrawTable = function(force) {
     GbGradeTable.instance.updateSettings({
       columns: GbGradeTable.getFilteredColumns()
     });
+    GbGradeTable.refreshSummaryLabels();
     GbGradeTable.forceRedraw = false;
   }, 100);
 };
@@ -1727,6 +1734,44 @@ GbGradeTable.setLiveFeedbackAsSaving = function() {
   $liveFeedback.html($liveFeedback.data("saving-message"));
   $liveFeedback.show()
 };
+
+
+GbGradeTable.refreshSummaryLabels = function() {
+  var $summary = $("#gradeTableSummary");
+
+  function refreshStudentSummary() {
+    $summary.find(".gb-student-summary").html(GbGradeTable.templates.studentSummary.process());
+    var visible = GbGradeTable.instance.view.settings.data.length;
+    var total = GbGradeTable.students.length;
+
+    $summary.find(".gb-student-summary .visible").html(visible);
+    $summary.find(".gb-student-summary .total").html(total);
+
+    if (visible < total) {
+      $summary.find(".gb-student-summary-counts").addClass("warn-students-hidden");
+    }
+  }
+
+  function refreshGradeItemSummary() {
+    $summary.find(".gb-grade-item-summary").html(GbGradeTable.templates.gradeItemSummary.process());
+    var visible = 0;
+    var total = GbGradeTable.columns.length;
+    $.each(GbGradeTable.columns, function(i, col) {
+      if (!col.hidden) {
+        visible = visible + 1;
+      }
+    });
+    $summary.find(".gb-grade-item-summary .visible").html(visible);
+    $summary.find(".gb-grade-item-summary .total").html(total);
+    if (visible < total) {
+      $summary.find(".gb-item-summary-counts").addClass("warn-items-hidden");
+    }
+  }
+
+  refreshStudentSummary();
+  refreshGradeItemSummary();
+};
+
 
 /**************************************************************************************
  * GradebookAPI - all the GradebookNG entity provider calls in one happy place
