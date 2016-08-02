@@ -557,6 +557,26 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     multiSelect: false
   });
 
+  GbGradeTable.instance.updateSettings({
+    cells: function (row, col, prop) {
+      var cellProperties = {};
+
+      var column = GbGradeTable.instance.view.settings.columns[col]._data_;
+      var student = GbGradeTable.instance.getDataAtCell(row, 0);
+
+      if (column == null) {
+         cellProperties.readOnly = true;
+      } else {
+        var readonly = column.type === "assignment" ? GbGradeTable.isReadOnly(student, column.assignmentId) : false;
+
+        if (column.externallyMaintained || readonly) {
+          cellProperties.readOnly = true;
+        }
+      }
+
+      return cellProperties;
+    }
+  });
 
   // resize the table on window resize
   var resizeTimeout;
