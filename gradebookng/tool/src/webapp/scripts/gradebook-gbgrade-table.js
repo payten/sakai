@@ -1698,22 +1698,24 @@ GbGradeTable.setupCellMetaDataSummary= function() {
     // only care about data cells (not headers)
     if (r >= 0 && c >= 0) {
       var cell = GbGradeTable.instance.getCell(r,c);
-      var cellKey = $.data(cell, 'cell-initialised');
+      if (cell != null) {
+        var cellKey = $.data(cell, 'cell-initialised');
 
-      var metadata = $.data(cell, 'metadata');
+        var metadata = $.data(cell, 'metadata');
 
-      $(".gb-metadata").hide();
+        $(".gb-metadata").hide();
 
-      if (metadata) {
-        $("#"+cellKey).remove();
+        if (metadata) {
+          $("#"+cellKey).remove();
 
-        $(cell).attr("aria-describedby", cellKey);
+          $(cell).attr("aria-describedby", cellKey);
 
-        $(GbGradeTable.instance.rootElement).after(
-          GbGradeTable.templates.metadata.process(metadata)
-        );
+          $(GbGradeTable.instance.rootElement).after(
+            GbGradeTable.templates.metadata.process(metadata)
+          );
 
-        $("#"+cellKey).show();
+          $("#"+cellKey).show();
+        }
       }
     }
   });
