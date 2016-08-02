@@ -873,7 +873,7 @@ GbGradeTable.setHasConcurrentEdit = function(conflict) {
   var hasConcurrentEdit = student.hasConcurrentEdit;
 
   var row = GbGradeTable.rowForStudent(conflict.studentUuid);
-  var col = GbGradeTable.colForAssignment(conflict.assignmentId);con
+  var col = GbGradeTable.colForAssignment(conflict.assignmentId);
 
   $.data(GbGradeTable.instance.getCell(row, col), "concurrent-edit", conflict);
 
