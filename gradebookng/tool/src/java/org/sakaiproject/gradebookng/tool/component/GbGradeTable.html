@@ -1,11 +1,13 @@
 <html>
     <wicket:panel xmlns:wicket="http://wicket.apache.org">
-        <div id="gradeTableSummary">
-            <div class="gb-student-summary pull-left"></div>
-            <div class="gb-grade-item-summary pull-right"></div>
+        <div id="gradeTableWrapper">
+            <div id="gradeTableSummary">
+                <div class="gb-student-summary pull-left"></div>
+                <div class="gb-grade-item-summary pull-right"></div>
+            </div>
+    
+            <div wicket:id="gradeTable" id="gradeTable" accesskey="g" wicket:message="aria-label:gradetable.wrapper.tooltip" aria-describedby="gradeTableCaption"></div>
         </div>
-
-        <div wicket:id="gradeTable" id="gradeTable" accesskey="g" wicket:message="aria-label:gradetable.wrapper.tooltip" aria-describedby="gradeTableCaption"></div>
 
         <script id="courseGradeHeaderTemplate" type="text/template">
             <span class="colHeader hide">${col}</span>
@@ -200,7 +202,8 @@
         </script>
         <script id="metadataTemplate" type="text/template">
             <div id="${id}" class="gb-metadata">
-                <div class="col-sm-6">
+                <a href="javascript:void(0);" class="gb-metadata-close"></a>
+                <div class="gb-metadata-summary">
                     <h4 class="sr-only"><wicket:message key="metadata.header" /></h4>
                     <dl class="dl-horizontal">
                         <dt><wicket:message key="metadata.student" /></dt>
@@ -227,7 +230,7 @@
                         {/if}
                     </dl>
                 </div>
-                <div class="col-sm-6">
+                <div class="gb-metadata-notifications">
                     {if defined('notifications') && notifications.length > 0}
                         <p><wicket:message key="metadata.flags" /></p>
                         <ul>

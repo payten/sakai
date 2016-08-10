@@ -169,7 +169,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   var isReadOnly = column.type === "assignment" ? GbGradeTable.isReadOnly(student, column.assignmentId) : false;
   var hasConcurrentEdit = column.type === "assignment" ? GbGradeTable.hasConcurrentEdit(student, column.assignmentId) : false;
   var keyValues = [row, index, value, student.eid, hasComment, isReadOnly, hasConcurrentEdit, column.type, scoreState];
-  var cellKey = keyValues.join("_");
+  var cellKey = keyValues.join("_").replace(/[\ \(\)%\.]/g, "_");
 
   var wasInitialised = $.data(td, 'cell-initialised');
 
@@ -226,8 +226,8 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
       commentNotification.style.display = 'block';
       notifications.push({
         type: 'comment',
-        // TODO add real comment
-        comment: "PANTS"
+        // TODO This add real comment
+        comment: "TODO comment goes here"
       });
     } else {
       commentNotification.style.display = 'none';
@@ -358,15 +358,12 @@ GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value,
   var html = GbGradeTable.templates.studentCell.process(data);
   td.innerHTML = html;
 
+  $.data(td, 'cell-initialised', cellKey);
   $.data(td, "studentid", value.userId);
   $.data(td, "metadata", {
     id: cellKey,
     student: value
   });
-
-  // If this cell gets reused for a score display, it'll need to be fully
-  // reinitialised before use.
-  $.removeData(td, "cell-initialised");
 }
 
 
@@ -1712,6 +1709,7 @@ GbGradeTable.setupKeyboardNavigation = function() {
         }
 
         if (handled) {
+          GbGradeTable.hideMetadata();
           return;
         }
       }
@@ -1727,8 +1725,18 @@ GbGradeTable.setupKeyboardNavigation = function() {
 };
 
 
-GbGradeTable.setupCellMetaDataSummary= function() {
+GbGradeTable.clearMetadata = function() {
+  $(".gb-metadata").remove();
+};
+
+GbGradeTable.hideMetadata = function() {
+  $(".gb-metadata").hide();
+};
+
+GbGradeTable.setupCellMetaDataSummary = function() {
   GbGradeTable.instance.addHook("afterSelection", function(r, c) {
+    GbGradeTable.clearMetadata()
+
     // only care about data cells (not headers)
     if (r >= 0 && c >= 0) {
       var cell = GbGradeTable.instance.getCell(r,c);
@@ -1737,21 +1745,50 @@ GbGradeTable.setupCellMetaDataSummary= function() {
 
         var metadata = $.data(cell, 'metadata');
 
-        $(".gb-metadata").hide();
-
         if (metadata) {
-          $("#"+cellKey).remove();
-
           $(cell).attr("aria-describedby", cellKey);
 
           $(GbGradeTable.instance.rootElement).after(
             GbGradeTable.templates.metadata.process(metadata)
           );
 
-          $("#"+cellKey).show();
+          $("#"+cellKey).hide().on("click", ".gb-metadata-close", function() {
+            GbGradeTable.hideMetadata();
+            GbGradeTable.instance.selectCell(r, c);
+          });
         }
       }
     }
+  });
+
+  GbGradeTable.instance.addHook("beforeKeyDown", function(event) {
+      var $current = $(GbGradeTable.instance.rootElement).find("td.current");
+
+      if ($current[0]) {
+        var cellKey = $.data($current[0], 'cell-initialised');
+
+        if (event.keyCode == 83) { // s
+          event.preventDefault();
+          event.stopImmediatePropagation();
+
+          var cellOffset = $current.offset();
+          var wrapperOffset = $("#gradeTableWrapper").offset();
+          var cellHeight = $current.height();
+          var cellWidth = $current.width();
+
+          var topOffset = Math.abs(wrapperOffset.top - cellOffset.top) + cellHeight + 5;
+          var leftOffset = Math.abs(wrapperOffset.left - cellOffset.left) + parseInt(cellWidth/2) - parseInt($("#"+cellKey).width() / 2) - 8;
+
+          $("#"+cellKey).css({
+            top: topOffset,
+            left: leftOffset
+          }).toggle();
+        } else {
+          GbGradeTable.hideMetadata();
+        }
+      } else {
+        GbGradeTable.clearMetadata();
+      }
   });
 };
 

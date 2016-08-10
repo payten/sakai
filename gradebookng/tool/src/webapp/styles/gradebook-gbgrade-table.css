@@ -6,6 +6,10 @@
     font-weight:400;
     font-style:normal
 }
+#gradeTableWrapper {
+  position: relative;
+  overflow: visible;
+}
 
 #gradeTable {
   font-size: 0.9em;
@@ -266,11 +270,17 @@
 
 /* Cell Metadata Summary */
 .gb-metadata {
-  width: 100%;
+  position: absolute;
+  width: 300px;
   padding: 10px;
   background-color: #EAEAEA;
   font-size: 0.8em;
-  overflow: hidden;
+  background: #000;
+  background: rgba(0,0,0,0.9);
+  color: #fff;
+  z-index: 1000;
+  border-radius: 5px;
+  box-shadow: 1px 1px 3px #333;  
 }
 .gb-metadata p,
 .gb-metadata dl,
@@ -278,9 +288,46 @@
 .gb-metadata blockquote {
   margin: 0;
 }
+.gb-metadata dt {
+  width: 80px !important;
+  color: #FE8;
+}
+.gb-metadata dd {
+  margin-left: 90px !important;
+}
 .gb-metadata blockquote {
   font-size: 1em;
   padding: 5px;
+  color: #666;
+}
+.gb-metadata:after, .gb-metadata:before {
+  bottom: 100%;
+  left: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.gb-metadata:after {
+  border-color: transparent;
+  border-bottom-color: rgba(0,0,0,0.9);
+  border-width: 10px;
+  margin-left: -10px;
+}
+.gb-metadata:before {
+  border-color: transparent;
+  border-bottom-color: rgba(0,0,0,0.9);
+  border-width: 10px;
+  margin-left: -10px;
+}
+.gb-metadata .gb-metadata-close:before {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  font-family: 'gradebook-icons';
+  content: '\f00d';
 }
 #gradebookGradesToolbar {
   border-top: 1px solid #F6f6f6;
