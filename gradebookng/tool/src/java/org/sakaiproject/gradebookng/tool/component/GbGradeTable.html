@@ -205,14 +205,30 @@
                     <dl class="dl-horizontal">
                         <dt><wicket:message key="metadata.student" /></dt>
                         <dd>${student.lastName}, ${student.firstName} (${student.eid})</dd>
+                        {if defined('assignment')}
                         <dt><wicket:message key="metadata.assignment" /></dt>
                         <dd>${assignment.title}</dd>
+                        {/if}
+                        {if defined('value')}
                         <dt><wicket:message key="metadata.score" /></dt>
                         <dd>${value}</dd>
+                        {/if}
+                        {if defined('courseGrade')}
+                        <dt><wicket:message key="metadata.courseGrade" /></dt>
+                        <dd>${courseGrade}</dd>
+                        {/if}
+                        {if defined('category')}
+                        <dt><wicket:message key="metadata.category" /></dt>
+                        <dd>${category.title}</dd>
+                        {/if}
+                        {if defined('categoryAverage')}
+                        <dt><wicket:message key="metadata.categoryAverage" /></dt>
+                        <dd>${categoryAverage}</dd>
+                        {/if}
                     </dl>
                 </div>
                 <div class="col-sm-6">
-                    {if notifications.length > 0}
+                    {if defined('notifications') && notifications.length > 0}
                         <p><wicket:message key="metadata.flags" /></p>
                         <ul>
                             {for notification in notifications}

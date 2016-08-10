@@ -108,7 +108,7 @@ $(document).ready(function() {
 GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value, cellProperties) {
 
   var $td = $(td);
-  var cellKey = (row + ',' + col + ',' + value);
+  var cellKey = (row + '_' + col + '_' + value.join('_')).replace(/[\ \(\)%\.]/g, "_");
   var wasInitialised = $.data(td, 'cell-initialised');
 
   if (wasInitialised === cellKey) {
@@ -130,6 +130,11 @@ GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value
 
   $.data(td, 'studentid', student.userId);
   $.data(td, 'cell-initialised', cellKey);
+  $.data(td, "metadata", {
+    id: cellKey,
+    student: student,
+    courseGrade: value[0]
+  });
 };
 
 GbGradeTable.replaceContents = function (elt, newContents) {
@@ -206,11 +211,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   } else if (column.type === "category") {
     $.data(td, "categoryId", column.categoryId);
     $.removeData(td, "assignmentid");
-    if (value != null && (value+"").length > 0 && value != "-") {
-      GbGradeTable.replaceContents(valueCell, document.createTextNode('' + value + '%'));
-    } else {
-      GbGradeTable.replaceContents(valueCell, document.createTextNode('-'));
-    }
+    GbGradeTable.replaceContents(valueCell, document.createTextNode(GbGradeTable.formatCategoryAverage(value)));
   } else {
     throw "column.type not supported: " + column.type;
   }
@@ -225,6 +226,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
       commentNotification.style.display = 'block';
       notifications.push({
         type: 'comment',
+        // TODO add real comment
         comment: "PANTS"
       });
     } else {
@@ -304,6 +306,14 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
       assignment: column,
       notifications: notifications
     });
+  } else if (column.type == 'category') {
+    $.data(td, "metadata", {
+      id: cellKey,
+      student: student,
+      categoryAverage: GbGradeTable.formatCategoryAverage(value),
+      category: column,
+      notifications: notifications
+    });
   } else {
     td.removeAttribute('aria-describedby');
     $.data(td, "metadata", null);
@@ -339,6 +349,8 @@ GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value,
 
   $td.attr("scope", "row").attr("role", "rowHeader");
 
+  var cellKey = (row + '_' + col);
+
   var data = $.extend({
     settings: GbGradeTable.settings
   }, value);
@@ -347,6 +359,10 @@ GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value,
   td.innerHTML = html;
 
   $.data(td, "studentid", value.userId);
+  $.data(td, "metadata", {
+    id: cellKey,
+    student: value
+  });
 
   // If this cell gets reused for a score display, it'll need to be fully
   // reinitialised before use.
@@ -989,6 +1005,14 @@ GbGradeTable.redrawCell = function(row, col) {
   $cell.removeData('cell-initialised');
 
   GbGradeTable.instance.render();
+};
+
+GbGradeTable.formatCategoryAverage = function(value) {
+  if (value != null && (value+"").length > 0 && value != "-") {
+    return '' + value + '%';
+  } else {
+    return '-';
+  }
 };
 
 GbGradeTable._redrawTableTimeout;
