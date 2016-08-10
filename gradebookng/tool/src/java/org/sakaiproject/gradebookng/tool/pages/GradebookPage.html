@@ -57,8 +57,13 @@
         <li>
           <button wicket:id="toggleGradeItemsToolbarItem" id="toggleGradeItemsToolbarItem" class="button" aria-popup="true" aria-controls="gradeItemsTogglePanel"><wicket:message key="label.toolbar.toggleitems"/></button>
         </li>
+        <wicket:enclosure>
+            <li>
+              <button wicket:id="toggleCategoriesToolbarItem" id="toggleCategoriesToolbarItem" class="button" aria-controls="gradebookGradesTable"><wicket:message key="label.toolbar.togglecategories"/></button>
+            </li>
+        </wicket:enclosure>
         <li>
-          <button wicket:id="toggleCategoriesToolbarItem" id="toggleCategoriesToolbarItem" class="button" aria-controls="gradebookGradesTable"><wicket:message key="label.toolbar.togglecategories"/></button>
+          <button id="captionToggle" class="button" aria-popup="true" aria-controls="gradeTableCaption"></button>
         </li>
       </ul>
     </div>

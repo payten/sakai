@@ -301,3 +301,39 @@
   color: #CA7311;
   font-weight: bold;
 }
+/* table caption and toggle */
+#captionToggle:before {
+  font-family: 'gradebook-icons';
+  content: '\f11c';
+}
+#gradeTable table caption {
+  /* hide the caption from users, but retain for screen readers */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+#gradeTable table caption.maximized {
+  position: fixed;
+  width: 80%;
+  height: 60%;
+  background: #000;
+  background: rgba(0,0,0,0.9);
+  color: #fff;
+  z-index: 1000;
+  top: 20%;
+  left: 150px;
+  padding: 10px;
+  margin: 0;
+  border-radius: 5px;
+  box-shadow: 1px 1px 3px #333;
+  overflow: auto;
+  clip: auto;
+}
+#gradeTable table caption dt {
+  color: #FE8;
+}

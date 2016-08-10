@@ -97,7 +97,9 @@ $(document).ready(function() {
     studentSummary: TrimPath.parseTemplate(
         $("#studentSummaryTemplate").html().trim().toString()),
     gradeItemSummary: TrimPath.parseTemplate(
-        $("#gradeItemSummaryTemplate").html().trim().toString())
+        $("#gradeItemSummaryTemplate").html().trim().toString()),
+    caption: TrimPath.parseTemplate(
+        $("#captionTemplate").html().trim().toString())
 
   };
 
@@ -786,6 +788,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   GbGradeTable.setupConcurrencyCheck();
   GbGradeTable.setupKeyboardNavigation();
   GbGradeTable.setupCellMetaDataSummary();
+  GbGradeTable.setupAccessiblityBits();
   GbGradeTable.refreshSummaryLabels();
 
   // Patch HandsonTable getWorkspaceWidth for improved scroll performance on big tables
@@ -1772,6 +1775,43 @@ GbGradeTable.refreshSummaryLabels = function() {
   refreshGradeItemSummary();
 };
 
+
+GbGradeTable.setupAccessiblityBits = function() {
+
+  var $wrapper = $("#gradeTable");
+
+  function setupWrapperAccessKey() {
+    $wrapper.on("click", function(event) {
+      if ($(event.target).is("#gradeTable")) {
+        $wrapper.focus();
+      };
+    });
+  };
+
+  function setupTableCaption() {
+    var caption = GbGradeTable.templates.caption.process();
+    var $table = $wrapper.find(".ht_master.handsontable table");
+    $table.prepend(caption);
+
+    var $captionToggle = $("#captionToggle");
+    $captionToggle.on("click", function(event) {
+      event.preventDefault();
+      $table.find("caption").toggleClass("maximized");
+    }).on("keyup", function(event) {
+      if (event.keyCode == 27) { //ESC
+        $table.find("caption").removeClass("maximized");
+      }
+    });
+
+    $table.find("caption").on("click", function() {
+      $(this).closest("caption").removeClass("maximized");
+      $captionToggle.focus();
+    });
+  }
+
+  setupWrapperAccessKey();
+  setupTableCaption();
+};
 
 /**************************************************************************************
  * GradebookAPI - all the GradebookNG entity provider calls in one happy place
