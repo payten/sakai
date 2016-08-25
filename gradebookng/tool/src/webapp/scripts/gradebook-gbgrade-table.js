@@ -108,7 +108,7 @@ $(document).ready(function() {
 GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value, cellProperties) {
 
   var $td = $(td);
-  var cellKey = (row + '_' + col + '_' + value.join('_')).replace(/[\ \(\)%\.]/g, "_");
+  var cellKey = GbGradeTable.cleanKey(row + '_' + col + '_' + value.join('_'));
   var wasInitialised = $.data(td, 'cell-initialised');
 
   if (wasInitialised === cellKey) {
@@ -135,7 +135,13 @@ GbGradeTable.courseGradeRenderer = function (instance, td, row, col, prop, value
     student: student,
     courseGrade: value[0]
   });
+  $td.removeAttr('aria-describedby');
 };
+
+GbGradeTable.cleanKey = function(key) {
+    return key.replace(/[^a-zA-Z0-9]/g, '_');
+};
+
 
 GbGradeTable.replaceContents = function (elt, newContents) {
   // empty it
@@ -169,7 +175,7 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   var isReadOnly = column.type === "assignment" ? GbGradeTable.isReadOnly(student, column.assignmentId) : false;
   var hasConcurrentEdit = column.type === "assignment" ? GbGradeTable.hasConcurrentEdit(student, column.assignmentId) : false;
   var keyValues = [row, index, value, student.eid, hasComment, isReadOnly, hasConcurrentEdit, column.type, scoreState];
-  var cellKey = keyValues.join("_").replace(/[\ \(\)%\.]/g, "_");
+  var cellKey = GbGradeTable.cleanKey(keyValues.join("_"));
 
   var wasInitialised = $.data(td, 'cell-initialised');
 
@@ -364,6 +370,8 @@ GbGradeTable.studentCellRenderer = function(instance, td, row, col, prop, value,
     id: cellKey,
     student: value
   });
+
+  $td.removeAttr('aria-describedby');
 }
 
 
@@ -1644,7 +1652,7 @@ GbGradeTable.setupKeyboardNavigation = function() {
       handled = true;
     }
 
-    var $current = $(GbGradeTable.instance.rootElement).find("td.current");
+    var $current = $(GbGradeTable.instance.rootElement).find("td.current:visible:last"); // get the last and visible, as may be multiple due to fixed columns
     var $focus = $(":focus");
     var editing = GbGradeTable.instance.getActiveEditor() && GbGradeTable.instance.getActiveEditor()._opened;
 
@@ -1762,7 +1770,8 @@ GbGradeTable.setupCellMetaDataSummary = function() {
   });
 
   GbGradeTable.instance.addHook("beforeKeyDown", function(event) {
-      var $current = $(GbGradeTable.instance.rootElement).find("td.current");
+      // get the last and visible, as may be multiple due to fixed columns
+      var $current = $(GbGradeTable.instance.rootElement).find("td.current:visible:last");
 
       if ($current[0]) {
         var cellKey = $.data($current[0], 'cell-initialised');
