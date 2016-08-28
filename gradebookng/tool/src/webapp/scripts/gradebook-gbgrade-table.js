@@ -1249,12 +1249,12 @@ GbGradeTable.setupToggleGradeItems = function() {
 
 
   function handleShowAll() {
-    $panel.find(".gb-item-category-filter :input:not(:checked)").trigger("click");
+    $panel.find(".gb-item-filter :input:not(:checked), .gb-item-category-score-filter :input:not(:checked)").trigger("click");
   };
 
 
   function handleHideAll() {
-    $panel.find(".gb-item-category-filter :input:checked").trigger("click");
+    $panel.find(".gb-item-filter :input:checked, .gb-item-category-score-filter :input:checked").trigger("click");
   };
 
 
