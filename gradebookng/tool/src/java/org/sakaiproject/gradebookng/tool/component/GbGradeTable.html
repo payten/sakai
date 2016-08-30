@@ -177,16 +177,18 @@
         </script>
         <script id="studentCellTemplate" type="text/template">
             <div class="relative">
-                <div class="rowHeader">
-                    {if settings.isStudentOrderedByLastName}
-                        <span class="gb-last-name">${lastName}</span>,
-                         <span class="gb-first-name">${firstName}</span>
-                         (<span class="gb-eid">${eid}</span>)
-                    {else}
-                        <span class="gb-first-name">${firstName}</span>
-                         <span class="gb-last-name">${lastName}</span>
-                         (<span class="gb-eid">${eid}</span>)
-                    {/if}
+                <div class="gb-value">
+                    <div class="rowHeader">
+                        {if settings.isStudentOrderedByLastName}
+                            <span class="gb-last-name">${lastName}</span>,
+                            <span class="gb-first-name">${firstName}</span>
+                            (<span class="gb-eid">${eid}</span>)
+                        {else}
+                            <span class="gb-first-name">${firstName}</span>
+                            <span class="gb-last-name">${lastName}</span>
+                            (<span class="gb-eid">${eid}</span>)
+                        {/if}
+                    </div>
                 </div>
                 <div class="btn-group">
                     <a class="btn btn-sm btn-default dropdown-toggle"
