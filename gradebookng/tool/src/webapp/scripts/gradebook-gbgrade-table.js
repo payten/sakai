@@ -1742,30 +1742,51 @@ GbGradeTable.hideMetadata = function() {
 };
 
 GbGradeTable.setupCellMetaDataSummary = function() {
-  GbGradeTable.instance.addHook("afterSelection", function(r, c) {
-    GbGradeTable.clearMetadata()
+
+  function initializeMetadataSummary(row, col) {
+    var cell = GbGradeTable.instance.getCell(row, col);
+    if (cell != null) {
+      var cellKey = $.data(cell, 'cell-initialised');
+
+      var metadata = $.data(cell, 'metadata');
+
+      if (metadata) {
+        $(cell).attr("aria-describedby", cellKey);
+
+        $(GbGradeTable.instance.rootElement).after(
+          GbGradeTable.templates.metadata.process(metadata)
+        );
+
+        $("#"+cellKey).hide().on("click", ".gb-metadata-close", function() {
+          GbGradeTable.hideMetadata();
+          GbGradeTable.instance.selectCell(row, col);
+        });
+      }
+    }
+  }
+
+
+  function showMetadata(cellKey, $td) {
+    var cellOffset = $td.offset();
+    var wrapperOffset = $("#gradeTableWrapper").offset();
+    var cellHeight = $td.height();
+    var cellWidth = $td.width();
+
+    var topOffset = Math.abs(wrapperOffset.top - cellOffset.top) + cellHeight + 5;
+    var leftOffset = Math.abs(wrapperOffset.left - cellOffset.left) + parseInt(cellWidth/2) - parseInt($("#"+cellKey).width() / 2) - 8;
+
+    $("#"+cellKey).css({
+      top: topOffset,
+      left: leftOffset
+    }).toggle();
+  }
+
+  GbGradeTable.instance.addHook("afterSelection", function(row, col) {
+    GbGradeTable.clearMetadata();
 
     // only care about data cells (not headers)
-    if (r >= 0 && c >= 0) {
-      var cell = GbGradeTable.instance.getCell(r,c);
-      if (cell != null) {
-        var cellKey = $.data(cell, 'cell-initialised');
-
-        var metadata = $.data(cell, 'metadata');
-
-        if (metadata) {
-          $(cell).attr("aria-describedby", cellKey);
-
-          $(GbGradeTable.instance.rootElement).after(
-            GbGradeTable.templates.metadata.process(metadata)
-          );
-
-          $("#"+cellKey).hide().on("click", ".gb-metadata-close", function() {
-            GbGradeTable.hideMetadata();
-            GbGradeTable.instance.selectCell(r, c);
-          });
-        }
-      }
+    if (row >= 0 && col >= 0) {
+      initializeMetadataSummary(row, col);
     }
   });
 
@@ -1780,24 +1801,48 @@ GbGradeTable.setupCellMetaDataSummary = function() {
           event.preventDefault();
           event.stopImmediatePropagation();
 
-          var cellOffset = $current.offset();
-          var wrapperOffset = $("#gradeTableWrapper").offset();
-          var cellHeight = $current.height();
-          var cellWidth = $current.width();
-
-          var topOffset = Math.abs(wrapperOffset.top - cellOffset.top) + cellHeight + 5;
-          var leftOffset = Math.abs(wrapperOffset.left - cellOffset.left) + parseInt(cellWidth/2) - parseInt($("#"+cellKey).width() / 2) - 8;
-
-          $("#"+cellKey).css({
-            top: topOffset,
-            left: leftOffset
-          }).toggle();
+          showMetadata(cellKey, $current);
         } else {
           GbGradeTable.hideMetadata();
         }
       } else {
         GbGradeTable.clearMetadata();
       }
+  });
+
+  // PROTOTYPE: show metadata popover on mouse hover
+  GbGradeTable._hoverSummaryTimeout;
+  GbGradeTable._mouseCoords;
+  GbGradeTable.instance.addHook("afterOnCellMouseOver", function(event, coords, TD) {
+    clearTimeout(GbGradeTable._hoverSummaryTimeout);
+    // only show something if mouse has actually moved!
+    var newMouseCoords = event.clientX + "," + event.clientY;
+    if (GbGradeTable._mouseCoords != newMouseCoords) {
+      GbGradeTable._mouseCoords = newMouseCoords;
+      if (coords.row >= 0 && coords.col >= 0) {
+        GbGradeTable._hoverSummaryTimeout = setTimeout(function() {
+          var $cell = $(GbGradeTable.instance.getCell(coords.row, coords.col));
+          if ($cell[0]) {
+            var cellKey = $.data($cell[0], 'cell-initialised');
+            GbGradeTable.hideMetadata();
+            initializeMetadataSummary(coords.row, coords.col);
+            showMetadata(cellKey, $cell);
+          }
+        }, 2000);
+      }
+    }
+  });
+
+  GbGradeTable.instance.addHook("afterSelection", function() {
+    clearTimeout(GbGradeTable._hoverSummaryTimeout);
+  });
+
+  GbGradeTable.instance.addHook("afterScrollHorizontally", function() {
+    GbGradeTable.hideMetadata();
+  });
+
+  GbGradeTable.instance.addHook("afterScrollVertically", function() {
+    GbGradeTable.hideMetadata();
   });
 };
 
