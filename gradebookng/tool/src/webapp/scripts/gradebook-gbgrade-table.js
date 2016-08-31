@@ -1780,7 +1780,27 @@ GbGradeTable.setupCellMetaDataSummary = function() {
     var topOffset = Math.abs(wrapperOffset.top - cellOffset.top) + cellHeight + 5;
     var leftOffset = Math.abs(wrapperOffset.left - cellOffset.left) + parseInt(cellWidth/2) - parseInt($("#"+cellKey).width() / 2) - 8;
 
-    $("#"+cellKey).css({
+    var $metadata = $("#"+cellKey);
+
+    if ($metadata.find(".gb-flag-comment").length > 0) {
+      $metadata.find("blockquote").hide();
+      setTimeout(function() {
+        GradebookAPI.getComments(
+          GbGradeTable.container.data("siteid"),
+          $.data($td[0], "assignmentid"),
+          $.data($td[0], "studentid"),
+          function(comment) {
+            // success
+            $metadata.find("blockquote").html(comment).show();
+          },
+          function() {
+            // error
+            $metadata.find("blockquote").html("Unable to load comment. Please try again later.").show();
+          })
+      });
+    }
+
+    $metadata.css({
       top: topOffset,
       left: leftOffset
     }).toggle();
@@ -1959,6 +1979,17 @@ GradebookAPI.isAnotherUserEditing = function(siteId, timestamp, onSuccess, onErr
   var endpointURL = "/direct/gbng/isotheruserediting/" + siteId + ".json";
   var params = {
     since: timestamp
+  };
+  GradebookAPI._GET(endpointURL, params, onSuccess, onError);
+};
+
+
+GradebookAPI.getComments = function(siteId, assignmentId, studentUuid, onSuccess, onError) {
+  var endpointURL = "/direct/gbng/comments";
+  var params = {
+    siteId: siteId,
+    assignmentId: assignmentId,
+    studentUuid: studentUuid
   };
   GradebookAPI._GET(endpointURL, params, onSuccess, onError);
 };

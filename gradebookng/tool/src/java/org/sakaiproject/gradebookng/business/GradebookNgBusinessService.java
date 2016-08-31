@@ -1509,8 +1509,19 @@ public class GradebookNgBusinessService {
 	 * @return the comment or null if none
 	 */
 	public String getAssignmentGradeComment(final long assignmentId, final String studentUuid) {
+		return getAssignmentGradeComment(getCurrentSiteId(), assignmentId, studentUuid);
+	}
 
-		final String siteId = getCurrentSiteId();
+
+	/**
+	 * Get the comment for a given student assignment grade
+	 *
+	 * @param siteId site id
+	 * @param assignmentId id of assignment
+	 * @param studentUuid uuid of student
+	 * @return the comment or null if none
+	 */
+	public String getAssignmentGradeComment(final String siteId, final long assignmentId, final String studentUuid) {
 		final Gradebook gradebook = getGradebook(siteId);
 
 		try {
@@ -1524,6 +1535,7 @@ public class GradebookNgBusinessService {
 		}
 		return null;
 	}
+
 
 	/**
 	 * Update (or set) the comment for a student's assignment

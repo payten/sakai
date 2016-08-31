@@ -240,7 +240,7 @@
                                 {if notification.type == 'comment'}
                                     <li>
                                         <span class="gb-flag-comment"></span> <wicket:message key="grade.notifications.hascomment"/>
-                                        <blockquote>${notification.comment}</blockquote>
+                                        <blockquote><wicket:message key="grade.notifications.commentloading"/></blockquote>
                                     </li>
                                 {elseif notification.type == 'extra-credit'}
                                     <li>

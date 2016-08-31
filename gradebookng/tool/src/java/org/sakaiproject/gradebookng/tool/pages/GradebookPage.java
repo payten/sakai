@@ -509,8 +509,8 @@ public class GradebookPage extends BasePage {
 				.forUrl(String.format("/gradebookng-tool/styles/gradebook-sorter.css?version=%s", version)));
 		response.render(CssHeaderItem
 				.forUrl(String.format("/gradebookng-tool/styles/gradebook-print.css?version=%s", version), "print"));
-		response.render(JavaScriptHeaderItem
-				.forUrl(String.format("/gradebookng-tool/scripts/gradebook-grades.js?version=%s", version)));
+//		response.render(JavaScriptHeaderItem
+//				.forUrl(String.format("/gradebookng-tool/scripts/gradebook-grades.js?version=%s", version)));
 		response.render(JavaScriptHeaderItem
 				.forUrl(String.format("/gradebookng-tool/scripts/gradebook-grade-summary.js?version=%s", version)));
 		response.render(JavaScriptHeaderItem
