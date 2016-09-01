@@ -329,6 +329,10 @@
   font-family: 'gradebook-icons';
   content: '\f00d';
 }
+.gb-metadata .gb-metadata-notifications ul {
+  list-style: none;
+  padding-left: 0;
+}
 #gradebookGradesToolbar {
   border-top: 1px solid #F6f6f6;
 }

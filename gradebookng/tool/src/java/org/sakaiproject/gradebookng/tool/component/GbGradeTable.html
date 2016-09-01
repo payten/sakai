@@ -207,7 +207,7 @@
                 <a href="javascript:void(0);" class="gb-metadata-close"></a>
                 <div class="gb-metadata-summary">
                     <h4 class="sr-only"><wicket:message key="metadata.header" /></h4>
-                    <dl class="dl-horizontal">
+                    <dl class="sr-only dl-horizontal">
                         <dt><wicket:message key="metadata.student" /></dt>
                         <dd>${student.lastName}, ${student.firstName} (${student.eid})</dd>
                         {if defined('assignment')}
@@ -234,7 +234,7 @@
                 </div>
                 <div class="gb-metadata-notifications">
                     {if defined('notifications') && notifications.length > 0}
-                        <p><wicket:message key="metadata.flags" /></p>
+                        <p class="sr-only"><wicket:message key="metadata.flags" /></p>
                         <ul>
                             {for notification in notifications}
                                 {if notification.type == 'comment'}
@@ -283,6 +283,8 @@
                                 {/if}
                             {/for}
                         </ul>
+                    {else}
+                        <p><wicket:message key="metadata.noflags"/></p>
                     {/if}
                 </div>
             </div>
