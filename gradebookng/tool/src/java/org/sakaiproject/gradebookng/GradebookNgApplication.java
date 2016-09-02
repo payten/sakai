@@ -1,7 +1,5 @@
 package org.sakaiproject.gradebookng;
 
-import org.apache.wicket.core.request.handler.PageProvider;
-import org.apache.wicket.core.request.handler.RenderPageRequestHandler;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.IRequestHandler;
 import org.apache.wicket.request.cycle.AbstractRequestCycleListener;
@@ -9,7 +7,6 @@ import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.settings.IExceptionSettings;
 import org.apache.wicket.settings.IRequestCycleSettings.RenderStrategy;
 import org.apache.wicket.spring.injection.annot.SpringComponentInjector;
-import org.sakaiproject.gradebookng.tool.pages.ErrorPage;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.gradebookng.tool.pages.ImportExportPage;
 import org.sakaiproject.gradebookng.tool.pages.PermissionsPage;
@@ -55,12 +52,14 @@ public class GradebookNgApplication extends WebApplication {
 		// show internal error page rather than default developer page
 		// for production, set to SHOW_NO_EXCEPTION_PAGE
 		getExceptionSettings().setUnexpectedExceptionDisplay(IExceptionSettings.SHOW_EXCEPTION_PAGE);
+		getExceptionSettings().setAjaxErrorHandlingStrategy(IExceptionSettings.AjaxErrorStrategy.REDIRECT_TO_ERROR_PAGE);
 
 		// Intercept any unexpected error stacktrace and take to our page
 		getRequestCycleListeners().add(new AbstractRequestCycleListener() {
 			@Override
 			public IRequestHandler onException(final RequestCycle cycle, final Exception e) {
-				return new RenderPageRequestHandler(new PageProvider(new ErrorPage(e)));
+				// Raise this to the portal error handler
+				throw new RuntimeException(e);
 			}
 		});
 

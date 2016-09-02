@@ -67,6 +67,10 @@ public class GradeStatisticsPanel extends Panel {
 
 		final Long assignmentId = ((Model<Long>) getDefaultModel()).getObject();
 
+		if (assignmentId != null) {
+			throw new RuntimeException("This is a test");
+		}
+
 		final Assignment assignment = this.businessService.getAssignment(assignmentId.longValue());
 
 		GradeStatisticsPanel.this.window.setTitle(

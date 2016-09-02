@@ -186,7 +186,9 @@ public class BasePage extends WebPage {
 		response.render(StringHeaderItem
 				.forString("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />"));
 
-		// Shared stylesheets
+		// Shared resources
+		response.render(JavaScriptHeaderItem
+			.forUrl(String.format("/gradebookng-tool/scripts/gradebook-shared.js?version=%s", version)));
 		response.render(CssHeaderItem
 				.forUrl(String.format("/gradebookng-tool/styles/gradebook-shared.css?version=%s", version)));
 

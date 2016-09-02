@@ -63,6 +63,10 @@ public class PermissionsPage extends BasePage {
 	public void onInitialize() {
 		super.onInitialize();
 
+		if (true) {
+			throw new RuntimeException("PermissionsPage fake bug");
+		}
+
 		// grab the selected parameter (if provided)
 		final PageParameters params = getPageParameters();
 		final String taUuid = params.get("selected").toOptionalString();
