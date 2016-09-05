@@ -9,8 +9,6 @@ function toggleMinimizeNav(){
   var el = $PBJQ(this);
   var label = $PBJQ('.accessibility-btn-label' , el);
 
-  el.toggleClass('min max');
-  
   if (label.text() == el.data("title-expand") || collapsed) {
 	document.cookie = "sakai_nav_minimized=false; path=/";
 	collapsed = false;
@@ -100,3 +98,6 @@ function getNumPart(val) {
 		}
 	}
 }
+
+$PBJQ(".js-toggle-nav").on("click", toggleMinimizeNav);
+
