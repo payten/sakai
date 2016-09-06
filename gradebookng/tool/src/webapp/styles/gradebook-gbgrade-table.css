@@ -204,12 +204,21 @@
   color: #999;
   font-family: 'gradebook-icons';
   display: inline-block;
+  min-width: 16px;
+  text-align: center;
 }
 .gb-flag-not-counted:before {
   content: '\e600';
 }
 .gb-flag-not-released:before {
   content: '\e601';
+}
+.gb-flag-not-released:before {
+  content: '\e601';
+}
+.gb-flag-counted,
+.gb-flag-released {
+  display: none;
 }
 #gradeTable .gb-extra-credit {
   background-color: #FCF8E3;
