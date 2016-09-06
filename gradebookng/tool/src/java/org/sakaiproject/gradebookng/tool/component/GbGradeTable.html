@@ -238,7 +238,7 @@
                         <ul>
                             {for notification in notifications}
                                 {if notification.type == 'comment'}
-                                    <li>
+                                    <li class="gb-metadata-comment-notification">
                                         <span class="gb-flag-comment"></span> <wicket:message key="grade.notifications.hascomment"/>
                                         <blockquote><wicket:message key="grade.notifications.commentloading"/></blockquote>
                                     </li>

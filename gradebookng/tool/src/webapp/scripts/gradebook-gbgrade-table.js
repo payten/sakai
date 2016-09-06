@@ -1771,7 +1771,7 @@ GbGradeTable.setupCellMetaDataSummary = function() {
   }
 
 
-  function showMetadata(cellKey, $td) {
+  function showMetadata(cellKey, $td, showCellNotifications, showCommentNotification) {
     var cellOffset = $td.offset();
     var wrapperOffset = $("#gradeTableWrapper").offset();
     var cellHeight = $td.height();
@@ -1782,8 +1782,15 @@ GbGradeTable.setupCellMetaDataSummary = function() {
 
     var $metadata = $("#"+cellKey);
 
-    if ($metadata.find(".gb-flag-comment").length > 0) {
+    if (showCellNotifications) {
+      $metadata.find(".gb-metadata-notifications li:not(.gb-metadata-comment-notification)").show();
+    } else {
+      $metadata.find(".gb-metadata-notifications li:not(.gb-metadata-comment-notification)").hide();
+    }
+
+    if (showCommentNotification && $metadata.find(".gb-metadata-comment-notification").length > 0) {
       $metadata.find("blockquote").hide();
+
       setTimeout(function() {
         GradebookAPI.getComments(
           GbGradeTable.container.data("siteid"),
@@ -1798,6 +1805,10 @@ GbGradeTable.setupCellMetaDataSummary = function() {
             $metadata.find("blockquote").html("Unable to load comment. Please try again later.").show();
           })
       });
+
+      $metadata.find(".gb-metadata-notifications li.gb-metadata-comment-notification").show()
+    } else {
+      $metadata.find(".gb-metadata-notifications li.gb-metadata-comment-notification").hide();
     }
 
     $metadata.css({
@@ -1826,7 +1837,7 @@ GbGradeTable.setupCellMetaDataSummary = function() {
           event.preventDefault();
           event.stopImmediatePropagation();
 
-          showMetadata(cellKey, $current);
+          showMetadata(cellKey, $current, true, true);
         } else {
           GbGradeTable.hideMetadata();
         }
@@ -1874,7 +1885,9 @@ GbGradeTable.setupCellMetaDataSummary = function() {
       var cellKey = $.data($cell[0], 'cell-initialised');
       var coords = GbGradeTable.instance.getCoords($cell[0]);
       initializeMetadataSummary(coords.row, coords.col);
-      showMetadata(cellKey, $cell);
+      var showCellNotifications = $(event.target).is(".gb-notification");
+      var showCommentNotification = $(event.target).is(".gb-comment-notification");
+      showMetadata(cellKey, $cell, showCellNotifications, showCommentNotification);
     }
   });
 
