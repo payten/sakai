@@ -1,3 +1,110 @@
+<!-- Drag/drop shenanigans -->
+
+var currentlyDragging = false;
+var floatyFloat = undefined;
+var candidateTarget = undefined;
+var candidateTargetSide = undefined;
+
+var LEFT_POSITION = 'left';
+var RIGHT_POSITION = 'right';
+
+
+function clearSelection() {
+  if ( document.selection ) {
+    document.selection.empty();
+  } else if ( window.getSelection ) {
+    window.getSelection().removeAllRanges();
+  }
+}
+
+$(document).on('dragstarted', function (dragStartedEvent, e) {
+  currentlyDragging = true;
+  console.log("Drag started");
+  var dragee = $(e.target).closest('th');
+
+  floatyFloat = dragee.clone();
+  floatyFloat.css('opacity', 0.8)
+             .css('position', 'fixed')
+             .css('width', dragee.width())
+             .css('height', dragee.height())
+             .css('background-color', 'white')
+             .css('z-index', 5000)
+             .css('top', $('#gradeTable').offset().top + 'px');
+
+  $('#gradeTableWrapper').append(floatyFloat);
+});
+
+
+$(document).on('mouseup', function (e) {
+  if (currentlyDragging) {
+    console.log("Drag stopped");
+
+    currentlyDragging = false;
+    $('.column-marker').remove();
+    if (floatyFloat) {
+      floatyFloat.remove();
+      floatyFloat = undefined;
+    }
+
+    if (candidateTarget) {
+      console.log("Drop it to the " + candidateTargetSide + " of " + candidateTarget);
+    }
+  }
+
+  return true;
+});
+
+$(document).on('mousemove', function (e) {
+  if (currentlyDragging) {
+    clearSelection();
+
+    floatyFloat.css('left', e.clientX + 10 + 'px');
+
+    candidateTarget = $(e.target).closest('th');
+
+    if (candidateTarget.length == 0) {
+      return true;
+    }
+
+    var leftX = $(candidateTarget).offset().left;
+    var candidateXMidpoint = leftX + ($(candidateTarget).width() / 2.0);
+
+    $('.column-marker').remove();
+
+    var marker = $('<div class="column-marker" />');
+
+    /* FIXME gross */
+    if (e.clientX < candidateXMidpoint) {
+      candidateTargetSide = LEFT_POSITION;
+      marker
+        .css('display', 'inline-block')
+        .css('position', 'absolute')
+        .css('left', '0')
+        .css('width', '2px')
+        .css('height', '100%')
+        .css('background-color', 'green')
+        .prependTo($('.relative', candidateTarget));
+    } else {
+      candidateTargetSide = RIGHT_POSITION;
+      marker
+        .css('display', 'inline-block')
+        .css('position', 'absolute')
+        .css('right', '0')
+        .css('width', '2px')
+        .css('height', '100%')
+        .css('background-color', 'green')
+        .prependTo($('.relative', candidateTarget));
+    }
+  }
+
+  return true;
+});
+
+
+
+/////////////////////////////////////////////////////////////////////
+
+
 GbGradeTable = {};
 
 GbGradeTable.unpack = function (s, rowCount, columnCount) {
@@ -602,6 +709,8 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     },
     beforeOnCellMouseDown: function(event, coords, td) {
       if (coords.row < 0 && coords.col >= 0) {
+        $(document).trigger('dragstarted', event);
+
         event.stopImmediatePropagation();
         this.selectCell(0, coords.col);
       } else if (coords.col < 0) {
