@@ -593,8 +593,8 @@
   position: absolute;
   right: 0;
 }
-#gradeItemsTogglePanel .off .gb-item-filter-signal,
-#gradeItemsTogglePanel .partial .gb-item-filter-signal {
+#gradeItemsTogglePanel .off > .gb-item-filter-signal,
+#gradeItemsTogglePanel .partial > .gb-item-filter-signal {
   background-color: #FFF !important;
 }
 #gradeItemsTogglePanel .gb-item-category-filter,
