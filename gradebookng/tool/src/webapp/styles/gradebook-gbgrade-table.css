@@ -404,11 +404,11 @@
 */
 .ht_clone_left.handsontable,
 .ht_clone_left.handsontable .wtHolder {
-  height: calc(100% - 10px) !important;
+  height: calc(100% - 5px) !important;
 }
 .ht_clone_top.handsontable,
 .ht_clone_top.handsontable .wtHolder {
-  width: calc(100% - 10px) !important;
+  width: calc(100% - 5px) !important;
 }
 .wtHolder::-webkit-scrollbar {
   width: 10px;
