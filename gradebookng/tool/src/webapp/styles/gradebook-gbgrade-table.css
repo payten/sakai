@@ -206,6 +206,7 @@
   display: inline-block;
   min-width: 16px;
   text-align: center;
+  font-style: normal;
 }
 .gb-flag-not-counted:before {
   content: '\e600';

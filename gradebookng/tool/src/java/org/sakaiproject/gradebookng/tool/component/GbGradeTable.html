@@ -34,7 +34,7 @@
             <div class="relative">
                 <a class="gb-title">
                     {if extraCredit}
-                        <span class="gb-flag-extra-credit"></span>
+                        <span class="gb-flag-extra-credit" wicket:message="title:label.gradeitem.extracredit"></span>
                     {/if}
                     ${title}
                 </a>
@@ -43,7 +43,7 @@
                         <div class="gb-category">
                             <wicket:message key="label.category"/>
                             {if categoryExtraCredit}
-                                <span class="gb-flag-extra-credit"></span>
+                                <span class="gb-flag-extra-credit" wicket:message="title:label.gradeitem.extracreditcategory"></span>
                             {/if}
                             <span class="swatch" style="background-color: #${categoryColor}"></span>
                             <span>${categoryName}</span>
@@ -79,8 +79,16 @@
                 {/if}
                 <div class="gb-grade-item-flags">
                     <!-- TODO popover -->
-                    {if released}<span class="gb-flag-released"></span>{else}<span class="gb-flag-not-released"></span>{/if}
-                    {if includedInCourseGrade}<span class="gb-flag-counted"></span>{else}<span class="gb-flag-not-counted"></span>{/if}
+                    {if released}
+                        <span class="gb-flag-released" wicket:message="title:label.gradeitem.released"></span>
+                    {else}
+                        <span class="gb-flag-not-released" wicket:message="title:label.gradeitem.notreleased"></span>
+                    {/if}
+                    {if includedInCourseGrade}
+                        <span class="gb-flag-counted" wicket:message="title:label.gradeitem.counted"></span>
+                    {else}
+                        <span class="gb-flag-not-counted" wicket:message="title:label.gradeitem.notcounted"></span>
+                    {/if}
                 </div>
                 <div class="btn-group">
                     <a class="btn btn-sm btn-default dropdown-toggle"
@@ -105,12 +113,12 @@
                 <a class="gb-title">
                     <span class="gb-category">
                         {if extraCredit}
-                            <span class="gb-flag-extra-credit"></span>
+                            <span class="gb-flag-extra-credit" wicket:message="title:label.gradeitem.extracredit"></span>
                         {/if}
                         <span class="swatch" style="background-color: #${color}"></span>
                         ${title}
                         {if settings.isCategoryTypeWeighted}
-                            <span class="gb-category-weight">[${weight}]</span>
+                            <span class="gb-category-weight" wicket:message="title:label.gradeitem.categoryweight">[${weight}]</span>
                         {/if}
                     </span>
                 </a>
