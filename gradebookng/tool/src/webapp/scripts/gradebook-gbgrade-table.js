@@ -1283,7 +1283,7 @@ GbGradeTable.setupToggleGradeItems = function() {
     var $label = $filter.find("label");
 
     $panel.
-        find(".gb-item-category-filter :input:checked:not([value="+$input.val()+"])").
+        find(".gb-item-category-filter :input:checked:not([value='"+$input.val()+"'])").
         trigger("click");
 
     if ($input.is(":not(:checked)")) {
