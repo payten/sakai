@@ -4,6 +4,7 @@ var currentlyDragging = false;
 var floatyFloat = undefined;
 var candidateTarget = undefined;
 var candidateTargetSide = undefined;
+var dragee = undefined;
 
 var LEFT_POSITION = 'left';
 var RIGHT_POSITION = 'right';
@@ -20,7 +21,7 @@ function clearSelection() {
 $(document).on('dragstarted', function (dragStartedEvent, e) {
   currentlyDragging = true;
   console.log("Drag started");
-  var dragee = $(e.target).closest('th');
+  dragee = $(e.target).closest('th');
 
   floatyFloat = dragee.clone();
   floatyFloat.css('opacity', 0.8)
@@ -48,6 +49,47 @@ $(document).on('mouseup', function (e) {
 
     if (candidateTarget) {
       console.log("Drop it to the " + candidateTargetSide + " of " + candidateTarget);
+
+      var targetAssignmentId = $.data(candidateTarget[0], "assignmentid");
+      var sourceAssignmentId = $.data(dragee[0], "assignmentid");
+
+      var targetColIndex = GbGradeTable.colForAssignment(targetAssignmentId);
+      var sourceColIndex = GbGradeTable.colForAssignment(sourceAssignmentId);
+
+      var numberOfFixedColumns = 2; // FIXME
+      var newIndex = targetColIndex - numberOfFixedColumns;
+
+      if (candidateTargetSide == RIGHT_POSITION) {
+        newIndex = newIndex + 1;
+      }
+
+      // moving left to right
+      if (sourceColIndex < targetColIndex) {
+        newIndex = newIndex - 1;
+      }
+
+      var sourceModel = GbGradeTable.colModelForAssignment(sourceAssignmentId);
+
+      if (GbGradeTable.settings.isCategoriesEnabled) {
+        // subtract the category column offset
+        newIndex = newIndex - GbGradeTable.indexOfFirstCategoryColumn(sourceModel.categoryId);
+
+        GradebookAPI.updateCategorizedAssignmentOrder(
+          GbGradeTable.container.data("siteid"),
+          sourceAssignmentId,
+          sourceModel.categoryId,
+          newIndex,
+          $.noop,
+          $.noop,
+          function() {
+            location.reload();
+          }
+        );
+      } else {
+        // TODO updateAssignmentOrder
+      }
+
+      dragee = undefined;
     }
   }
 
@@ -971,6 +1013,12 @@ GbGradeTable.selectCourseGradeCell = function(studentId) {
 GbGradeTable.rowForStudent = function(studentId) {
   return GbGradeTable.instance.view.settings.data.findIndex(function(row, index, array) {
            return row[0].userId === studentId;
+         });
+};
+
+GbGradeTable.indexOfFirstCategoryColumn = function(categoryId) {
+  return GbGradeTable.columns.findIndex(function(column, index, array) {
+           return column.categoryId == categoryId;
          });
 };
 
