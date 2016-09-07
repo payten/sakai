@@ -657,10 +657,15 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   var $dropdownMenu;
   var $link;
   $(window).on('show.bs.dropdown', function (event) {
+    $link = $(event.target);
     $dropdownMenu = $(event.target).find('.dropdown-menu');
+
+    if ($link.closest("#gradeTable").length == 0) {
+      return true;
+    }
+
     $dropdownMenu.addClass("gb-dropdown-menu");
 
-    $link = $(event.target);
     $dropdownMenu.data("cell", $link.closest("td, th"));
 
     $dropdownMenu.width($dropdownMenu.outerWidth());
@@ -676,6 +681,9 @@ GbGradeTable.renderTable = function (elementId, tableData) {
     });
   });
   $(window).on('hide.bs.dropdown', function (event) {
+    if ($link.closest("#gradeTable").length == 0) {
+      return true;
+    }
     $link.append($dropdownMenu.detach());
     $dropdownMenu.hide();
     $dropdownMenu = null;
@@ -1334,10 +1342,11 @@ GbGradeTable.setupToggleGradeItems = function() {
         $button.removeClass("on");
         $button.attr("aria-expanded", "false");
         $panel.hide().attr("aria-hidden", "true");
-        $(document).off("mousedown", hidePanelOnOuterClick);
+        $(document).off("mouseup", hidePanelOnOuterClick);
       }
+      return true;
     };
-    $(document).on("mousedown", hidePanelOnOuterClick);
+    $(document).on("mouseup", hidePanelOnOuterClick);
 
     return false;
   });
