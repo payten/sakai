@@ -2008,6 +2008,27 @@ GradebookAPI.getComments = function(siteId, assignmentId, studentUuid, onSuccess
 };
 
 
+GradebookAPI.updateAssignmentOrder = function(siteId, assignmentId, order, onSuccess, onError, onComplete) {
+  GradebookAPI._POST("/direct/gbng/assignment-order", {
+                                                        siteId: siteId,
+                                                        assignmentId: assignmentId,
+                                                        order: order
+                                                      },
+                                                      onSuccess, onError, onComplete)
+};
+
+
+GradebookAPI.updateCategorizedAssignmentOrder = function(siteId, assignmentId, categoryId, order, onSuccess, onError, onComplete) {
+  GradebookAPI._POST("/direct/gbng/categorized-assignment-order", {
+                                                        siteId: siteId,
+                                                        assignmentId: assignmentId,
+                                                        categoryId: categoryId,
+                                                        order: order
+                                                      },
+                                                      onSuccess, onError, onComplete)
+};
+
+
 GradebookAPI._GET = function(url, data, onSuccess, onError, onComplete) {
   $.ajax({
     type: "GET",
