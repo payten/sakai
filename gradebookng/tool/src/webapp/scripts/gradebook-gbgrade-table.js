@@ -1202,11 +1202,11 @@ GbGradeTable.setupToggleGradeItems = function() {
 
     // toggle all columns in this category
     if ($input.is(":checked")) {
-      $filter.removeClass("off");
+      $label.removeClass("off");
       // show all
       $input.closest(".gb-item-filter-group").find(".gb-item-filter :input:not(:checked), .gb-item-category-score-filter :input:not(:checked)").trigger("click");
     } else {
-      $filter.addClass("off");
+      $label.addClass("off");
       // hide all
       $input.closest(".gb-item-filter-group").find(".gb-item-filter :input:checked, .gb-item-category-score-filter :input:checked").trigger("click");
     }
