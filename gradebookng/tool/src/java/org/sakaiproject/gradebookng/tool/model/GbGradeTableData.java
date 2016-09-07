@@ -27,7 +27,7 @@ public class GbGradeTableData {
         uiSettings = settings;
 
         SortType sortBy = SortType.SORT_BY_SORTING;
-        if (settings.isCategoriesEnabled()) {
+        if (settings.isCategoriesEnabled() && settings.isGroupedByCategory()) {
             // Pre-sort assignments by the categorized sort order
             sortBy = SortType.SORT_BY_CATEGORY;
         }

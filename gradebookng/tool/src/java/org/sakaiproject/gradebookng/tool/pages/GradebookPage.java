@@ -195,7 +195,7 @@ public class GradebookPage extends BasePage {
 		final GradebookUiSettings settings = getUiSettings();
 
 		SortType sortBy = SortType.SORT_BY_SORTING;
-		if (settings.isCategoriesEnabled()) {
+		if (settings.isCategoriesEnabled() && settings.isGroupedByCategory()) {
 			// Pre-sort assignments by the categorized sort order
 			sortBy = SortType.SORT_BY_CATEGORY;
 			this.form.add(new AttributeAppender("class", "gb-grouped-by-category"));
@@ -204,7 +204,7 @@ public class GradebookPage extends BasePage {
 		// get Gradebook to save additional calls later
 		final Gradebook gradebook = this.businessService.getGradebook();
 
-		final List<Assignment> assignments = this.businessService.getGradebookAssignments();
+		final List<Assignment> assignments = this.businessService.getGradebookAssignments(sortBy);
 		final List<String> students = this.businessService.getGradeableUsers();
 
 		hasAssignmentsAndGrades = !assignments.isEmpty() && !students.isEmpty(); 
