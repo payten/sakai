@@ -1,152 +1,3 @@
-<!-- Drag/drop shenanigans -->
-
-var currentlyDragging = false;
-var floatyFloat = undefined;
-var candidateTarget = undefined;
-var candidateTargetSide = undefined;
-var dragee = undefined;
-
-var LEFT_POSITION = 'left';
-var RIGHT_POSITION = 'right';
-
-
-function clearSelection() {
-  if ( document.selection ) {
-    document.selection.empty();
-  } else if ( window.getSelection ) {
-    window.getSelection().removeAllRanges();
-  }
-}
-
-$(document).on('dragstarted', function (dragStartedEvent, e) {
-  currentlyDragging = true;
-  console.log("Drag started");
-  dragee = $(e.target).closest('th');
-
-  floatyFloat = dragee.clone();
-  floatyFloat.css('opacity', 0.8)
-             .css('position', 'fixed')
-             .css('width', dragee.width())
-             .css('height', dragee.height())
-             .css('background-color', 'white')
-             .css('z-index', 5000)
-             .css('top', $('#gradeTable').offset().top + 'px');
-
-  $('#gradeTableWrapper').append(floatyFloat);
-});
-
-
-$(document).on('mouseup', function (e) {
-  if (currentlyDragging) {
-    console.log("Drag stopped");
-
-    currentlyDragging = false;
-    $('.column-marker').remove();
-    if (floatyFloat) {
-      floatyFloat.remove();
-      floatyFloat = undefined;
-    }
-
-    if (candidateTarget) {
-      console.log("Drop it to the " + candidateTargetSide + " of " + candidateTarget);
-
-      var targetAssignmentId = $.data(candidateTarget[0], "assignmentid");
-      var sourceAssignmentId = $.data(dragee[0], "assignmentid");
-
-      var targetColIndex = GbGradeTable.colForAssignment(targetAssignmentId);
-      var sourceColIndex = GbGradeTable.colForAssignment(sourceAssignmentId);
-
-      var numberOfFixedColumns = 2; // FIXME
-      var newIndex = targetColIndex - numberOfFixedColumns;
-
-      if (candidateTargetSide == RIGHT_POSITION) {
-        newIndex = newIndex + 1;
-      }
-
-      // moving left to right
-      if (sourceColIndex < targetColIndex) {
-        newIndex = newIndex - 1;
-      }
-
-      var sourceModel = GbGradeTable.colModelForAssignment(sourceAssignmentId);
-
-      if (GbGradeTable.settings.isCategoriesEnabled) {
-        // subtract the category column offset
-        newIndex = newIndex - GbGradeTable.indexOfFirstCategoryColumn(sourceModel.categoryId);
-
-        GradebookAPI.updateCategorizedAssignmentOrder(
-          GbGradeTable.container.data("siteid"),
-          sourceAssignmentId,
-          sourceModel.categoryId,
-          newIndex,
-          $.noop,
-          $.noop,
-          function() {
-            location.reload();
-          }
-        );
-      } else {
-        // TODO updateAssignmentOrder
-      }
-
-      dragee = undefined;
-    }
-  }
-
-  return true;
-});
-
-$(document).on('mousemove', function (e) {
-  if (currentlyDragging) {
-    clearSelection();
-
-    floatyFloat.css('left', e.clientX + 10 + 'px');
-
-    candidateTarget = $(e.target).closest('th');
-
-    if (candidateTarget.length == 0) {
-      return true;
-    }
-
-    var leftX = $(candidateTarget).offset().left;
-    var candidateXMidpoint = leftX + ($(candidateTarget).width() / 2.0);
-
-    $('.column-marker').remove();
-
-    var marker = $('<div class="column-marker" />');
-
-    /* FIXME gross */
-    if (e.clientX < candidateXMidpoint) {
-      candidateTargetSide = LEFT_POSITION;
-      marker
-        .css('display', 'inline-block')
-        .css('position', 'absolute')
-        .css('left', '0')
-        .css('width', '2px')
-        .css('height', '100%')
-        .css('background-color', 'green')
-        .prependTo($('.relative', candidateTarget));
-    } else {
-      candidateTargetSide = RIGHT_POSITION;
-      marker
-        .css('display', 'inline-block')
-        .css('position', 'absolute')
-        .css('right', '0')
-        .css('width', '2px')
-        .css('height', '100%')
-        .css('background-color', 'green')
-        .prependTo($('.relative', candidateTarget));
-    }
-  }
-
-  return true;
-});
-
-
-
-/////////////////////////////////////////////////////////////////////
-
-
 GbGradeTable = {};
 
 GbGradeTable.unpack = function (s, rowCount, columnCount) {
@@ -738,6 +589,9 @@ GbGradeTable.renderTable = function (elementId, tableData) {
           attr("abbr", columnName).
           attr("aria-label", columnName);
 
+        $.data(th, "columnType", column.type);
+        $.data(th, "categoryId", column.categoryId);
+
         if (column.type == "assignment") {
           $.data(th, "assignmentid", column.assignmentId);
         }
@@ -962,6 +816,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   GbGradeTable.setupCellMetaDataSummary();
   GbGradeTable.setupAccessiblityBits();
   GbGradeTable.refreshSummaryLabels();
+  GbGradeTable.setupDragAndDrop();
 
   // Patch HandsonTable getWorkspaceWidth for improved scroll performance on big tables
   var origGetWorkspaceWidth = WalkontableViewport.prototype.getWorkspaceWidth;
@@ -1778,6 +1633,211 @@ GbGradeTable.setupConcurrencyCheck = function() {
 };
 
 
+GbGradeTable.setupDragAndDrop = function () {
+  /* True if drag/drop is active */
+  var currentlyDragging = false;
+
+  /* Our floating drag indicator */
+  var floatyFloat = undefined;
+
+  /* The element we'll be dropping near */
+  var dropTarget = undefined;
+
+  /* And the side of the element we're targetting */
+  var dropTargetSide = undefined;
+
+  /* The thing we're dragging */
+  var dragTarget = undefined;
+
+  var LEFT_POSITION = 'left';
+  var RIGHT_POSITION = 'right';
+
+  function clearSelection() {
+    if ( document.selection ) {
+      document.selection.empty();
+    } else if ( window.getSelection ) {
+      window.getSelection().removeAllRanges();
+    }
+  }
+
+  function isDraggable(th) {
+    return ($(th).data('columnType') == 'assignment');
+  }
+
+
+  $(document).on('dragstarted', function (dragStartedEvent, e) {
+    dragTarget = $(e.target).closest('th');
+
+    if (isDraggable(dragTarget)) {
+      currentlyDragging = true;
+    } else {
+      dragTarget = undefined;
+      return;
+    }
+
+    floatyFloat = dragTarget.clone();
+    floatyFloat.css('opacity', 0.8)
+               .css('position', 'fixed')
+               .css('width', dragTarget.width())
+               .css('height', dragTarget.height())
+               .css('background-color', 'white')
+               .css('z-index', 5000)
+               .css('top', $('#gradeTable').offset().top + 'px');
+
+    /* Knock out input elements */
+    $('.btn-group', floatyFloat).remove();
+
+    $('#gradeTableWrapper').append(floatyFloat);
+  });
+
+  function cancelDrag() {
+    if (currentlyDragging) {
+      currentlyDragging = false;
+      $('.column-marker').remove();
+
+      if (floatyFloat) {
+        floatyFloat.remove();
+        floatyFloat = undefined;
+      }
+
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  GbGradeTable._cancelDrag = cancelDrag;
+
+
+  $(document).on('mouseup', function (e) {
+    if (currentlyDragging) {
+      cancelDrag();
+
+      if (dropTarget) {
+        var targetAssignmentId = $.data(dropTarget[0], "assignmentid");
+        var sourceAssignmentId = $.data(dragTarget[0], "assignmentid");
+
+        var targetColIndex = GbGradeTable.colForAssignment(targetAssignmentId);
+        var sourceColIndex = GbGradeTable.colForAssignment(sourceAssignmentId);
+
+        /* If we drop in a spot that would put our column in the same position,
+           don't bother doing anything. */
+        if (targetColIndex == sourceColIndex || 
+            (dropTargetSide == LEFT_POSITION && targetColIndex == (sourceColIndex + 1)) ||
+            (dropTargetSide == RIGHT_POSITION && targetColIndex == (sourceColIndex - 1))) {
+              return true;
+        }
+
+        var numberOfFixedColumns = GbGradeTable.instance.getSettings().fixedColumnsLeft;
+        var newIndex = targetColIndex - numberOfFixedColumns;
+
+        if (dropTargetSide == RIGHT_POSITION) {
+          newIndex = newIndex + 1;
+        }
+
+        // moving left to right
+        if (sourceColIndex < targetColIndex) {
+          newIndex = newIndex - 1;
+        }
+
+        var sourceModel = GbGradeTable.colModelForAssignment(sourceAssignmentId);
+
+        if (GbGradeTable.settings.isGroupedByCategory) {
+          // subtract the category column offset
+          newIndex = newIndex - GbGradeTable.indexOfFirstCategoryColumn(sourceModel.categoryId);
+
+          GradebookAPI.updateCategorizedAssignmentOrder(
+            GbGradeTable.container.data("siteid"),
+            sourceAssignmentId,
+            sourceModel.categoryId,
+            newIndex,
+            $.noop,
+            $.noop,
+            function() {
+              location.reload();
+            }
+          );
+        } else {
+          GradebookAPI.updateAssignmentOrder(
+            GbGradeTable.container.data("siteid"),
+            sourceAssignmentId,
+            newIndex,
+            $.noop,
+            $.noop,
+            function() {
+              location.reload();
+            }
+          )
+        }
+
+        dragTarget = undefined;
+      }
+    }
+
+    return true;
+  });
+
+  function isDroppable(dropTarget) {
+    if (GbGradeTable.settings.isGroupedByCategory) {
+      if (dragTarget.data('categoryId') != dropTarget.data('categoryId')) {
+        return false;
+      }
+    }
+
+    if (dropTarget.data('columnType') !== 'assignment') {
+      return false;
+    }
+
+    return true;
+  }
+
+  $(document).on('mousemove', function (e) {
+    if (currentlyDragging) {
+      clearSelection();
+
+      var margin = 10;
+      floatyFloat.css('left', e.clientX + margin + 'px');
+
+      var candidateTarget = $(e.target).closest('th');
+
+      if (candidateTarget.length == 0) {
+        return true;
+      }
+
+      if (!isDroppable(candidateTarget)) {
+        return true;
+      }
+
+      dropTarget = candidateTarget;
+
+      var leftX = $(dropTarget).offset().left;
+      var candidateXMidpoint = leftX + ($(dropTarget).width() / 2.0);
+
+      $('.column-marker').remove();
+
+      var marker = $('<div class="column-marker" />')
+        .css('display', 'inline-block')
+        .css('position', 'absolute')
+        .css('width', '2px')
+        .css('height', '100%')
+        .css('background-color', 'green');
+
+      if (e.clientX < candidateXMidpoint) {
+        dropTargetSide = LEFT_POSITION;
+        marker.css('left', '0')
+      } else {
+        dropTargetSide = RIGHT_POSITION;
+        marker.css('right', '0')
+      }
+
+      marker.prependTo($('.relative', dropTarget));
+    }
+
+    return true;
+  });
+};
+
+
 GbGradeTable.setupKeyboardNavigation = function() {
   // add grade table to the tab flow
   $(GbGradeTable.instance.rootElement).attr("tabindex", 0);
@@ -1881,9 +1941,13 @@ GbGradeTable.setupKeyboardNavigation = function() {
 
       // escape - return focus to table if not currently editing a grade
       if (!editing && event.keyCode == 27) {
-        iGotThis();
-        GbGradeTable.instance.deselectCell();
-        GbGradeTable.instance.rootElement.focus();
+        if (GbGradeTable._cancelDrag()) {
+          /* Nothing else to do */
+        } else {
+          iGotThis();
+          GbGradeTable.instance.deselectCell();
+          GbGradeTable.instance.rootElement.focus();
+        }
       }
     }
   });

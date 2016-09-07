@@ -325,6 +325,7 @@ public class GbGradebookData {
         result.put("isCategoryTypeWeighted", GbCategoryType.valueOf(settings.getCategoryType()) == GbCategoryType.WEIGHTED_CATEGORY);
         result.put("isStudentOrderedByLastName", uiSettings.getNameSortOrder() == GbStudentNameSortOrder.LAST_NAME);
         result.put("isStudentOrderedByFirstName", uiSettings.getNameSortOrder() == GbStudentNameSortOrder.FIRST_NAME);
+        result.put("isGroupedByCategory", uiSettings.isGroupedByCategory());
 
         return result;
     };
