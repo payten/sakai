@@ -3,13 +3,13 @@
 
 <body>
 <wicket:extend>
-	
+
+	<!-- PLEASE NOTE:                                                                                -->
+	<!-- This page should never be reached as error should be handled by the portal's ErrorReporter. -->
+	<!-- A redirect will take place ensuring this page is never delivered to the user                -->
+
 	<h2><wicket:message key="errorpage.heading" /></h2>
-	
-	<p wicket:id="error">Error code: C123K4F</p>
-	
-	<pre><wicket:container wicket:id="stacktrace" /></pre>
-			
+
 </wicket:extend>
 </body>
 </html>

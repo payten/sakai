@@ -1,11 +1,12 @@
 package org.sakaiproject.gradebookng.tool.pages;
 
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.model.StringResourceModel;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.StringHeaderItem;
+import org.sakaiproject.portal.util.ErrorReporter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Page displayed when an internal error occurred.
@@ -18,24 +19,30 @@ public class ErrorPage extends BasePage {
 
 	private static final long serialVersionUID = 1L;
 
+	private Exception exception;
+
 	public ErrorPage(final Exception e) {
-		
-		final String stacktrace = ExceptionUtils.getStackTrace(e);
-		
-		//log the stacktrace
-		log.error(stacktrace);
-		
-		// generate an error code so we can log the exception with it without giving the user the stacktrace
-		// note that wicket will already have logged the stacktrace so we aren't going to bother logging it again
-		final String code = RandomStringUtils.randomAlphanumeric(10);
-		log.error("User supplied error code for the above stacktrace: " + code);
+		this.exception = e;
+	}
 
-		final Label error = new Label("error", new StringResourceModel("errorpage.text", null, new Object[] { code }));
-		error.setEscapeModelStrings(false);
-		add(error);
+	@Override
+	public void onInitialize() {
+		super.onInitialize();
 
-		// show the stacktrace. This should be configurable at some point
-		add(new Label("stacktrace", stacktrace));
+		final HttpServletRequest request = ((HttpServletRequest) getRequest().getContainerRequest());
+		final HttpServletResponse response = ((HttpServletResponse) getResponse().getContainerResponse());
 
+		new ErrorReporter().report(request, response, this.exception);
+	}
+
+	@Override
+	public void renderHead(final IHeaderResponse response) {
+		// Force a redirect back to the Grade page.
+		// This should never happen as the ErrorReporter.report
+		// above should hijack the response when it counts.
+		response.render(new StringHeaderItem("<META http-equiv=\"refresh\"" + 
+			" content=\"0;URL=" +
+			getRequestCycle().urlFor(GradebookPage.class, null) + 
+			"\">"));
 	}
 }

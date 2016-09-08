@@ -6,6 +6,8 @@ import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.IRequestHandler;
 import org.apache.wicket.request.cycle.AbstractRequestCycleListener;
 import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.request.http.handler.RedirectRequestHandler;
 import org.apache.wicket.settings.IExceptionSettings;
 import org.apache.wicket.settings.IRequestCycleSettings.RenderStrategy;
 import org.apache.wicket.spring.injection.annot.SpringComponentInjector;
@@ -60,7 +62,17 @@ public class GradebookNgApplication extends WebApplication {
 		getRequestCycleListeners().add(new AbstractRequestCycleListener() {
 			@Override
 			public IRequestHandler onException(final RequestCycle cycle, final Exception e) {
-				return new RenderPageRequestHandler(new PageProvider(new ErrorPage(e)));
+				final IRequestHandler handler = new RenderPageRequestHandler(new PageProvider(new ErrorPage(e)));
+
+				// if exception occured on an AJAX request, we need to force
+				// a redirect to the ErrorPage (this will add the requisite
+				// header fields to ensure the AJAX request is redirected
+				// by the wicket framework)
+				if (((WebRequest)cycle.getRequest()).isAjax()) {
+					return new RedirectRequestHandler(cycle.urlFor(handler).toString());
+				}
+
+				return handler;
 			}
 		});
 
