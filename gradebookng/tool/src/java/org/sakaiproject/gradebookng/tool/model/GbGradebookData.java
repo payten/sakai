@@ -73,6 +73,8 @@ public class GbGradebookData {
         private String categoryWeight;
         private boolean isCategoryExtraCredit;
 
+        private boolean hidden;
+
         @Override
         public String getType() {
             return "assignment";
@@ -105,6 +107,7 @@ public class GbGradebookData {
         private String weight;
         private boolean isExtraCredit; 
         private String color;
+        private boolean hidden;
 
         @Override
         public String getType() {
@@ -435,7 +438,9 @@ public class GbGradebookData {
                                                 a1.getCategoryName(),
                                                 userSettings.getCategoryColor(a1.getCategoryName()),
                                                 nullable(categoryWeight),
-                                                a1.isCategoryExtraCredit()));
+                                                a1.isCategoryExtraCredit(),
+
+                                                !uiSettings.isAssignmentVisible(a1.getId())));
 
 
             // If we're at the end of the assignment list, or we've just changed
@@ -447,7 +452,8 @@ public class GbGradebookData {
                                                          a1.getCategoryName(),
                                                          nullable(categoryWeight),
                                                          a1.isCategoryExtraCredit(),
-                                                         userSettings.getCategoryColor(a1.getCategoryName())));
+                                                         userSettings.getCategoryColor(a1.getCategoryName()),
+                                                         !uiSettings.isCategoryScoreVisible(a1.getCategoryName())));
             }
         }
 
@@ -465,7 +471,8 @@ public class GbGradebookData {
                         category.getName(),
                         nullable(categoryWeight),
                         category.isExtraCredit(),
-                        userSettings.getCategoryColor(category.getName())));
+                        userSettings.getCategoryColor(category.getName()),
+                        !uiSettings.isCategoryScoreVisible(category.getName())));
                 }
             }
         }

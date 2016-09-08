@@ -533,7 +533,7 @@ GbGradeTable.renderTable = function (elementId, tableData) {
   GbGradeTable.columnDOMNodeCache = {};
 
   GbGradeTable.instance = new Handsontable(document.getElementById(elementId), {
-    data: GbGradeTable.grades,
+    data: GbGradeTable.getFilteredData(),
 //    rowHeaderWidth: 220,
 //    rowHeaders: GbGradeTable.studentCellRenderer,
     fixedColumnsLeft: 2,
@@ -578,10 +578,11 @@ GbGradeTable.renderTable = function (elementId, tableData) {
         attr("scope", "col").
         addClass("gb-categorized"); /* TODO only if enabled */
 
+      var columnModel = this.view.settings.columns[col]._data_;
+
       // assignment column
       if (col > 1) {
-        var column = this.view.settings.columns[col]._data_;
-        var columnName = column.title;
+        var columnName = columnModel.title;
 
         $th.
           attr("role", "columnheader").
@@ -589,19 +590,42 @@ GbGradeTable.renderTable = function (elementId, tableData) {
           attr("abbr", columnName).
           attr("aria-label", columnName);
 
-        $.data(th, "columnType", column.type);
-        $.data(th, "categoryId", column.categoryId);
+        $.data(th, "columnType", columnModel.type);
+        $.data(th, "categoryId", columnModel.categoryId);
 
-        if (column.type == "assignment") {
-          $.data(th, "assignmentid", column.assignmentId);
+        if (columnModel.type == "assignment") {
+          $.data(th, "assignmentid", columnModel.assignmentId);
         }
 
         if (GbGradeTable.settings.isCategoriesEnabled) {
-          var color = column.color || column.categoryColor;
+          var color = columnModel.color || columnModel.categoryColor;
           $th.css("borderTopColor", color);
           $th.find(".swatch").css("backgroundColor", color);
         }
       }
+
+      // show visual cue that columns are hidden
+      // check for last of the fixed columns
+      if (col == 1) { //GbGradeTable.instance.getSettings().fixedColumnsLeft - 1) {
+        if (GbGradeTable.columns[0].hidden &&
+            $th.find(".gb-hidden-column-visual-cue").length == 0) {
+          $th.find(".relative").append("<a href='javascript:void(0);' class='gb-hidden-column-visual-cue'></a>");
+        }
+      } else if (col >= 2) { //GbGradeTable.instance.getSettings().fixedColumnsLeft) {
+        var origColIndex = GbGradeTable.columns.findIndex(function(c, i) {
+          return c == columnModel;
+        });
+
+        if (origColIndex < (GbGradeTable.columns.length - 1)) {
+          if (GbGradeTable.columns[origColIndex+1].hidden &&
+              $th.find(".gb-hidden-column-visual-cue").length == 0) {
+            $th.find(".relative").append("<a href='javascript:void(0);' class='gb-hidden-column-visual-cue'></a>");
+          }
+        }
+      }
+    },
+    beforeRender: function(isForced) {
+      $(".gb-hidden-column-visual-cue").remove();
     },
     beforeOnCellMouseDown: function(event, coords, td) {
       if (coords.row < 0 && coords.col >= 0) {
@@ -1046,6 +1070,7 @@ GbGradeTable.redrawTable = function(force) {
 
   GbGradeTable._redrawTableTimeout = setTimeout(function() {
     GbGradeTable.forceRedraw = force || false;
+
     GbGradeTable.instance.loadData(GbGradeTable.getFilteredData());
     GbGradeTable.instance.updateSettings({
       columns: GbGradeTable.getFilteredColumns()
@@ -1157,6 +1182,8 @@ GbGradeTable.getColumnWidths = function() {
 };
 
 GbGradeTable.setupToggleGradeItems = function() {
+  var SUPPRESS_TABLE_REDRAW = true;
+
   var $panel = $("<div>").addClass("gb-toggle-grade-items-panel").hide();
   var $button = $("#toggleGradeItemsToolbarItem");
   $button.after($panel);
@@ -1215,7 +1242,7 @@ GbGradeTable.setupToggleGradeItems = function() {
   };
 
 
-  function handleGradeItemFilterStateChange(event) {
+  function handleGradeItemFilterStateChange(event, suppressRedraw) {
     var $input = $(event.target);
     var $label = $input.closest("label");
     var $filter = $input.closest(".gb-item-filter");
@@ -1238,11 +1265,13 @@ GbGradeTable.setupToggleGradeItems = function() {
 
     updateCategoryFilterState($input);
 
-    GbGradeTable.redrawTable(true);
+    if (suppressRedraw != SUPPRESS_TABLE_REDRAW) {
+      GbGradeTable.redrawTable(true);
+    }
   };
 
 
-  function handleCategoryScoreFilterStateChange(event) {
+  function handleCategoryScoreFilterStateChange(event, suppressRedraw) {
     var $input = $(event.target);
     var $label = $input.closest("label");
     var $filter = $input.closest(".gb-item-category-score-filter");
@@ -1264,7 +1293,9 @@ GbGradeTable.setupToggleGradeItems = function() {
     }
 
     updateCategoryFilterState($input);
-    GbGradeTable.redrawTable(true);
+    if (!suppressRedraw) {
+      GbGradeTable.redrawTable(true);
+    }
   }
 
 
@@ -1456,7 +1487,39 @@ GbGradeTable.setupToggleGradeItems = function() {
   $panel.find(".gb-item-filter :input").on("change", handleGradeItemFilterStateChange);
   $panel.find(".gb-item-category-score-filter :input").on("change", handleCategoryScoreFilterStateChange);
 
-  $panel.find(":input:not(:checked)").trigger("change");
+  $panel.find(":input:not(:checked)").trigger("change", [SUPPRESS_TABLE_REDRAW]);
+
+  // setup hidden visual cue clicky
+  $(GbGradeTable.instance.rootElement).on("click", ".gb-hidden-column-visual-cue", function(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    var $th = $(this).closest("th");
+    var data = $.data($th[0]);
+    var index = 0;
+    if (data.columnType == "assignment") {
+      index = GbGradeTable.colForAssignment(data.assignmentid) - GbGradeTable.instance.getSettings().fixedColumnsLeft + 1;
+    } else if (data.columnType == "category") {
+      index = GbGradeTable.colForCategoryScore(data.categoryId) - GbGradeTable.instance.getSettings().fixedColumnsLeft + 1;
+    }
+
+    var columnsAfter = GbGradeTable.columns.slice(index);
+    var done = false;
+    $.each(columnsAfter, function(i, column) {
+      if (!done && column.hidden) {
+        if (column.type == "assignment") {
+          $panel.find(".gb-item-filter :input[value='"+column.assignmentId+"']").trigger("click", [SUPPRESS_TABLE_REDRAW]);
+        } else {
+          $panel.find(".gb-item-category-score-filter :input[value='"+column.title+"']").trigger("click", [SUPPRESS_TABLE_REDRAW]);
+        }
+      } else {
+        done = true;
+      }
+    });
+
+    $(this).remove();
+    GbGradeTable.redrawTable(true);
+  });
 };
 
 GbGradeTable.setupColumnSorting = function() {
