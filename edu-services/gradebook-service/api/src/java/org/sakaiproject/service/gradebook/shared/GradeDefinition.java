@@ -32,6 +32,7 @@ public class GradeDefinition {
 	private String graderUid;
 	private Date dateRecorded;
 	private String grade;
+	private Double pointsEarned;
 	private String gradeComment;
 	private int gradeEntryType;
 	private boolean gradeReleased;
@@ -122,4 +123,11 @@ public class GradeDefinition {
 	}
 	
 	
+	public Double getPointsEarned() {
+		return pointsEarned;
+	}
+	
+	public void setPointsEarned(Double pointsEarned) {
+		this.pointsEarned = pointsEarned;
+	}
 }

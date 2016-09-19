@@ -23,6 +23,9 @@ public class GbGradeInfo implements Serializable, Comparable<GbGradeInfo> {
 	private final String grade;
 
 	@Getter
+	private final Double pointsEarned;
+
+	@Getter
 	private final String gradeComment;
 
 	/**
@@ -43,9 +46,11 @@ public class GbGradeInfo implements Serializable, Comparable<GbGradeInfo> {
 		if (gd == null) {
 			this.grade = null;
 			this.gradeComment = null;
+			this.pointsEarned = null;
 			this.gradeable = false;
 		} else {
 			this.grade = gd.getGrade();
+			this.pointsEarned = gd.getPointsEarned();
 			this.gradeComment = gd.getGradeComment();
 			this.gradeable = false;
 		}

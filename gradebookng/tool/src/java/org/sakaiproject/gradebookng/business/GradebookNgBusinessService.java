@@ -1,7 +1,5 @@
 package org.sakaiproject.gradebookng.business;
 
-import java.math.RoundingMode;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -438,7 +436,7 @@ public class GradebookNgBusinessService {
 
 		final Gradebook gradebook = this.getGradebook();
 		if (gradebook == null) {
-			return GradeSaveResponse.ERROR;
+			return GradeSaveResponse.error();
 		}
 
 		return this.saveGrade(assignmentId, studentUuid, null, grade, comment);
@@ -457,22 +455,25 @@ public class GradebookNgBusinessService {
 	 *
 	 * 		TODO make the concurrency check a boolean instead of the null oldGrade
 	 */
-	public GradeSaveResponse saveGrade(final Long assignmentId, final String studentUuid, final String oldGrade,
+	public GradeSaveResponse saveGrade(final Long assignmentId, final String studentUuid, final Double oldGrade,
 			final String newGrade, final String comment) {
 
 		final Gradebook gradebook = this.getGradebook();
 		if (gradebook == null) {
-			return GradeSaveResponse.ERROR;
+			return GradeSaveResponse.error();
 		}
 
 		// if newGrade is null, no change
 		if (newGrade == null) {
-			return GradeSaveResponse.NO_CHANGE;
+			return GradeSaveResponse.noChange();
 		}
 
 		// get current grade
-		final String storedGrade = this.gradebookService.getAssignmentScoreString(gradebook.getUid(), assignmentId,
-				studentUuid);
+		final GradeDefinition storedGradeDefinition = this.gradebookService.getGradeDefinitionForStudentForItem(
+			gradebook.getUid(),
+			assignmentId,
+			studentUuid);
+		final Double storedGrade = storedGradeDefinition.getPointsEarned();
 
 		// get assignment config
 		final Assignment assignment = this.getAssignment(assignmentId);
@@ -483,8 +484,6 @@ public class GradebookNgBusinessService {
 
 		// if percentage entry type, reformat the grades, otherwise use points as is
 		String newGradeAdjusted = newGrade;
-		String oldGradeAdjusted = oldGrade;
-		String storedGradeAdjusted = storedGrade;
 
 		if (gradingType == GbGradingType.PERCENTAGE) {
 			// the passed in grades represents a percentage so the number needs to be adjusted back to points
@@ -492,42 +491,17 @@ public class GradebookNgBusinessService {
 			final Double newGradePointsFromPercentage = (newGradePercentage / 100) * maxPoints;
 			newGradeAdjusted = FormatHelper.formatDoubleToTwoDecimalPlaces(newGradePointsFromPercentage);
 
-			// only convert if we had a previous value otherwise it will be out of sync
-			if (StringUtils.isNotBlank(oldGradeAdjusted)) {
-				// To check if our data is out of date, we first compare what we think
-				// is the latest saved score against score stored in the database. As the score
-				// is stored as points, we must convert this to a percentage. To be sure we're
-				// comparing apples with apples, we first determine the number of decimal places
-				// on the score, so the converted points-as-percentage is in the expected format. 
-				int numberOfDecimalPlaces = 0;
-				if (storedGradeAdjusted.indexOf(".") >= 0) {
-					numberOfDecimalPlaces = storedGradeAdjusted.split("\\.")[1].length();
-				}
-
-				final Double oldGradePercentage = NumberUtils.toDouble(oldGrade);
-				final Double oldGradePointsFromPercentage = (oldGradePercentage / 100) * maxPoints;
-				final NumberFormat df = NumberFormat.getInstance();
-				df.setMinimumFractionDigits(0);
-				df.setMaximumFractionDigits(numberOfDecimalPlaces);
-				df.setGroupingUsed(false);
-				df.setRoundingMode(RoundingMode.HALF_DOWN);
-
-				oldGradeAdjusted = df.format(oldGradePointsFromPercentage);
-			}
-
 			// we dont need processing of the stored grade as the service does that when persisting.
 		}
 
 		// trim the .0 from the grades if present. UI removes it so lets standardise
 		// trim to null so we can better compare against no previous grade being recorded (as it will be null)
 		// Note that we also trim newGrade so that don't add the grade if the new grade is blank and there was no grade previously
-		storedGradeAdjusted = StringUtils.trimToNull(StringUtils.removeEnd(storedGradeAdjusted, ".0"));
-		oldGradeAdjusted = StringUtils.trimToNull(StringUtils.removeEnd(oldGradeAdjusted, ".0"));
 		newGradeAdjusted = StringUtils.trimToNull(StringUtils.removeEnd(newGradeAdjusted, ".0"));
 
 		if (log.isDebugEnabled()) {
-			log.debug("storedGradeAdjusted: " + storedGradeAdjusted);
-			log.debug("oldGradeAdjusted: " + oldGradeAdjusted);
+			log.debug("storedGrade: " + storedGrade);
+			log.debug("oldGrade: " + oldGrade);
 			log.debug("newGradeAdjusted: " + newGradeAdjusted);
 		}
 
@@ -536,37 +510,29 @@ public class GradebookNgBusinessService {
 		// see SAK-29595
 		if (StringUtils.length(comment) > 500) {
 			log.error("Comment too long. Maximum 500 characters.");
-			return GradeSaveResponse.ERROR;
+			return GradeSaveResponse.error();
 		}
 
 		// no change
-		if (StringUtils.equals(storedGradeAdjusted, newGradeAdjusted)) {
-			final Double storedGradePoints = NumberUtils.toDouble(storedGradeAdjusted);
-			if (storedGradePoints.compareTo(maxPoints) > 0) {
-				return GradeSaveResponse.OVER_LIMIT;
+		if ((storedGrade == null && newGradeAdjusted == null) ||
+			(storedGrade != null && newGradeAdjusted != null &&
+				Double.compare(storedGrade, Double.valueOf(newGradeAdjusted)) == 0)) {
+
+			if (storedGrade.compareTo(maxPoints) > 0) {
+				return GradeSaveResponse.overLimit();
 			} else {
-				return GradeSaveResponse.NO_CHANGE;
+				return GradeSaveResponse.noChange();
 			}
 		}
 
 		// concurrency check, if stored grade != old grade that was passed in,
 		// someone else has edited.
 		// if oldGrade == null, ignore concurrency check
-		if (oldGrade != null && !StringUtils.equals(storedGradeAdjusted, oldGradeAdjusted)) {
-			return GradeSaveResponse.CONCURRENT_EDIT;
+		if (oldGrade != null && Double.compare(storedGrade, Double.valueOf(oldGrade)) != 0) {
+			return GradeSaveResponse.concurrentEdit();
 		}
 
 		GradeSaveResponse rval = null;
-
-		if (StringUtils.isNotBlank(newGradeAdjusted)) {
-			final Double newGradePoints = NumberUtils.toDouble(newGradeAdjusted);
-
-			// if over limit, still save but return the warning
-			if (newGradePoints.compareTo(maxPoints) > 0) {
-				log.debug("over limit. Max: " + maxPoints);
-				rval = GradeSaveResponse.OVER_LIMIT;
-			}
-		}
 
 		// save
 		try {
@@ -574,14 +540,27 @@ public class GradebookNgBusinessService {
 			// also, must pass in the raw grade as the service does conversions between percentage etc
 			this.gradebookService.saveGradeAndCommentForStudent(gradebook.getUid(), assignmentId, studentUuid,
 					newGrade, comment);
+
+			final GradeDefinition savedGradeDefinition = this.gradebookService.getGradeDefinitionForStudentForItem(
+				gradebook.getUid(),
+				assignmentId,
+				studentUuid);
+
+			if (savedGradeDefinition.getPointsEarned() != null) {
+				if (savedGradeDefinition.getPointsEarned().compareTo(maxPoints) > 0) {
+					log.debug("over limit. Max: " + maxPoints);
+					rval = GradeSaveResponse.overLimit(savedGradeDefinition);
+				}
+			}
 			if (rval == null) {
 				// if we don't have some other warning, it was all OK
-				rval = GradeSaveResponse.OK;
+				rval = GradeSaveResponse.ok(savedGradeDefinition);
 			}
 		} catch (InvalidGradeException | GradebookNotFoundException | AssessmentNotFoundException e) {
 			log.error("An error occurred saving the grade. " + e.getClass() + ": " + e.getMessage());
-			rval = GradeSaveResponse.ERROR;
+			rval = GradeSaveResponse.error();
 		}
+
 		return rval;
 	}
 

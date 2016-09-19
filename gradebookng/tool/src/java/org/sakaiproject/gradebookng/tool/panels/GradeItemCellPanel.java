@@ -53,7 +53,7 @@ public class GradeItemCellPanel extends Panel {
 	Map<String, Object> modelData;
 
 	TextField<String> gradeCell;
-	private String originalGrade;
+	private Double originalPointsEarned;
 	
 	String rawGrade;
 	String formattedGrade;
@@ -114,6 +114,7 @@ public class GradeItemCellPanel extends Panel {
 
 		// Note: gradeInfo may be null
 		this.rawGrade = (gradeInfo != null) ? gradeInfo.getGrade() : "";
+		this.originalPointsEarned = (gradeInfo != null) ? gradeInfo.getPointsEarned() : null;
 		this.comment = (gradeInfo != null) ? gradeInfo.getGradeComment() : "";
 		this.gradeable = (gradeInfo != null) ? gradeInfo.isGradeable() : false; // ensure this is ALWAYS false if gradeInfo is null.
 
@@ -202,13 +203,6 @@ public class GradeItemCellPanel extends Panel {
 				private static final long serialVersionUID = 1L;
 
 				@Override
-				public void onBind() {
-					super.onBind();
-					//get the model data, and unformat it if required.
-					GradeItemCellPanel.this.originalGrade = unformatDisplayGrade(GradeItemCellPanel.this.gradeCell.getDefaultModelObjectAsString());
-				}
-
-				@Override
 				protected void onUpdate(final AjaxRequestTarget target) {
 					final String rawGrade = GradeItemCellPanel.this.gradeCell.getValue();
 					
@@ -228,43 +222,41 @@ public class GradeItemCellPanel extends Panel {
 						
 						// for concurrency, get the original grade we have in the UI and pass it into the service as a check
 						final GradeSaveResponse result = GradeItemCellPanel.this.businessService.saveGrade(assignmentId, studentUuid,
-								GradeItemCellPanel.this.originalGrade, newGrade, GradeItemCellPanel.this.comment);
+								GradeItemCellPanel.this.originalPointsEarned, newGrade, GradeItemCellPanel.this.comment);
 
 						// reformat to display version
 						displayGrade = formatDisplayGrade(newGrade);
 						gradeCell.setDefaultModel(Model.of(displayGrade));
-						
+
+						// if the save succeeded, update our originalPointsEarned to match the new
+						// database value
+						if (result.getGrade() != null) {
+							GradeItemCellPanel.this.originalPointsEarned = result.getGrade().getPointsEarned();
+						}
+
 						// handle the result
-						switch (result) {
-							case OK:
-								markSuccessful(GradeItemCellPanel.this.gradeCell);
-								GradeItemCellPanel.this.originalGrade = newGrade;
-								refreshCourseGradeAndCategoryAverages(target);
-								target.add(page.updateLiveGradingMessage(getString("feedback.saved")));
-								break;
-							case ERROR:
-								markError(getComponent());
-								// show the error message
-								target.add(page.updateLiveGradingMessage(getString("feedback.error")));
-								// and the invalid score message, just to be helpful
-								GradeItemCellPanel.this.notifications.add(GradeCellNotification.INVALID);
-								break;
-							case OVER_LIMIT:
-								markOverLimit(GradeItemCellPanel.this.gradeCell);
-								GradeItemCellPanel.this.originalGrade = newGrade;
-								refreshCourseGradeAndCategoryAverages(target);
-								target.add(page.updateLiveGradingMessage(getString("feedback.saved")));
-								break;
-							case NO_CHANGE:
-								handleNoChange(GradeItemCellPanel.this.gradeCell);
-								break;
-							case CONCURRENT_EDIT:
-								markError(GradeItemCellPanel.this.gradeCell);
-								target.add(page.updateLiveGradingMessage(getString("feedback.error")));
-								GradeItemCellPanel.this.notifications.add(GradeCellNotification.CONCURRENT_EDIT);
-								break;
-							default:
-								throw new UnsupportedOperationException("The response for saving the grade is unknown.");
+						if (result.isOk()) {
+							markSuccessful(GradeItemCellPanel.this.gradeCell);
+							refreshCourseGradeAndCategoryAverages(target);
+							target.add(page.updateLiveGradingMessage(getString("feedback.saved")));
+						} else if (result.isError()) {
+							markError(getComponent());
+							// show the error message
+							target.add(page.updateLiveGradingMessage(getString("feedback.error")));
+							// and the invalid score message, just to be helpful
+							GradeItemCellPanel.this.notifications.add(GradeCellNotification.INVALID);
+						} else if (result.isOverLimit()) {
+							markOverLimit(GradeItemCellPanel.this.gradeCell);
+							refreshCourseGradeAndCategoryAverages(target);
+							target.add(page.updateLiveGradingMessage(getString("feedback.saved")));
+						} else if (result.isNoChange()) {
+							handleNoChange(GradeItemCellPanel.this.gradeCell);
+						} else if (result.isConcurrentEdit()) {
+							markError(GradeItemCellPanel.this.gradeCell);
+							target.add(page.updateLiveGradingMessage(getString("feedback.error")));
+							GradeItemCellPanel.this.notifications.add(GradeCellNotification.CONCURRENT_EDIT);
+						} else {
+							throw new UnsupportedOperationException("The response for saving the grade is unknown.");
 						}
 					}
 
@@ -347,7 +339,7 @@ public class GradeItemCellPanel extends Panel {
 				protected void onEvent(final AjaxRequestTarget target) {
 					GradebookPage page = (GradebookPage)getPage();
 
-					getComponent().setDefaultModelObject(GradeItemCellPanel.this.originalGrade);
+					getComponent().setDefaultModelObject(GradeItemCellPanel.this.originalPointsEarned);
 					clearNotifications();
 					refreshNotifications();
 					final Component cell = getParentCellFor(getComponent());

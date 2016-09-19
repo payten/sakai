@@ -307,6 +307,7 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 						gradeDef.setDateRecorded(gradeRecord.getDateRecorded());
 						gradeDef.setGraderUid(gradeRecord.getGraderId());
 						gradeDef.setGradeComment(commentText);
+						gradeDef.setPointsEarned(gradeRecord.getPointsEarned());
 						
 						if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) {
 							List<AssignmentGradeRecord> gradeList = new ArrayList<AssignmentGradeRecord>();
@@ -1929,6 +1930,7 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 		}
 		gradeDef.setGrade(grade);
 		gradeDef.setGradeReleased(gradebook.isAssignmentsDisplayed() && gbo.isReleased());
+		gradeDef.setPointsEarned(gradeRecord.getPointsEarned());
 
 		if (commentText != null)
 		{

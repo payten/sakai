@@ -153,37 +153,29 @@ public class GradeImportConfirmationStep extends Panel {
 									processedGradeItemDetail.getGrade(), processedGradeItemDetail.getComment());
 
 							// handle the response types
-							switch(saveResponse) {
-								case OK:
-									// sweet
-									break;
-								case OVER_LIMIT:
-									// no worries!
-									break;
-								case NO_CHANGE:
-									// Try to save just the comments
-									final String currentComment = StringUtils.trimToNull(GradeImportConfirmationStep.this.businessService.getAssignmentGradeComment(assignmentId, processedGradeItemDetail.getStudentUuid()));
-									final String newComment = StringUtils.trimToNull(processedGradeItemDetail.getComment());
+							if (saveResponse.isOk()) {
+								// sweet
+							} else if (saveResponse.isOverLimit()) {
+								// no worries!
+							} else if (saveResponse.isNoChange()) {
+								// Try to save just the comments
+								final String currentComment = StringUtils.trimToNull(GradeImportConfirmationStep.this.businessService.getAssignmentGradeComment(assignmentId, processedGradeItemDetail.getStudentUuid()));
+								final String newComment = StringUtils.trimToNull(processedGradeItemDetail.getComment());
 
-									if (!StringUtils.equals(currentComment, newComment)) {
-										final boolean success = GradeImportConfirmationStep.this.businessService.updateAssignmentGradeComment(assignmentId, processedGradeItemDetail.getStudentUuid(), newComment);
-										log.info("Saving comment: " + success + ", " + assignmentId + ", "+ processedGradeItemDetail.getStudentEid() + ", " + processedGradeItemDetail.getComment());
-										if (!success) {
-											getSession().error(new ResourceModel("importExport.error.comment").getObject());
-											this.errors = true;
-										}
+								if (!StringUtils.equals(currentComment, newComment)) {
+									final boolean success = GradeImportConfirmationStep.this.businessService.updateAssignmentGradeComment(assignmentId, processedGradeItemDetail.getStudentUuid(), newComment);
+									log.info("Saving comment: " + success + ", " + assignmentId + ", " + processedGradeItemDetail.getStudentEid() + ", " + processedGradeItemDetail.getComment());
+									if (!success) {
+										getSession().error(new ResourceModel("importExport.error.comment").getObject());
+										this.errors = true;
 									}
-									break;
-								case CONCURRENT_EDIT:
-									// this will be handled eventually
-									break;
-								case ERROR:
-									// uh oh
-									getSession().error(new ResourceModel("importExport.error.grade").getObject());
-									this.errors = true;
-									break;
-								default:
-									break;
+								}
+							} else if (saveResponse.isConcurrentEdit()) {
+								// this will be handled eventually
+							} else if (saveResponse.isError()) {
+								// uh oh
+								getSession().error(new ResourceModel("importExport.error.grade").getObject());
+								this.errors = true;
 							}
 
 							log.info("Saving grade for assignment id: " +  assignmentId + ", student: " + processedGradeItemDetail.getStudentEid() + ", grade: " + processedGradeItemDetail.getGrade() + ", comment: " + processedGradeItemDetail.getComment() + ", status: " + saveResponse);
