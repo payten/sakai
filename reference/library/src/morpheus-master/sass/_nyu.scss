@@ -346,20 +346,30 @@ $footer-color: #414141;
     padding: 0 4px;
   }
 }
-#mastLogin .no-avatar {
-  text-decoration: none !important;
-
-  &::after {
-    float: right;
+#mastLogin {
+  #loginForm {
+    label {
+      color: $text-color !important;
+    }
+    input[type="text"], input[type="password"], input[type="email"] {
+     border: 1px solid #CCC !important;
+    }
   }
-
-  .#{$namespace}userNav__submenuitem--username,
-  .#{$namespace}userNav__submenuitem--userid {
-    padding-top: 5px;
-  }
-
-  @media #{$phone} {
-    top: 6px;
+  .no-avatar {
+    text-decoration: none !important;
+  
+    &::after {
+      float: right;
+    }
+  
+    .#{$namespace}userNav__submenuitem--username,
+    .#{$namespace}userNav__submenuitem--userid {
+      padding-top: 5px;
+    }
+  
+    @media #{$phone} {
+      top: 6px;
+    }
   }
 }
 #pageBody{
@@ -369,7 +379,7 @@ $footer-color: #414141;
 }
 .#{$namespace}siteHierarchy {
   box-shadow: none !important;
-  padding: 1em 0 0.5em 1.25em !important;
+  padding: 0 !important;
   background: #FFFFFF !important;
 
   @media #{$desktop} {
@@ -378,6 +388,9 @@ $footer-color: #414141;
 
   a {
     color: #124466 !important;
+    margin: 1em 0 0.25em 1.25em !important;
+    display: inline-block !important;
+    border-bottom: 1px solid transparent;
   }
 
   @media #{$phone} {
@@ -548,12 +561,15 @@ body {
   }
   .#{$namespace}pageColumns--single {
     .#{$namespace}toolTitleNav__button_container {
-      top: -37px !important;
-      right: -20px !important;
+      top: -30px !important;
+      right: 0 !important;
+      position: absolute !important;
+      float: none !important;
     }
   }
   .navIntraTool {
     padding-left: 0 !important;
+    padding-right: 1em !important;
     li {
       margin-right: -5px !important;
   
@@ -562,16 +578,57 @@ body {
       }
   
       span.current {
-      padding: 4px 10px 0px !important;
-      margin: 0px 0 0 !important;
-      color: #1E80B5 !important;
-      border-top: 4px solid #1E80B5 !important;
-      height: 31px;
+        padding: 4px 10px 0px !important;
+        margin: 0px 0 0 !important;
+        color: #1E80B5 !important;
+        border-top: 4px solid #1E80B5 !important;
+        height: 31px;
+      }
+
+      .formItem {
+        input[type="submit"] {
+          margin: 0;
+        }
+        &.form-inline {
+          input[type="submit"] {
+            margin: 0;
+            height: 26px;
+            padding: 0px 10px;
+          }
+        }
+        input[type="text"] {
+          height: 30px;
+          margin: 0px 0 0 6px;
+
+          &.form-control {
+            height: 26px;
+            margin: 0px 0 1px 6px;
+          }
+        }
       }
     }
   }
 }
-.Mrphs-toolTitleNav__button_container
+// Unpublished notice 
+.#{$namespace}siteStatus{
+  &.is-unpublished {
+    color: $text-color !important;
+    height: 41px;
+    padding: 0;
+    border-color: #E5E5E5 !important;
+
+    h4 {
+      margin: 0;
+      line-height: 30px;
+    }
+
+    button {
+      top: -2px !important;
+      line-height: 14px !important;
+      display: inline-block !important;
+    }
+  }
+}
 /* SU-95 */
 .time-picker {
   margin-top: 27px;

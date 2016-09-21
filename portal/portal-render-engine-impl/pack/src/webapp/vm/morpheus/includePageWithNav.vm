@@ -17,6 +17,8 @@
 
     <div class="Mrphs-pagebody">
         <header class="Mrphs-siteHierarchy">
+            #parse("/vm/morpheus/snippets/siteStatus-snippet.vm")
+
             #foreach( $page in $sitePages.pageNavTools )
                 #if (${page.current})
                 <a href="${page.pageResetUrl}" title="$rloader.sit_reset" class="Mrphs-hierarchy-item Mrphs-hierarchy--toolName">
