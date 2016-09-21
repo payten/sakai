@@ -45,9 +45,9 @@ $portal-background-color:               #F6F6F6;
 $tool-background-color:                                          $background-color;
 $tool-menu-background-color:                                     #F6F6F6;
 $tool-menu-color:                                                #424242;
-$tool-tab-background-color:                                      #F6F6F6;
-$tool-border-color:                                              #F0F0F0;
-$tool-tab-active-background-color:                               $background-color;
+$tool-tab-background-color:                                      #FAFAFA;
+$tool-border-color:                                              #E5E5E5;
+$tool-tab-active-background-color:                               #FFFFFF;
 $tool-tab-active-border-color:                                   $background-color;
 $tool-menu-hover-color:                                          $tool-background-color;
 $tool-menu-hover-background-color:                               $primary-color;
@@ -372,6 +372,10 @@ $footer-color: #414141;
   padding: 1em 0 0.5em 1.25em !important;
   background: #FFFFFF !important;
 
+  @media #{$desktop} {
+    border-left: 1px solid #F0F0F0;
+  }
+
   a {
     color: #124466 !important;
   }
@@ -532,6 +536,42 @@ body {
 .#{$namespace}multipleTools .#{$namespace}toolTitleNav .#{$namespace}toolTitleNav__title {
   z-index: 1 !important;
 }
+// tool action/tab changes
+// - restyle tabs with blue bar for current
+// - ensure the new and help actions are rendered above the tabs
+@media #{$desktop} {
+  #content {
+    overflow: visible !important;
+  }
+  .#{$namespace}toolTitleNav {
+    margin-top: 0 !important;
+  }
+  .#{$namespace}pageColumns--single {
+    .#{$namespace}toolTitleNav__button_container {
+      top: -37px !important;
+      right: -20px !important;
+    }
+  }
+  .navIntraTool {
+    padding-left: 0 !important;
+    li {
+      margin-right: -5px !important;
+  
+      a {
+        margin-right: 0 !important;
+      }
+  
+      span.current {
+      padding: 4px 10px 0px !important;
+      margin: 0px 0 0 !important;
+      color: #1E80B5 !important;
+      border-top: 4px solid #1E80B5 !important;
+      height: 31px;
+      }
+    }
+  }
+}
+.Mrphs-toolTitleNav__button_container
 /* SU-95 */
 .time-picker {
   margin-top: 27px;
