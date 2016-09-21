@@ -29,8 +29,10 @@ $header-font-family: $font-family;
 $header-font-weight: 700;
 
 /* Color palette */
+$nyu-purple:                            #57068C;
+
 $background-color:                      #FFFFFF;
-$background-color-secondary:            #57068C;
+$background-color-secondary:            #FFFFFF;
 
 $primary-color:                         #2A94C0;
 $secondary-color:                       #F00;
@@ -63,7 +65,7 @@ $tool-sub-menu-current-hover-background-color:                   $background-col
 
 $main-content-background: #FFFFFF;
 $top-header-background: $background-color-secondary;
-$sites-nav-background: #F6F6F6;
+$sites-nav-background: #FAFAFA;
 
 $breadcrumbs-color:                     $text-color;
 $breadcrumbs-tool-color:                #185878;
@@ -98,7 +100,7 @@ $warn-color:                darken($warn-color, 35%);
 $error-background-color:    #f2dede;
 $error-color:               darken($error-color, 30%);
 
-$swapped-view-primary: 		 #57068C;
+$swapped-view-primary: 		 $nyu-purple;
 $swapped-view-text-color:        $text-color;
 
 /* This is the gradient in the header of the page */
@@ -108,16 +110,23 @@ $header-gradient-c: #EEE8F4;
 $header-gradient-d: #EEE8F4;
 
 /* Main Menu */
-$header-size : 3.8em;
-$sites-nav-menu-item-background: #EBEBEB;
-$sites-nav-menu-item-color: $text-color;
-$sites-nav-menu-item-color-hover: $link-hover-color;
-$sites-nav-menu-item-border: 1px solid #DDDDDD;
-$sites-nav-menu-item-selected-background: $primary-color;
-$sites-nav-menu-item-selected-color: $background-color;
-$sites-nav-menu-item-selected-border: none;
-$site-name-my-workspace-background: $sites-nav-menu-item-background;
-$site-name-my-workspace-color: $text-color;
+$header-size : 52px;
+$topNav-text-color: #191919;
+$topNav-text-alt-color: $text-color;
+
+$sites-nav-menu-item-background: #FFFFFF;
+$sites-nav-menu-item-color: #4C4C4C;
+$sites-nav-menu-item-color-hover: #4C4C4C;
+$sites-nav-menu-item-border-top: 1px solid #E5E5E5;
+$sites-nav-menu-item-border-right: $sites-nav-menu-item-border-top;
+$sites-nav-menu-item-border-bottom: $sites-nav-menu-item-border-top;
+$sites-nav-menu-item-border-left: $sites-nav-menu-item-border-top;
+$sites-nav-menu-item-selected-background: #1E80B5;
+$sites-nav-menu-item-selected-color: #FFFFFF;
+$sites-nav-menu-item-selected-border-top: 1px solid #326B97;
+$sites-nav-menu-item-selected-border-right: $sites-nav-menu-item-selected-border-top;
+$sites-nav-menu-item-selected-border-bottom: $sites-nav-menu-item-selected-border-top;
+$sites-nav-menu-item-selected-border-left: $sites-nav-menu-item-selected-border-top;
 $sites-nav-submenu-background: $sites-nav-menu-item-background;
 $sites-nav-submenu-item-background: $sites-nav-menu-item-background;
 $sites-nav-submenu-item-color: $sites-nav-menu-item-color;
@@ -227,7 +236,9 @@ $footer-color: #414141;
 .#{$namespace}mainHeader{
   .#{$namespace}headerLogo{
     @media #{$nonPhone} {
-      width: 240px !important;
+      width: 100% !important;
+      justify-content: flex-start !important;
+      border-bottom: 1px solid #E5E5E5;
     }
     @media #{$phone} {
       width: 160px !important;
@@ -239,10 +250,10 @@ $footer-color: #414141;
     .#{$namespace}headerLogo--institution:before{
       font-family: 'nyu-classes-icons';
       content: '\e000';
-      color: #FFFFFF;
-      font-size: 70px;
-      line-height: 60px;
-      height: 60px;
+      color: $nyu-purple;
+      font-size: 50px;
+      line-height: 52px;
+      height: 52px;
       display: block;
 
       @media #{$phone} {
@@ -272,11 +283,12 @@ $footer-color: #414141;
     background-image: none !important;
     background-color: $background-color-secondary !important;
     margin-bottom: 20px;
+    border-bottom: 1px solid #E5E5E5;
   }
   .logo:before{
     font-family: 'nyu-classes-icons';
     content: '\e000';
-    color: #FFFFFF;
+    color: $nyu-purple;
     font-size: 70px;
     line-height: 60px;
   }
@@ -293,15 +305,25 @@ $footer-color: #414141;
 }
 .#{$namespace}topHeader{
   display: block !important;
+  box-shadow: 0 1px 5px rgba(0,0,0,.3);
+  z-index: 1;
+  position: relative;
 }
-.#{$namespace}topHeader .#{$namespace}loginNav {
-  position: absolute;
-  top: 14px;
-  right: 0;
-
-  @media #{$phone} {
-    top: 6px;
-    margin-right: 0px !important;
+.#{$namespace}topHeader {
+   .#{$namespace}loginNav {
+    position: absolute;
+    top: 14px;
+    right: 0;
+  
+    @media #{$phone} {
+      top: 6px;
+      margin-right: 0px !important;
+    }
+  }
+}
+.is-maximized {
+  #loginLinks { 
+    border-color: #191919 !important;
   }
 }
 #loginLinks, .view-all-sites-btn {
@@ -340,15 +362,40 @@ $footer-color: #414141;
     top: 6px;
   }
 }
+#pageBody{
+  @media #{$phone}{
+    padding: 0 !important;
+  }
+}
 .#{$namespace}siteHierarchy {
   box-shadow: none !important;
-  border-top: 1px solid #EAEAEA;
-  border-bottom: 1px solid #E6E6E6;
-  padding: 0.5em 0 0.5em 1em !important;
-  //box-shadow: 0 1px 2px #CCC, 0 -1px 1px #EAEAEA !important
+  padding: 1em 0 0.5em 1.25em !important;
+  background: #FFFFFF !important;
 
-  a.Mrphs-hierarchy--toolName {
-    margin-left: 4px !important;
+  a {
+    color: #124466 !important;
+  }
+
+  @media #{$phone} {
+    text-transform: uppercase !important;
+    font-size: 130% !important;
+    font-weight: bold !important;
+    top: 88px !important;
+    padding: 0.5em 0 0.5em 0.5em !important;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.3) !important;
+    min-height: auto !important;
+
+    &.moving{
+      top: -22em !important;
+    }
+  }
+}
+#topnav_container {
+  .#{$namespace}sitesNav__menuitem.is-selected > a:hover {
+    color: $sites-nav-menu-item-selected-color !important;
+  }
+  .#{$namespace}sitesNav__menuitem > a:hover {
+    border-color: #BBBBBB;
   }
 }
 .#{$namespace}mainContent{
@@ -438,6 +485,7 @@ body.#{$namespace}toolMenu-collapsed ul#subSites ul li a {
   #content {
     //box-shadow: none;
     border: none;
+    margin-top: 100px !important;
   }
   #toolMenuWrap {
     padding-top: 4px;
@@ -472,13 +520,17 @@ input[type='button'][value^='Cancel']{
 body {
   &.#{$namespace}portalBody{
     @media #{$phone}{
-      background: linear-gradient( to bottom, $header-gradient-a, $header-gradient-b, $header-gradient-c, $header-gradient-d ) !important;
+      background: #FFFFFF !important;
     }
   }
 }
 // hide the directtool action
 .Mrphs-toolTitleNav__link.Mrphs-toolTitleNav__link--directurl {
   display:  none !important;
+}
+// fix cray z-index on tool headers
+.#{$namespace}multipleTools .#{$namespace}toolTitleNav .#{$namespace}toolTitleNav__title {
+  z-index: 1 !important;
 }
 /* SU-95 */
 .time-picker {
