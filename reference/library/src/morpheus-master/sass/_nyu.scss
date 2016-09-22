@@ -34,7 +34,7 @@ $nyu-purple:                            #57068C;
 $background-color:                      #FFFFFF;
 $background-color-secondary:            #FFFFFF;
 
-$primary-color:                         #2A94C0;
+$primary-color:                         #347EB2;
 $secondary-color:                       #F00;
 $alt-colour:                            #d36f00;
 
@@ -44,16 +44,16 @@ $portal-background-color:               #F6F6F6;
 
 $tool-background-color:                                          $background-color;
 $tool-menu-background-color:                                     #F6F6F6;
-$tool-menu-color:                                                #424242;
+$tool-menu-color:                                                #4C4C4C;
 $tool-tab-background-color:                                      #FAFAFA;
 $tool-border-color:                                              #E5E5E5;
 $tool-tab-active-background-color:                               #FFFFFF;
-$tool-tab-active-border-color:                                   $background-color;
-$tool-menu-hover-color:                                          $tool-background-color;
-$tool-menu-hover-background-color:                               $primary-color;
-$tool-menu-current-background-color:                             $background-color;
-$tool-menu-current-color:                                        $primary-color;
-$tool-menu-current-border-color:                                 $primary-color;
+$tool-tab-active-border-color:                                   #FFFFFF;
+$tool-menu-hover-color:                                          #191919;
+$tool-menu-hover-background-color:                               #ECECEC;
+$tool-menu-current-background-color:                             #FFFFFF !important;
+$tool-menu-current-color:                                        #1E80B5 !important;
+$tool-menu-current-border-color:                                 #1E80B5;
 $tool-sub-menu-border-color:                                     lighten( $text-color, 5% );
 $tool-sub-menu-background-color:                                 lighten( $text-color, 5% );
 $tool-sub-menu-hover-background-color:                           $primary-color;
@@ -81,14 +81,14 @@ $link-hover-background-color: transparent;
 
 /* Linknav button colors */
 $button-text-color:	 #777;
-$button-border-color: #C0C0C0;
-$button-background-color: #F0F0F0;
-$button-background-secondary-color: #FFF;
+$button-border-color: #CCCCCC;
+$button-background-color: #FAFAFA;
+$button-background-secondary-color: #FAFAFA;
 /* General button colors */
 $button-color-text-color: #FFF;
-$button-color-border-color: #4a8db3;
-$button-color-background-color: $primary-color;
-$button-color-background-secondary-color: #276488;
+$button-color-border-color: #326B97;
+$button-color-background-color: #1E80B5;
+$button-color-background-secondary-color: #176691;
 /* ///////////// */
 
 $info-color:                $primary-color;
@@ -407,20 +407,35 @@ $footer-color: #414141;
     }
   }
 }
+// -------------------------------------------------------------------------------------------------------------------
+// Sites navigation
+// -------------------------------------------------------------------------------------------------------------------
 #topnav_container {
   .#{$namespace}sitesNav__menuitem.is-selected > a:hover {
     color: $sites-nav-menu-item-selected-color !important;
   }
   .#{$namespace}sitesNav__menuitem > a:hover {
-    border-color: #BBBBBB;
+    border-color: #7F7F7F;
   }
 }
+
+// -------------------------------------------------------------------------------------------------------------------
+// Page content
+// -------------------------------------------------------------------------------------------------------------------
 .#{$namespace}mainContent{
   border-bottom: 1px solid #EEE;
 }
+
+// -------------------------------------------------------------------------------------------------------------------
+// Footer
+// -------------------------------------------------------------------------------------------------------------------
 .#{$namespace}footer {
   margin: 0 !important;
 }
+
+// -------------------------------------------------------------------------------------------------------------------
+// Tool navigation
+// -------------------------------------------------------------------------------------------------------------------
 .#{$namespace}toolsNav__menuitem--icon {
   display: inline-block !important;
   vertical-align: 0 !important;
@@ -457,27 +472,51 @@ body.#{$namespace}toolMenu-collapsed ul#subSites ul li a {
       border-top-color: #FFF !important;
     }
   }
-  //#linkNav ul.#{$namespace}sitesNav__submenu li a {
-  //  border: none !important;
-  //  background-color: transparent !important;
-  //}
-  #toolMenu ul li a,
-  #subSites ul li a {
-    border-left: 4px solid transparent;
-    border-bottom: none !important;
-    font-size: 0.9em !important;
-  }
-  #toolMenu ul li a > span,
-  #subSites ul li a > span{
-    vertical-align: text-top;
-  }
-  #toolMenu ul li,
-  #subSites ul li {
-    border-bottom: 1px solid #F0F0F0;
-  }
-  #toolMenu ul li a.is-invisible:after,
-  #subSites ul li a.is-invisible:after {
-    top: 13px !important;
+  #toolMenu, #subSites, .floatingToolMenu {
+    ul {
+      li {
+        border-bottom: 1px solid #E5E5E5;
+
+        &.is-current {
+          position: relative;
+          margin-right: -1px;
+
+          a {
+            background: $tool-menu-current-background-color;
+          }
+        }
+
+        a {
+          border-left: 4px solid transparent;
+          border-bottom: none !important;
+          font-size: 0.9em !important;
+
+          &.is-invisible {
+            color: #9A9A9A !important;
+
+            .#{$namespace}toolsNav__menuitem--icon {
+              font-style: normal !important;
+            }
+
+            &:hover {
+              color: #808080 !important;
+            }
+            &:after {
+              top: 13px !important;
+            }
+          }
+
+          &:hover {
+            border-left-color: #7F7F7F;
+            color: #191919;
+          }
+
+          > span {
+            vertical-align: text-top;
+          }
+        }
+      }
+    }
   }
   .#{$namespace}collapseTools {
     height: 30px !important;
@@ -491,11 +530,6 @@ body.#{$namespace}toolMenu-collapsed ul#subSites ul li a {
     border-left: 1px solid #F0F0F0;
     // fix margin-top on content child causing margin above #content
     overflow: auto;
-  }
-  #toolMenu ul li.is-current,
-  #subSites ul li.is-current {
-    position: relative;
-    margin-right: -1px;
   }
 }
 @media #{$phone} {
@@ -522,7 +556,9 @@ body.#{$namespace}toolMenu-collapsed ul#subSites ul li a {
     height: auto !important;
   }
 }
-/* Any cancel buttons should be styled as secondary buttons */
+// -------------------------------------------------------------------------------------------------------------------
+// Buttons
+// -------------------------------------------------------------------------------------------------------------------
 /* The world isn't ready for this yet...
 input[type='submit'][name^='cancel'],
 input[type='submit'][name^='Cancel'],
@@ -545,9 +581,10 @@ body {
 .Mrphs-toolTitleNav__link.Mrphs-toolTitleNav__link--directurl {
   display:  none !important;
 }
-// fix cray z-index on tool headers
+// fix cray z-index on tool headers and buttons
+.#{$namespace}toolTitleNav__button_container,
 .#{$namespace}multipleTools .#{$namespace}toolTitleNav .#{$namespace}toolTitleNav__title {
-  z-index: 1 !important;
+  z-index: 0 !important;
 }
 // tool action/tab changes
 // - restyle tabs with blue bar for current
@@ -575,6 +612,14 @@ body {
   
       a {
         margin-right: 0 !important;
+
+        &:hover {
+          border-top: 4px solid #7F7F7F !important;
+          padding: 3px 10px 6px !important;
+          background-color: #ECECEC !important;
+          color: #191919 !important;
+          text-decoration: none !important;
+        }
       }
   
       span.current {
