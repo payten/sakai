@@ -1,13 +1,11 @@
 /**
-* For toggling the Minimize and Maximize tools menu in Morpheus: Adds classes to the <body> and changes the label text for accessibility
+* For toggling the Minimize and Maximize tools menu in Morpheus.
 */
 
 function toggleMinimizeNav(){
-
   $PBJQ('body').toggleClass('Mrphs-toolMenu-collapsed');
 
-  var el = $PBJQ(this);
-  var label = $PBJQ('.accessibility-btn-label' , el);
+  var isCollapsed = $PBJQ('body').hasClass('Mrphs-toolMenu-collapsed');
 
   if (label.text() == el.data("title-expand") || collapsed) {
 	document.cookie = "sakai_nav_minimized=false; path=/";
