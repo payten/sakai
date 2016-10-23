@@ -2244,7 +2244,8 @@ public class SiteAction extends PagedResourceActionII {
 								String importFromFile = ServerConfigurationService
 										.getString("site.setup.import.file",
 												Boolean.TRUE.toString());
-								if (importFromFile.equalsIgnoreCase("true")) {
+
+								if (importFromFile.equalsIgnoreCase("true") && SecurityService.isSuperUser()) {
 									// htripath: June
 									// 4th added as per
 									// Kris and changed
