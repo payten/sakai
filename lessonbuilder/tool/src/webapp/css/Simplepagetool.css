@@ -1697,8 +1697,12 @@ span.nextprev {
   /* NYU: Added to stop the larger icons from overflowing their container and affecting the line height. */
   float: right;
 }
+
 .navIntraTool li.contentButton a, .topaction a {
   padding-top:2px !important;
+ }
+
+.navIntraTool li.contentButton a {
   padding-bottom:2px !important;
   text-transform: uppercase;
 }
