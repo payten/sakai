@@ -93,3 +93,125 @@ $(function() {
 // Bind a dummy touch event on document to stop iOS from capturing
 // a click to enable a hover state
 $PBJQ(document).on("touchstart", function() { return true; });
+
+
+// Profile Image Edit/Upload Widget
+$PBJQ(function() {
+  var $profileLink = $PBJQ(".Mrphs-userNav__submenuitem--profilelink");
+  if ($profileLink.length > 0) {
+    $profileLink.on("click", function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      // include croppie (unless already added)
+      if (!$PBJQ.fn.croppie) {
+        var s = document.createElement("script");
+        s.type = "text/javascript";
+        s.src = "/library/js/croppie/croppie.min.js?_=2.4.0";
+        $PBJQ("head").append(s);
+
+        //<link rel="Stylesheet" type="text/css" href="croppie.css">
+        var l = document.createElement("link");
+        l.type = "text/css";
+        l.rel = "Stylesheet";
+        l.href = "/library/js/croppie/croppie.css?_=2.4.0";
+        $PBJQ("head").append(l);
+      }
+
+      // show popup!
+      if (!$PBJQ.fn.modal) {
+        throw "Bootstrap not loaded"
+      }
+
+      var $modal = $('<div class="modal fade" id="profileImageUpload" tabindex="-1" role="dialog">'
+                     +  '<div class="modal-dialog" role="document">'
+                     +    '<div class="modal-content">'
+                     +      '<div class="modal-header"><h3>Change Profile Picture</h3></div>'
+                     +      '<div class="modal-body"></div>'
+                     +      '<div class="modal-footer">'
+                     +        '<button type="button" class="button_color" id="save" disabled="disabled">Save</button>'
+                     +        '<button type="button" class="button" data-dismiss="modal">Cancel</button>'
+                     +      '</div>'
+                     +    '</div>'
+                     +  '</div>'
+                     +'</div>');
+      $PBJQ(document.body).append($modal);
+      $modal.modal({
+        width: 320
+      });
+
+      var $save = $modal.find("#save");
+
+      var $upload = $('<a id="upload" class="button">'
+                      + 'Upload'
+                      +'</a>');
+      var $fileUpload = $('<input type="file" id="file" value="Choose a file" accept="image/*">');
+      $upload.append($fileUpload);
+
+      var $croppie = $('<div id="croppie"></div>').hide();
+
+      $modal.find(".modal-body").append($upload);
+      $modal.find(".modal-body").append($croppie);
+
+      $croppie.croppie({
+        viewport: {
+          width: 100,
+          height: 100
+        },
+        enableExif: true
+      });
+
+      function uploadProfileImage(imageByteSrc) {
+        $modal.find(".modal-body .alert").remove();
+  
+        $.ajax("/direct/profile-image/upload", {
+          data: {
+            //sakai_csrf_token: sakai.csrf_token,
+            base64: imageByteSrc
+          },
+          type: 'POST',
+          dataType: 'json',
+          success: function(data, textStatus, jqXHR) {
+            if (data.status == "SUCCESS") {
+              location.reload();
+            } else {
+              var $error = $("<div>").addClass("alert alert-danger").text("Error uploading image");
+              $modal.find(".modal-body").prepend($error);
+            }
+          }
+        });
+      }
+
+      $fileUpload.on("change", function() {
+        var $this = $(this);
+          if (this.files && this.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+              $croppie.show();
+              $croppie.croppie('bind', {
+                url: e.target.result
+              });
+              $save.removeProp("disabled");
+            };
+                  
+            reader.readAsDataURL(this.files[0]);
+          } else {
+            throw "Browser does not support FileReader";
+          }
+      });
+
+      $save.on('click', function (ev) {
+        $croppie.croppie('result', {
+          type: 'base64',
+          size: 'viewport'
+        }).then(function (src) {
+          uploadProfileImage(src.replace(/^data:image\/(png|jpg);base64,/, ''));
+        });
+      });
+
+      $modal.on("hidden.bs.modal", function() {
+          $modal.remove();
+      });
+    });
+  }
+});
