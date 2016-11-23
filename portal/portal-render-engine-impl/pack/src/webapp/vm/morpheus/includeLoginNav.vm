@@ -83,8 +83,8 @@
                                     <div class="Mrphs-userNav__submenuitem--profile-and-image">
                                         #if (${tabsSites.mrphs_profileToolUrl})
                                             <div class="has-avatar">
-                                                <a class="Mrphs-userNav__submenuitem--profilelink" href="${tabsSites.mrphs_profileToolUrl}">
-                                                    <span class="Mrphs-userNav__submenuitem--profilepicture" style="background-image:url(/direct/profile/${loginUserId}/image/thumb)" tabindex="-1"></span>
+                                                <a class="Mrphs-userNav__submenuitem--profilelink" href="${tabsSites.mrphs_profileToolUrl}" data-csrf-token="$!{profileUploadCSRFToken}">
+                                                    <span class="Mrphs-userNav__submenuitem--profilepicture" style="background-image:url(/direct/profile/${loginUserDispId}/image/thumb)" tabindex="-1"></span>
                                                 </a>
                                             </div>
                                             <div class="Mrphs-userNav__submenuitem--profile">
