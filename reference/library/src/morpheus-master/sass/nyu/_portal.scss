@@ -178,12 +178,12 @@ body {
       opacity: 0;
     }
   }
-  #croppie {
+  #cropme {
     height: 300px;
     width: 300px;
     margin-bottom: 20px;
 
-    .cr-viewport {
+    .cropper-view-box {
       border-radius: 50% !important;
     }
   }
