@@ -693,7 +693,7 @@ $PBJQ(document).ready(function($){
       list.empty();
 
       $('#noFavoritesToShow').hide();
-      $('#favoritesToShow').hide();
+      $('#favoritesToShow').removeClass('favorites-visible-nonmobile').hide();
 
       // Collapse any visible tool menus
       $PBJQ('#otherSiteTools').remove();
@@ -734,7 +734,7 @@ $PBJQ(document).ready(function($){
         // No favorites are present
         $('#noFavoritesToShow').show();
       } else {
-        $('#favoritesToShow').show();
+        $('#favoritesToShow').addClass('favorites-visible-nonmobile');
       }
 
       var highlightMaxItems = function () {
