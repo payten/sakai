@@ -209,8 +209,20 @@
 							<span id="warningInfo" class="alertMessage popupMessage" style="display:none; float: left;"></span>
 						</div>
 						<br/>
-						<br/>
-						<br/>
+						<div class="text-right">
+							<span>
+								<a href="javascript:void(0)" id="expandLink" onclick="expandAccordion('<%= org.sakaiproject.util.Web.escapeJavascript(thisId)%>')">
+					</f:verbatim>
+									<h:outputText value="#{msgs.expandAll}"/>
+					<f:verbatim>
+								</a>
+								<a href="javascript:void(0)" id="collapseLink" style="display:none" onclick="collapseAccordion('<%= org.sakaiproject.util.Web.escapeJavascript(thisId)%>')">
+					</f:verbatim>
+									<h:outputText value="#{msgs.collapseAll}"/>
+					<f:verbatim>
+								</a>
+							</span>
+						</div>
 						<div id="accordion">
 					</f:verbatim>
 					<t:dataList value="#{SyllabusTool.entries}" var="eachEntry" layout="simple">
@@ -218,15 +230,30 @@
 						<h:outputText value="#{eachEntry.entry.syllabusId}"/>
 						<f:verbatim>"><h3></f:verbatim>
 						<f:subview id="actionIcons" rendered="#{SyllabusTool.editAble == 'true'}">
+							<f:verbatim><span class="syllabus-drag"></f:verbatim>
 							<h:graphicImage url="/images/cursor_drag_arrow.png" title="#{msgs.dragToReorder}"  styleClass="actionIcon"/>
-							<h:commandLink action="#{eachEntry.processListRead}" title="#{msgs.edit_details}" styleClass="actionIcon">
+							<f:verbatim></span></f:verbatim>
+							<h:commandLink action="#{eachEntry.processListRead}" title="#{msgs.edit_details}" styleClass="actionIcon editDetails">
                                                           <f:param name="returnToMain" value="true"></f:param>
 							  <h:graphicImage url="/images/pencil.png"/>
 							</h:commandLink>
-							<h:graphicImage url="/images/lightbulb.gif" styleClass="actionIcon publish publishOn" title="#{msgs.clickToUnpublish}" style="#{eachEntry.status == eachEntry.draftStatus ? 'display:none' : ''}"/>
-							<h:graphicImage url="/images/lightbulb_off.gif" styleClass="actionIcon publish publishOff" title="#{msgs.clickToPublish}" style="#{eachEntry.status == eachEntry.draftStatus ? '' : 'display:none'}"/>
+							<f:verbatim><a class="actionIcon publish publishOff"
+															href="javascript:void(0);"
+															title="</f:verbatim><h:outputText value="#{msgs.clickToPublish}"/><f:verbatim>"
+															style="</f:verbatim><h:outputText value="#{eachEntry.status == eachEntry.draftStatus ? '' : 'display:none'}"/><f:verbatim>"></f:verbatim>
+							<f:verbatim></a></f:verbatim>
+							<f:verbatim><a class="actionIcon publish publishOn"
+															href="javascript:void(0);"
+															title="</f:verbatim><h:outputText value="#{msgs.clickToUnpublish}"/><f:verbatim>"
+															style="</f:verbatim><h:outputText value="#{eachEntry.status == eachEntry.draftStatus ? 'display:none' : ''}"/><f:verbatim>"></f:verbatim>
+							<f:verbatim></a></f:verbatim>
 							<f:verbatim>
-								<img src="/library/image/silk/cross.png" class="actionImage delete" onclick="showConfirmDeleteHelper(this, event);" title="</f:verbatim><h:outputText value="#{msgs.clickToDelete}"/><f:verbatim>">
+								<a class="actionIcon delete"
+										href="javascript:void(0);"
+										onclick="showConfirmDeleteHelper(this, event);"
+										title="</f:verbatim><h:outputText value="#{msgs.clickToDelete}"/><f:verbatim>"></f:verbatim><f:verbatim>
+								<img src="/library/image/silk/cross.png"/>
+								</a>
 							</f:verbatim>
 						</f:subview>
 						<f:verbatim><a href="javascript:void(0)" </f:verbatim>
