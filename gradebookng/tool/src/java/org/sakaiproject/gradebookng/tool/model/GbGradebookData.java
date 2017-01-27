@@ -7,12 +7,10 @@ import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.util.StringUtil;
 import org.sakaiproject.gradebookng.business.GbCategoryType;
-import org.sakaiproject.gradebookng.business.GbGradingType;
 import org.sakaiproject.gradebookng.business.GbRole;
 import org.sakaiproject.gradebookng.business.model.GbCourseGrade;
 import org.sakaiproject.gradebookng.business.model.GbStudentNameSortOrder;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
-import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 
 import org.apache.wicket.Component;
@@ -22,9 +20,12 @@ import java.io.UnsupportedEncodingException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CategoryDefinition;
 import org.sakaiproject.service.gradebook.shared.CourseGrade;
 import org.sakaiproject.service.gradebook.shared.GradebookInformation;
+import org.sakaiproject.service.gradebook.shared.GradingType;
+
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class GbGradebookData {
 
         private String hasComments;
         private String readonly;
+        private String dropped;
     }
 
     private interface ColumnDefinition {
@@ -322,8 +324,8 @@ public class GbGradebookData {
         result.put("isCourseLetterGradeDisplayed", settings.isCourseLetterGradeDisplayed());
         result.put("isCourseAverageDisplayed", settings.isCourseAverageDisplayed());
         result.put("isCoursePointsDisplayed", settings.isCoursePointsDisplayed());
-        result.put("isPointsGradeEntry", GbGradingType.valueOf(settings.getGradeType()).equals(GbGradingType.POINTS));
-        result.put("isPercentageGradeEntry", GbGradingType.valueOf(settings.getGradeType()).equals(GbGradingType.PERCENTAGE));
+        result.put("isPointsGradeEntry", GradingType.valueOf(settings.getGradeType()).equals(GradingType.POINTS));
+        result.put("isPercentageGradeEntry", GradingType.valueOf(settings.getGradeType()).equals(GradingType.PERCENTAGE));
         result.put("isCategoriesEnabled", GbCategoryType.valueOf(settings.getCategoryType()) != GbCategoryType.NO_CATEGORY);
         result.put("isCategoryTypeWeighted", GbCategoryType.valueOf(settings.getCategoryType()) == GbCategoryType.WEIGHTED_CATEGORY);
         result.put("isStudentOrderedByLastName", uiSettings.getNameSortOrder() == GbStudentNameSortOrder.LAST_NAME);
@@ -360,7 +362,7 @@ public class GbGradebookData {
 
             gradeData[0] = gbCourseGrade.getDisplayString();
 
-            gradeData[1] = FormatHelper.formatDoubleToTwoDecimalPlaces(courseGrade.getPointsEarned());
+            gradeData[1] = FormatHelper.formatDoubleToDecimal(courseGrade.getPointsEarned());
 
             result.add(gradeData);
         }
@@ -397,6 +399,7 @@ public class GbGradebookData {
             studentDefinition.setFirstName(student.getStudentFirstName());
             studentDefinition.setLastName(student.getStudentLastName());
             studentDefinition.setHasComments(formatCommentData(student));
+            studentDefinition.setDropped(formatKeepDropStatus(student));
 
             result.add(studentDefinition);
         }
@@ -488,6 +491,26 @@ public class GbGradebookData {
                 AssignmentDefinition assignmentColumn = (AssignmentDefinition) column;
                 GbGradeInfo gradeInfo = student.getGrades().get(assignmentColumn.getAssignmentId());
                 if (gradeInfo != null && !StringUtils.isBlank(gradeInfo.getGradeComment())) {
+                    sb.append('1');
+                } else {
+                    sb.append('0');
+                }
+            } else {
+                sb.append('0');
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private String formatKeepDropStatus(GbStudentGradeInfo student) {
+        StringBuilder sb = new StringBuilder();
+
+        for (ColumnDefinition column : this.columns) {
+            if (column instanceof AssignmentDefinition) {
+                AssignmentDefinition assignmentColumn = (AssignmentDefinition) column;
+                GbGradeInfo gradeInfo = student.getGrades().get(assignmentColumn.getAssignmentId());
+                if (gradeInfo != null && gradeInfo.isDropped()) {
                     sb.append('1');
                 } else {
                     sb.append('0');

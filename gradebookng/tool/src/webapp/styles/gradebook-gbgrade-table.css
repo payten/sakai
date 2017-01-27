@@ -217,6 +217,9 @@
 .gb-flag-not-released:before {
   content: '\e601';
 }
+.gb-flag-dropped:before {
+  content: '\e600';
+}
 .gb-flag-counted,
 .gb-flag-released {
   display: none;
@@ -265,6 +268,9 @@
 }
 #gradeTable .gb-read-only {
   color: #777;
+}
+#gradeTable .gb-dropped .gb-value {
+  text-decoration: line-through;
 }
 #gradeTable .gb-read-only .gb-notification:before {
   font-family: "gradebook-icons";

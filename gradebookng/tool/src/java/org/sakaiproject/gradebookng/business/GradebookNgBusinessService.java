@@ -731,6 +731,11 @@ public class GradebookNgBusinessService {
 		// note, the returned list only includes entries where there is a grade
 		// for the user
 		// we also build the category lookup map here
+		Map<Long, Map<String, GradeDefinition>> everything = this.gradebookService.getGradesWithCommentsForStudentsForItems(
+			gradebook.getUid(),
+			assignments.stream().map(a -> a.getId()).collect(Collectors.toList()),
+			studentUuids
+		);
 		for (final Assignment assignment : assignments) {
 
 			final Long categoryId = assignment.getCategoryId();
@@ -775,8 +780,11 @@ public class GradebookNgBusinessService {
 			}
 
 			// get grades
-			final List<GradeDefinition> defs = this.gradebookService.getGradesForStudentsForItem(gradebook.getUid(),
-					assignment.getId(), studentUuids);
+			//final List<GradeDefinition> defs = this.gradebookService.getGradesForStudentsForItem(gradebook.getUid(),
+			//		assignment.getId(), studentUuids);
+			final Map<String, GradeDefinition> studentToGradesMap = everything.get(assignment.getId());
+			Collection<GradeDefinition> defs = studentToGradesMap.values();
+
 			stopwatch.timeWithContext("buildGradeMatrix", "getGradesForStudentsForItem: " + assignment.getId(),
 					stopwatch.getTime());
 

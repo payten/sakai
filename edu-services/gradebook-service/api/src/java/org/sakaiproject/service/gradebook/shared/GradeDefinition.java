@@ -35,6 +35,7 @@ public class GradeDefinition {
 	private String gradeComment;
 	private int gradeEntryType;
 	private boolean gradeReleased;
+	private boolean dropped;
 	
 	public String getStudentUid() {
 		return studentUid;
@@ -55,6 +56,13 @@ public class GradeDefinition {
 	}
 	public void setDateRecorded(Date dateRecorded) {
 		this.dateRecorded = dateRecorded;
+	}
+	
+	public boolean isDropped() {
+		return dropped;
+	}
+	public void setDropped(boolean dropped) {
+		this.dropped= dropped;
 	}
 	
 	/**

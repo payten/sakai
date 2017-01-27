@@ -595,7 +595,20 @@ public interface GradebookService {
 	 * or if gradableObjectIds contains items that are not members of the gradebook with uid = gradebookUid
 	 */
 	public Map<Long, List<GradeDefinition>> getGradesWithoutCommentsForStudentsForItems(String gradebookUid, List<Long> gradableOjbectIds, List<String> studentIds);
-	
+
+	/**
+	 * This method gets grades for multiple gradebook items with all student comments
+	 * @param gradebookUid
+	 * @param gradableObjectIds
+	 * @param studentIds
+	 * @return a Map of GradableObjectIds to a List of GradeDefinitions containing the grade information for the given
+	 * students for the given gradableObjectIds. Comments are included and dropped grades are applied
+	 * @throws SecurityException if the current user is not authorized with gradeAll in this gradebook
+	 * @throws IllegalArgumentException if gradableObjectIds is null/empty,
+	 * or if gradableObjectIds contains items that are not members of the gradebook with uid = gradebookUid
+	 */
+	public Map<Long, Map<String, GradeDefinition>> getGradesWithCommentsForStudentsForItems(String gradebookUid, List<Long> gradableOjbectIds, List<String> studentIds);
+
 	/**
 	 * 
 	 * @param gradebookUuid

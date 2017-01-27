@@ -27,19 +27,8 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
@@ -294,8 +283,10 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 				} else {
 				
 					AssignmentGradeRecord gradeRecord = getAssignmentGradeRecord(assignment, studentUid, session);
+
 					CommentDefinition gradeComment = getAssignmentScoreComment(gradebookUid, assignmentId, studentUid);
 					String commentText = gradeComment != null ? gradeComment.getCommentText() : null;
+
 					if (log.isDebugEnabled()) log.debug("gradeRecord=" + gradeRecord);
 					
 					if (gradeRecord == null) {
@@ -326,6 +317,9 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 								gradeDef.setGrade(gradeRecord.getPointsEarned().toString());
 							}
 						}
+
+						// FIXME do we need isDropped? if so, we need to applyDropScores(Arrays.asList(gradeRecord)); 
+						gradeDef.setDropped(false);
 					}
 				}
 				
@@ -1898,6 +1892,117 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 		return gradesMap;
 	}
 
+	// FIXME! This is a new endpoint to facilitate the gradebookng spreadsheet - make it less cray :|
+	@Override
+	public Map<Long, Map<String, GradeDefinition>> getGradesWithCommentsForStudentsForItems(final String gradebookUid, final List<Long> gradableObjectIds, List<String> studentIds)
+	{
+		if (!authz.isUserAbleToGrade(gradebookUid))
+		{
+			throw new SecurityException("You do not have permission to perform this operation");
+		}
+
+		if (gradableObjectIds == null || gradableObjectIds.isEmpty())
+		{
+			throw new IllegalArgumentException("null or empty gradableObjectIds passed to getGradesWithoutCommentsForStudentsForItems");
+		}
+
+		Map<Long, Map<String, GradeDefinition>> gradesMap = new HashMap<>();
+		if (studentIds == null || studentIds.isEmpty())
+		{
+			// We could populate the map with (gboId : new ArrayList()), but it's cheaper to allow get(gboId) to return null.
+			return gradesMap;
+		}
+
+		final Gradebook gradebook = getGradebook(gradebookUid);
+
+		Map<Long, Assignment> assignmentMap = new HashMap<>();
+		for (Long assignmentId : gradableObjectIds) {
+			assignmentMap.put(assignmentId, getAssignment(assignmentId));
+		}
+
+		// Get all the comments
+		Map<Long, Map<String, Comment>> commentsMap = new HashMap<>();
+		for (Long gradableObjectId : gradableObjectIds) {
+			commentsMap.put(gradableObjectId, new HashMap<>());
+
+			List<Comment> comments = getComments(getAssignment(gradableObjectId), studentIds);
+			for (Comment comment : comments) {
+				Map<String, Comment> studentToCommentsMap = commentsMap.get(gradableObjectId);
+				studentToCommentsMap.put(comment.getStudentId(), comment);
+			}
+		}
+		// Get all the grades for the gradableObjectIds
+		List<AssignmentGradeRecord> gradeRecords = getAllAssignmentGradeRecordsForGbItems(gradableObjectIds, studentIds);
+		applyDropScores(gradeRecords);
+
+		// AssignmentGradeRecord is not in the API. So we need to convert grade records into GradeDefinition objects.
+		// GradeDefinitions are not tied to their gbos, so we need to return a map associating them back to their gbos
+		List<GradeDefinition> gradeDefinitions = new ArrayList<GradeDefinition>();
+		for (AssignmentGradeRecord gradeRecord : gradeRecords)
+		{
+			Assignment gbo = (Assignment)gradeRecord.getGradableObject();
+			Long gboId = gbo.getId();
+			if (!gradebookUid.equals(gradebook.getUid()))
+			{
+				// The user is authorized against gradebookUid, but we have grades for another gradebook.
+				// This is an authorization issue caused by gradableObjectIds violating the method contract.
+				throw new IllegalArgumentException("gradableObjectIds must belong to grades within this gradebook");
+			}
+
+			String commentText = null;
+			if (commentsMap.containsKey(gboId)) {
+				Map<String, Comment> studentToCommentsMap = commentsMap.get(gboId);
+				if (studentToCommentsMap.containsKey(gradeRecord.getStudentId())) {
+					commentText = studentToCommentsMap.get(gradeRecord.getStudentId()).getCommentText();
+				}
+			}
+			GradeDefinition gradeDef = convertGradeRecordToGradeDefinition(gradeRecord, gbo, gradebook, commentText);
+
+			gradesMap.putIfAbsent(gboId, new HashMap<>());
+			Map<String, GradeDefinition> studentGradeMap = gradesMap.get(gboId);
+			studentGradeMap.put(gradeDef.getStudentUid(), gradeDef);
+		}
+
+		// fill in the empties
+		for (Long assignmentId : gradableObjectIds) {
+			if (gradesMap.containsKey(assignmentId)) {
+				Map<String, GradeDefinition> studentGradeMap = gradesMap.get(assignmentId);
+				for (String studentId : studentIds) {
+					if (!studentGradeMap.containsKey(studentId)) {
+						String commentText = null;
+						if (commentsMap.containsKey(assignmentId)) {
+							Map<String, Comment> studentToCommentsMap = commentsMap.get(assignmentId);
+							if (studentToCommentsMap.containsKey(studentId)) {
+								commentText = studentToCommentsMap.get(studentId).getCommentText();
+							}
+						}
+						AssignmentGradeRecord emptyGradeRecord = new AssignmentGradeRecord(assignmentMap.get(assignmentId), studentId, null);
+						GradeDefinition gradeDef = convertGradeRecordToGradeDefinition(emptyGradeRecord, assignmentMap.get(assignmentId), gradebook, commentText);
+						studentGradeMap.put(studentId, gradeDef); 
+					}
+				}
+			} else {
+				// add an empty for all students
+				Map<String, GradeDefinition> studentGradeMap = new HashMap<>();
+				for (String studentId : studentIds) {
+					String commentText = null;
+					if (commentsMap.containsKey(assignmentId)) {
+						Map<String, Comment> studentToCommentsMap = commentsMap.get(assignmentId);
+						if (studentToCommentsMap.containsKey(studentId)) {
+							commentText = studentToCommentsMap.get(studentId).getCommentText();
+						}
+					}
+					AssignmentGradeRecord emptyGradeRecord = new AssignmentGradeRecord(assignmentMap.get(assignmentId), studentId, null);
+					GradeDefinition gradeDef = convertGradeRecordToGradeDefinition(emptyGradeRecord, assignmentMap.get(assignmentId), gradebook, commentText);
+					studentGradeMap.put(studentId, gradeDef);
+				}
+				gradesMap.put(assignmentId, studentGradeMap);
+			}
+		}
+
+		return gradesMap;
+	}
+
 	/**
 	 * Converts an AssignmentGradeRecord into a GradeDefinition object.
 	 * @param gradeRecord
@@ -1936,6 +2041,8 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 		{
 			gradeDef.setGradeComment(commentText);
 		}
+
+		gradeDef.setDropped(gradeRecord.getDroppedFromGrade());
 
 		return gradeDef;
 	}

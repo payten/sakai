@@ -173,8 +173,9 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
   var hasComment = column.type === "assignment" ? GbGradeTable.hasComment(student, column.assignmentId) : false;
   var scoreState = column.type === "assignment" ? GbGradeTable.getScoreState(student.userId, column.assignmentId) : false;
   var isReadOnly = column.type === "assignment" ? GbGradeTable.isReadOnly(student, column.assignmentId) : false;
+  var isDropped  = column.type === "assignment" ? GbGradeTable.isDropped(student, column.assignmentId) : false;
   var hasConcurrentEdit = column.type === "assignment" ? GbGradeTable.hasConcurrentEdit(student, column.assignmentId) : false;
-  var keyValues = [row, index, value, student.eid, hasComment, isReadOnly, hasConcurrentEdit, column.type, scoreState];
+  var keyValues = [row, index, value, student.eid, hasComment, isReadOnly, isDropped, hasConcurrentEdit, column.type, scoreState];
   var cellKey = GbGradeTable.cleanKey(keyValues.join("_"));
 
   var wasInitialised = $.data(td, 'cell-initialised');
@@ -284,6 +285,16 @@ GbGradeTable.cellRenderer = function (instance, td, row, col, prop, value, cellP
       type: 'save-invalid'
     });
   }
+
+  if (isDropped) {
+    $cellDiv.addClass("gb-dropped");
+    notifications.push({
+      type: 'dropped'
+    });
+  } else {
+    $cellDiv.removeClass("gb-dropped");
+  }
+
   var isExtraCredit = false;
 
   if (GbGradeTable.settings.isPointsGradeEntry) {
@@ -958,6 +969,16 @@ GbGradeTable.isReadOnly = function(student, assignmentId) {
 
   var assignmentIndex = $.inArray(GbGradeTable.colModelForAssignment(assignmentId), GbGradeTable.columns);
   return student.readonly[assignmentIndex] === "1";
+};
+
+
+GbGradeTable.isDropped = function(student, assignmentId) {
+  if (student.dropped == null) {
+    return false;
+  }
+
+  var assignmentIndex = $.inArray(GbGradeTable.colModelForAssignment(assignmentId), GbGradeTable.columns);
+  return student.dropped[assignmentIndex] === "1";
 };
 
 

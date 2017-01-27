@@ -285,6 +285,10 @@
                                     <li>
                                         <span class="gb-flag-read-only"></span> <wicket:message key="grade.notifications.privileges"/>
                                     </li>
+                                {elseif notification.type == 'dropped'}
+                                    <li>
+                                        <span class="gb-flag-dropped"></span> <wicket:message key="grade.notifications.dropped"/>
+                                    </li>
                                 {else}
                                     <li>
                                         <span class="gb-flag-${notification.type}"></span> ${notification.type}
