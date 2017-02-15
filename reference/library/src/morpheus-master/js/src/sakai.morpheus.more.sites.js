@@ -577,7 +577,7 @@ $PBJQ(document).ready(function($){
   };
 
   var returnElementToOriginalPositionIfPossible = function (siteId) {
-    if (initialFavoritesList && initialFavoritesList.includes(siteId)) {
+    if (initialFavoritesList && $.inArray(siteId,initialFavoritesList) >= 0) {
       var idx = initialFavoritesList.indexOf(siteId);
 
       // We'll attempt to place our item to the right its original left
@@ -760,6 +760,7 @@ $PBJQ(document).ready(function($){
       list.sortable({
         handle: ".fav-drag-handle",
         items: "li:not(.favorites-max-marker)",
+        handle: ".fav-drag-handle",
         stop: function () {
           // Rehighlight the first N items
           highlightMaxItems();
