@@ -3054,6 +3054,7 @@ private void getCalculatedQuestionScores(List<ItemGradingData> scores, Histogram
     headerList = new ArrayList<Object>();
     headerList.add(ExportResponsesBean.HEADER_MARKER); 
     headerList.add(rb.getString("question"));
+    headerList.add(rb.getString("question_text"));
     if(bean.getRandomType()){
         headerList.add("N(" + bean.getNumResponses() + ")");
     }else{
@@ -3096,6 +3097,7 @@ private void getCalculatedQuestionScores(List<ItemGradingData> scores, Histogram
     	HistogramQuestionScoresBean questionBean = (HistogramQuestionScoresBean)detailedStatsIter.next();
     	statsLine = new ArrayList();
     	statsLine.add(questionBean.getQuestionLabel());
+    	statsLine.add(questionBean.getQuestionText());
     	Double dVal;
     	
     	statsLine.add(questionBean.getNumResponses());
