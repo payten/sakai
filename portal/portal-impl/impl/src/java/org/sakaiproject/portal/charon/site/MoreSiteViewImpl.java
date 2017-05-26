@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.sakaiproject.component.cover.HotReloadConfigurationService;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.exception.IdUnusedException;
@@ -450,11 +451,10 @@ public class MoreSiteViewImpl extends AbstractSiteViewImpl
 			result.sitesInRightPane.put(term, new ArrayList());
 
 			String unknown_term_type = rb.getString("moresite_unknown_term");
-			Set<String> officialTerms = getOfficialTermTitles();
+			Set<String> customTerms = getCustomTermTitles();
 
 			for (Map site : (List<Map>)tabsMoreTerms.get(term)) {
-				if (isCourseType((String)site.get("siteType")) &&
-						(officialTerms.contains(term) || term.equals(unknown_term_type))) {
+				if (isCourseType((String)site.get("siteType")) && !customTerms.contains(term)) {
 					result.sitesInLeftPane.get(term).add(site);
 				} else {
 					result.sitesInRightPane.get(term).add(site);
@@ -465,12 +465,15 @@ public class MoreSiteViewImpl extends AbstractSiteViewImpl
 		return result;
 	}
 
-	private Set<String> getOfficialTermTitles() {
+	private Set<String> getCustomTermTitles() {
 		Set<String> result = new HashSet<>();
 
-		Collection<AcademicSession> sessions = courseManagementService.getAcademicSessions();
-		for (AcademicSession s: sessions) {
-			result.add(s.getTitle());
+		String termString = HotReloadConfigurationService.getString("nyu.custom-term-titles", null);
+
+		if (termString != null) {
+		    for (String term : termString.split(", ?")) {
+			result.add(term);
+		    }
 		}
 
 		return result;
