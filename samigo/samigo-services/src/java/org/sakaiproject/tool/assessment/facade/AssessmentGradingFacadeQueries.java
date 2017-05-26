@@ -3054,9 +3054,9 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 				  log.error("Cannot get user");
 			  }
 			  responseList = new ArrayList();
+			  responseList.add(agentEid);
 			  responseList.add(lastName);
 			  responseList.add(firstName);
-			  responseList.add(agentEid);
 			  responseList.add(noSubmissionMessage);
 			  dataList.add(responseList);
 		  }
