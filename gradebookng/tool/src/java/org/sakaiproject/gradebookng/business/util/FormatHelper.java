@@ -40,13 +40,23 @@ public class FormatHelper {
 	 * @return double to n decimal places
 	 */
 	private static String formatDoubleToDecimal(final Double score, final int n) {
-		final NumberFormat df = NumberFormat.getInstance();
-		df.setMinimumFractionDigits(0);
-		df.setMaximumFractionDigits(n);
-		df.setGroupingUsed(false);
-		df.setRoundingMode(RoundingMode.HALF_UP);
+		// Rounding is problematic due to the use of Doubles in
+		// Gradebook.  A number like 89.065 (which can be produced by
+		// weighted categories, for example) is stored as the double
+		// 89.06499999999999772626324556767940521240234375.  If you
+		// naively round this to two decimal places, you get 89.06 when
+		// you wanted 89.07
+		//
+		// Payten devised a clever trick of rounding to some larger
+		// decimal places first, which rounds these numbers up to
+		// something more manageable.  For example, if you round the
+		// above to 10 places, you get 89.0650000000, which rounds
+		// correctly when rounded up to 2 places.
 
-		return formatGrade(df.format(score));
+		return formatGrade(new BigDecimal(score)
+				.setScale(10, RoundingMode.HALF_UP)
+				.setScale(n, RoundingMode.HALF_UP)
+				.toString());
 	}
 
 	/**
