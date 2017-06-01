@@ -320,6 +320,7 @@ public class GradebookNgEntityProvider extends AbstractEntityProvider implements
 				this.businessService.saveUser(user);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException("Unable to set popup dismissal for user");
 		}
 	}
