@@ -124,7 +124,7 @@ public class GradebookNgBusinessService {
 	private ServerConfigurationService serverConfigurationService;
 
 	public static final String ASSIGNMENT_ORDER_PROP = "gbng_assignment_order";
-	public static final String ICON_SAKAI = "icon-sakai--";
+	public static final String ICON_SAKAI = "icon-"; // FIXME this is different in 11.x vs 12.x!
 
 	/**
 	 * Get a list of all users in the current site that can have grades
@@ -2000,7 +2000,7 @@ public class GradebookNgBusinessService {
 
 
 	public String getDefaultIconClass() {
-		return ICON_SAKAI + "default-tool";
+		return ICON_SAKAI + "default-tool fa fa-globe";
 	}
 
 	private String getAssignmentsIconClass() {
