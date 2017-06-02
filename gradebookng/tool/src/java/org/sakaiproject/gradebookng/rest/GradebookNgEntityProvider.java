@@ -19,6 +19,7 @@ import org.sakaiproject.entitybroker.entityprovider.capabilities.Outputable;
 import org.sakaiproject.entitybroker.entityprovider.extension.Formats;
 import org.sakaiproject.entitybroker.util.AbstractEntityProvider;
 import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.exception.InUseException;
 import org.sakaiproject.exception.PermissionException;
 import org.sakaiproject.gradebookng.business.GbRole;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
@@ -28,8 +29,11 @@ import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.SessionManager;
 
 import lombok.Setter;
+import org.sakaiproject.user.api.Preferences;
+import org.sakaiproject.user.api.PreferencesEdit;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserEdit;
+import org.sakaiproject.user.cover.PreferencesService;
 
 /**
  * This entity provider is to support some of the Javascript front end pieces. It never was built to support third party access, and never
@@ -43,6 +47,10 @@ import org.sakaiproject.user.api.UserEdit;
 public class GradebookNgEntityProvider extends AbstractEntityProvider implements
 		AutoRegisterEntityProvider, ActionsExecutable,
 		Outputable, Describeable {
+
+	private static final String PREF_GRADEBOOK_PROPERTY = "sakai:gradebookng";
+	private static final String PREF_GRADEBOOK_WELCOME_DISMISSED_PROPERTY = "gradebookng-help-popup-dismissed";
+	private static final String PREF_GRADEBOOK_WELCOME_DISMISSED_VALUE = "true";
 
 	@Override
 	public String[] getHandledOutputFormats() {
@@ -290,9 +298,11 @@ public class GradebookNgEntityProvider extends AbstractEntityProvider implements
 			return "false";
 		}
 
-		ResourceProperties properties = user.getProperties();
-		String dismissed = (String) properties.get("gradebookng-help-popup-dismissed");
-		if ("true".equals(dismissed)) {
+		Preferences prefs = PreferencesService.getPreferences(user.getId());
+		ResourceProperties properties = prefs.getProperties(PREF_GRADEBOOK_PROPERTY);
+
+		String dismissed = (String) properties.get(PREF_GRADEBOOK_WELCOME_DISMISSED_PROPERTY);
+		if (PREF_GRADEBOOK_WELCOME_DISMISSED_VALUE.equals(dismissed)) {
 			return "false";
 		} else {
 			return "true";
@@ -311,17 +321,30 @@ public class GradebookNgEntityProvider extends AbstractEntityProvider implements
 		checkInstructorOrTA(siteId);
 
 		try {
-			UserEdit user = this.businessService.editCurrentUser();
+			User user = this.businessService.getCurrentUser();
 
 			// we don't do this for the admin user
 			if (!"admin".equals(user.getId())) {
-				ResourcePropertiesEdit properties = user.getPropertiesEdit();
-				properties.addProperty("gradebookng-help-popup-dismissed", "true");
-				this.businessService.saveUser(user);
+				PreferencesEdit edit = getOrCreatePreferences(user.getId());
+				ResourcePropertiesEdit properties = edit.getPropertiesEdit(PREF_GRADEBOOK_PROPERTY);
+				properties.addProperty(PREF_GRADEBOOK_WELCOME_DISMISSED_PROPERTY, PREF_GRADEBOOK_WELCOME_DISMISSED_VALUE);
+				PreferencesService.commit(edit);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException("Unable to set popup dismissal for user");
+		}
+	}
+
+	private static PreferencesEdit getOrCreatePreferences(String userId) throws PermissionException, InUseException {
+		try {
+			return PreferencesService.edit(userId);
+		} catch (IdUnusedException e) {
+			try {
+				return PreferencesService.add(userId);
+			} catch (Exception e2) {
+				throw new RuntimeException("Unable to get preferences for user: " + userId);
+			}
 		}
 	}
 }
