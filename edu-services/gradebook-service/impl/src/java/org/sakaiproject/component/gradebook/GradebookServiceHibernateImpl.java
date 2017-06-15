@@ -63,6 +63,7 @@ import org.sakaiproject.service.gradebook.shared.ConflictingAssignmentNameExcept
 import org.sakaiproject.service.gradebook.shared.ConflictingCategoryNameException;
 import org.sakaiproject.service.gradebook.shared.GradeDefinition;
 import org.sakaiproject.service.gradebook.shared.GradeMappingDefinition;
+import org.sakaiproject.service.gradebook.shared.GradebookHelper;
 import org.sakaiproject.service.gradebook.shared.GradebookInformation;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 import org.sakaiproject.service.gradebook.shared.GradebookPermissionService;
@@ -796,10 +797,7 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
         }
         
         // name cannot start with * or # as they are reserved for special columns in import/export
-        if(StringUtils.startsWithAny(validatedName, new String[]{"*", "#"})) {
-            // TODO InvalidAssignmentNameException plus move all exceptions to their own package
-        	throw new ConflictingAssignmentNameException("Assignment names cannot start with * or # as they are reserved");
-        }
+	GradebookHelper.validateGradeItemName(validatedName);
 
 		final Gradebook gradebook = this.getGradebook(gradebookUid);
 
