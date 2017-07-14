@@ -126,10 +126,10 @@ public class CourseGradeFormatter {
 			if(mappedGrade == null) {
 				mappedGrade = new Double(0);
 			}
-			calculatedGrade = FormatHelper.formatGradeForUserLocale(mappedGrade);
+			calculatedGrade = FormatHelper.formatGradeForDisplay(mappedGrade);
 
 		} else {
-			calculatedGrade = FormatHelper.formatGradeForUserLocale(courseGrade.getCalculatedGrade());
+			calculatedGrade = FormatHelper.formatGradeForDisplay(courseGrade.getCalculatedGrade());
 		}
 
 		if (StringUtils.isNotBlank(calculatedGrade)
@@ -163,8 +163,8 @@ public class CourseGradeFormatter {
 				// otherwise check the settings
 				if (this.currentUserRole == GbRole.INSTRUCTOR || this.gradebook.isCoursePointsDisplayed()) {
 					if(pointsEarned != null && totalPointsPossible != null) {
-						final String pointsEarnedDisplayString = FormatHelper.formatGradeForUserLocale(pointsEarned);
-						final String totalPointsPossibleDisplayString = FormatHelper.formatGradeForUserLocale(totalPointsPossible);
+						final String pointsEarnedDisplayString = FormatHelper.formatGradeForDisplay(pointsEarned);
+						final String totalPointsPossibleDisplayString = FormatHelper.formatGradeForDisplay(totalPointsPossible);
 						if (parts.isEmpty()) {
 							parts.add(MessageHelper.getString("coursegrade.display.points-first", pointsEarnedDisplayString, totalPointsPossibleDisplayString));
 						} else {

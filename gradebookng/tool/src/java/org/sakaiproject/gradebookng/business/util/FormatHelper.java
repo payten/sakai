@@ -6,9 +6,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import lombok.extern.slf4j.Slf4j;
@@ -88,7 +86,7 @@ public class FormatHelper {
 	 * @return percentage to decimal places with a '%' for good measure
 	 */
 	public static String formatDoubleAsPercentage(final Double score) {
-		return formatGradeForUserLocale(score) + "%";
+		return formatGradeForDisplay(score) + "%";
 	}
 
 	/**
@@ -128,11 +126,11 @@ public class FormatHelper {
 		return formatGradeForLocale(grade, rl.getLocale());
 	}
 
-	public static String formatGradeForUserLocale(final Double grade) {
-		return formatGradeForUserLocale(formatDoubleToDecimal(grade));
+	public static String formatGradeForDisplay(final Double grade) {
+		return formatGradeForDisplay(formatDoubleToDecimal(grade));
 	}
 
-	public static String formatGradeForUserLocale(final String grade) {
+	public static String formatGradeForDisplay(final String grade) {
 		if (StringUtils.isBlank(grade)) {
 			return "";
 		}
