@@ -41,6 +41,10 @@ public class FormatHelper {
 	 * @return double to n decimal places
 	 */
 	private static String formatDoubleToDecimal(final Double score, final int n) {
+		return formatGrade(convertDoubleToBigDecimal(score, n).toString());
+	}
+
+	private static BigDecimal convertDoubleToBigDecimal(final Double score, final int decimalPlaces) {
 		// Rounding is problematic due to the use of Doubles in
 		// Gradebook.  A number like 89.065 (which can be produced by
 		// weighted categories, for example) is stored as the double
@@ -54,10 +58,9 @@ public class FormatHelper {
 		// above to 10 places, you get 89.0650000000, which rounds
 		// correctly when rounded up to 2 places.
 
-		return formatGrade(new BigDecimal(score)
-				.setScale(10, RoundingMode.HALF_UP)
-				.setScale(n, RoundingMode.HALF_UP)
-				.toString());
+		return new BigDecimal(score)
+			.setScale(10, RoundingMode.HALF_UP)
+			.setScale(decimalPlaces, RoundingMode.HALF_UP);
 	}
 
 	/**
@@ -85,8 +88,7 @@ public class FormatHelper {
 	 * @return percentage to decimal places with a '%' for good measure
 	 */
 	public static String formatDoubleAsPercentage(final Double score) {
-		// TODO does the % need to be internationalised?
-		return formatDoubleToDecimal(score) + "%";
+		return formatGradeForUserLocale(score) + "%";
 	}
 
 	/**
@@ -122,8 +124,39 @@ public class FormatHelper {
 	 * @param grade
 	 * @return
 	 */
-	public static String formatGradeFromUser(final String grade) {
+	public static String formatGradeFromUserLocale(final String grade) {
 		return formatGradeForLocale(grade, rl.getLocale());
+	}
+
+	public static String formatGradeForUserLocale(final Double grade) {
+		return formatGradeForUserLocale(formatDoubleToDecimal(grade));
+	}
+
+	public static String formatGradeForUserLocale(final String grade) {
+		if (StringUtils.isBlank(grade)) {
+			return "";
+		}
+
+		String s = null;
+		try {
+			final DecimalFormat dfParse = (DecimalFormat) NumberFormat.getInstance(Locale.ROOT);
+			dfParse.setParseBigDecimal(true);
+			final BigDecimal d = (BigDecimal) dfParse.parse(grade);
+
+
+			final DecimalFormat dfFormat = (DecimalFormat) NumberFormat.getInstance(rl.getLocale());
+			dfFormat.setMinimumFractionDigits(0);
+			dfFormat.setGroupingUsed(true);
+			s = dfFormat.format(d);
+		} catch (final NumberFormatException e) {
+			log.debug("Bad format, returning original string: " + grade);
+			s = grade;
+		} catch (final ParseException e) {
+			log.debug("Bad format, returning original string: " + grade);
+			s = grade;
+		}
+
+		return StringUtils.removeEnd(s, ".0");
 	}
 
 	private static String formatGradeForLocale(final String grade, Locale locale) {

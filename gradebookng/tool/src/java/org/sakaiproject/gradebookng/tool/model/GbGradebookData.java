@@ -382,12 +382,12 @@ public class GbGradebookData {
                 if(mappedGrade == null) {
                     mappedGrade = new Double(0);
                 }
-                gradeData[1] = FormatHelper.formatDoubleToDecimal(mappedGrade);
+                gradeData[1] = FormatHelper.formatGradeForUserLocale(mappedGrade);
             } else {
                 if (courseGrade.getPointsEarned() == null) {
                     gradeData[1] = "0";
                 } else {
-                    gradeData[1] = courseGrade.getCalculatedGrade();
+                    gradeData[1] = FormatHelper.formatGradeForUserLocale(courseGrade.getCalculatedGrade());
                 }
             }
 
