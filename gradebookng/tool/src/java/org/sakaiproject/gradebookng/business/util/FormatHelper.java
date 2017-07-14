@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -111,13 +112,28 @@ public class FormatHelper {
 	 * @return
 	 */
 	public static String formatGrade(final String grade) {
+		return formatGradeForLocale(grade, Locale.ROOT);
+	}
+
+
+	/**
+	 * Format a grade, e.g. 00 => 0 0001 => 1 1.0 => 1 1.25 => 1.25
+	 *
+	 * @param grade
+	 * @return
+	 */
+	public static String formatGradeFromUser(final String grade) {
+		return formatGradeForLocale(grade, rl.getLocale());
+	}
+
+	private static String formatGradeForLocale(final String grade, Locale locale) {
 		if (StringUtils.isBlank(grade)) {
 			return "";
 		}
 
 		String s = null;
 		try {
-			final DecimalFormat df = (DecimalFormat) NumberFormat.getInstance(rl.getLocale());
+			final DecimalFormat df = (DecimalFormat) NumberFormat.getInstance(locale);
 			final Double d = df.parse(grade).doubleValue();
 
 			df.setMinimumFractionDigits(0);
