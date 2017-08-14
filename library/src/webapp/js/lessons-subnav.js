@@ -71,24 +71,6 @@
                 }
             }
 
-            if (sub_page.disabledDueToPrerequisite == 'true') {
-                $submenu_action.classList.add('has-prerequisite');
-                if (sub_page.disabled == 'true') {
-                    $submenu_action.classList.add('disabled');
-                    $submenu_action.setAttribute('href', 'javascript:void(0);')
-                    title_string += ' ' + self.i18n.prerequisite_and_disabled;
-                } else {
-                    title_string += ' ' + self.i18n.prerequisite;
-                }
-
-            } else if(sub_page.required == 'true') {
-                if (sub_page.completed == 'false') {
-                    $submenu_action.classList.add('is-required');
-                } else {
-                    $submenu_action.classList.add('is-complete');
-                }
-            }
-
             $submenu_action.setAttribute('title', title_string);
 
             $submenu_item.appendChild($submenu_action);

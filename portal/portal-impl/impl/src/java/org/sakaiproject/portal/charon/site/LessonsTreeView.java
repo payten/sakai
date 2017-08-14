@@ -67,7 +67,6 @@ public class LessonsTreeView {
         }
 
         final Map<String, List<Map<String, String>>> pageData = getAdditionalLessonsPages(pageIds);
-        applyPrerequisites(pageData);
 
         final Map<String, Object> objectToSerialize = new HashMap<>();
         objectToSerialize.put("pages", pageData);
@@ -89,10 +88,8 @@ public class LessonsTreeView {
                 connection = SqlService.borrowConnection();
                 ps = connection.prepareStatement(buildSQL(connection, pageIds));
 
-                ps.setString(1, this.userId);
-
                 for (int i = 0; i < pageIds.size(); i++) {
-                    ps.setString(i + 2, pageIds.get(i));
+                    ps.setString(i + 1, pageIds.get(i));
                 }
 
                 rs = ps.executeQuery();
@@ -136,7 +133,6 @@ public class LessonsTreeView {
             " " + toChar(conn, "i.sakaiId") + " as sendingPage," +
             " p2.hidden as hidden," +
             " p2.releaseDate as releaseDate," +
-            " log.complete as completed," +
             " i.required," +
             " i.prerequisite" +
             " FROM lesson_builder_pages p" +
@@ -146,8 +142,6 @@ public class LessonsTreeView {
             "   on (i.pageId = p.pageId AND type = 2)" +
             " INNER JOIN lesson_builder_pages p2" +
             "   on (p2.pageId = i.sakaiId)" +
-            " LEFT OUTER JOIN lesson_builder_log log" +
-            "   on (log.itemId = i.id AND log.userId = ?)" +
             " WHERE p.parent IS NULL" +
             "   AND p.toolId in (" + placeholdersFor(pageIds) + ")" +
             " ORDER BY i.sequence");
@@ -181,7 +175,6 @@ public class LessonsTreeView {
         result.put("hidden", rs.getInt("hidden") == 1 ? "true" : "false");
 
         result.put("required", rs.getInt("required") == 1 ? "true" : "false");
-        result.put("completed", rs.getInt("completed") == 1 ? "true" : "false");
         result.put("prerequisite", rs.getInt("prerequisite") == 1 ? "true" : "false");
 
         if (rs.getTimestamp("releaseDate") != null) {
@@ -235,28 +228,5 @@ public class LessonsTreeView {
         translations.put("prerequisite_and_disabled", rb.getString("lessons_subnav.prerequisite_and_disabled"));
 
         return translations;
-    }
-
-    private void applyPrerequisites(final Map<String, List<Map<String, String>>> data) {
-        for (final String pageId : data.keySet()) {
-            boolean prerequisiteApplies = false;
-            final List<Map<String, String>> pages = data.get(pageId);
-            for (Map<String, String> pageData : pages) {
-                // If a sibling item with a smaller sequence is required
-                // we want to disable the current item for students
-                if (pageData.get("prerequisite").equals("true") && prerequisiteApplies) {
-                    pageData.put("disabledDueToPrerequisite", "true");
-                    pageData.put("disabled", String.valueOf(!this.isInstructor));
-                }
-
-                // Only disable items that have prerequisites below the current item
-                // when the current item is required and the user is yet to complete it
-                if (pageData.get("required").equals("true")) {
-                    if (pageData.get("completed").equals("false")) {
-                        prerequisiteApplies = true;
-                    }
-                }
-            }
-        }
     }
 }
