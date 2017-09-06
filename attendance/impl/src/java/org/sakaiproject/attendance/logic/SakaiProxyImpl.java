@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, University of Dayton
+ *  Copyright (c) 2017, University of Dayton
  *
  *  Licensed under the Educational Community License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -169,11 +169,16 @@ public class SakaiProxyImpl implements SakaiProxy {
 	 * {@inheritDoc}
 	 */
 	public List<String> getCurrentSiteMembershipIds() {
-		List<User> members = getCurrentSiteMembership();
-		List<String> studentIds = new ArrayList<String>();
-		for(User user : members) {
-			studentIds.add(user.getId());
-		}
+		return getSiteMembershipIds(getCurrentSiteId());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public List<String> getSiteMembershipIds(final String siteId) {
+		List<User> members = getSiteMembership(siteId);
+		List<String> studentIds = new ArrayList<>();
+		members.forEach(user-> studentIds.add(user.getId()));
 		return studentIds;
 	}
 
@@ -181,9 +186,16 @@ public class SakaiProxyImpl implements SakaiProxy {
 	 * {@inheritDoc}
 	 */
 	public List<User> getCurrentSiteMembership() {
-		List<User> returnList = new ArrayList<User>();
+		return getSiteMembership(getCurrentSiteId());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public List<User> getSiteMembership(final String siteId) {
+		List<User> returnList = new ArrayList<>();
 		try {
-			AuthzGroup membership = authzGroupService.getAuthzGroup("/site/" + getCurrentSiteId());
+			AuthzGroup membership = authzGroupService.getAuthzGroup("/site/" + siteId);
 			Set<Member> memberSet = membership.getMembers();
 			String maintainRole = membership.getMaintainRole();
 			returnList = getUserListForMemberSetHelper(memberSet, maintainRole);
@@ -327,7 +339,7 @@ public class SakaiProxyImpl implements SakaiProxy {
 	 * init - perform any actions required here for when this bean starts up
 	 */
 	public void init() {
-		log.info("init");
+		log.debug("SakaiProxyImpl init()");
 	}
 
 	private Preferences getCurrentUserPreferences() {

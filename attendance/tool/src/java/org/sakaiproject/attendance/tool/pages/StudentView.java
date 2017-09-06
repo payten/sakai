@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, University of Dayton
+ *  Copyright (c) 2017, University of Dayton
  *
  *  Licensed under the Educational Community License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.ResourceModel;
 import org.sakaiproject.attendance.model.AttendanceRecord;
 import org.sakaiproject.attendance.tool.dataproviders.AttendanceRecordProvider;
-import org.sakaiproject.attendance.tool.pages.panels.AttendanceGradePanel;
-import org.sakaiproject.attendance.tool.pages.panels.AttendanceRecordFormDataPanel;
-import org.sakaiproject.attendance.tool.pages.panels.AttendanceRecordFormHeaderPanel;
-import org.sakaiproject.attendance.tool.pages.panels.StatisticsPanel;
+import org.sakaiproject.attendance.tool.panels.AttendanceGradePanel;
+import org.sakaiproject.attendance.tool.panels.AttendanceRecordFormDataPanel;
+import org.sakaiproject.attendance.tool.panels.AttendanceRecordFormHeaderPanel;
+import org.sakaiproject.attendance.tool.panels.StatisticsPanel;
 
 /**
  * StudentView is the view of a single user (a student)'s AttendanceRecords
@@ -67,11 +67,18 @@ public class StudentView extends BasePage {
     private void init() {
         if(this.role != null && this.role.equals("Student")){
             this.isStudent = true;
-            hideNavigationLink(this.firstLink);
-            hideNavigationLink(this.addEventLink);
+            hideNavigationLink(this.homepageLink);
             hideNavigationLink(this.studentOverviewLink);
             hideNavigationLink(this.settingsLink);
+            hideNavigationLink(this.gradingLink);
         }
+
+        add(new Label("student-view-hidden","") {
+            @Override
+            public boolean isVisible() {
+                return isStudent;
+            }
+        });
 
         add(createHeader());
         add(createGrade());
@@ -92,9 +99,7 @@ public class StudentView extends BasePage {
         Link<Void> closeLink = new Link<Void>("close-link") {
             @Override
             public void onClick() {
-                if(returnPage.equals(BasePage.ITEMS_PAGE)) {
-                    setResponsePage(new AddEventPage());
-                } else if(returnPage.equals(BasePage.STUDENT_OVERVIEW_PAGE)) {
+                if(returnPage.equals(BasePage.STUDENT_OVERVIEW_PAGE)) {
                     setResponsePage(new StudentOverview());
                 } else {
                     setResponsePage(new Overview());
@@ -102,9 +107,7 @@ public class StudentView extends BasePage {
             }
         };
 
-        if(returnPage.equals(BasePage.ITEMS_PAGE)) {
-            closeLink.add(new Label("close-link-text", new ResourceModel("attendance.event.view.link.close.items")));
-        } else if(returnPage.equals(BasePage.STUDENT_OVERVIEW_PAGE)){
+        if(returnPage.equals(BasePage.STUDENT_OVERVIEW_PAGE)){
             closeLink.add(new Label("close-link-text", new ResourceModel("attendance.event.view.link.close.student.overview")));
         } else {
             closeLink.add(new Label("close-link-text", new ResourceModel("attendance.event.view.link.close.overview")));
@@ -212,7 +215,7 @@ public class StudentView extends BasePage {
                 }
                 item.add(eventLink);
                 item.add(new Label("event-date", item.getModelObject().getAttendanceEvent().getStartDateTime()));
-                item.add(new AttendanceRecordFormDataPanel("record", item.getModel(), false, returnPage, feedbackPanel));
+                item.add(new AttendanceRecordFormDataPanel("record", item.getModel(), returnPage, feedbackPanel));
             }
         };
 
