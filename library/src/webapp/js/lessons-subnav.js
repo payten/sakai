@@ -390,6 +390,8 @@
                 cache: false,
                 dataType: 'json',
                 success: function(json) {
+                    // json is keyed on the sakai page id to an array of lesson page ids that
+                    // are not accessible due to prerequisites
                     self.applyPrerequisites(json);
                 }
             });
@@ -405,7 +407,7 @@
                 var sub_pages = self.data[page_id];
                 sub_pages.forEach(function(sub_page) {
                     if (prereqData.hasOwnProperty(sub_page.sakaiPageId)) {
-                        if (sub_page.prerequisite == 'true' && $PBJQ.inArray(sub_page.itemId, prereqData[sub_page.sakaiPageId]) >= 0) {
+                        if (sub_page.prerequisite == 'true' && $PBJQ.inArray(sub_page.sendingPage, prereqData[sub_page.sakaiPageId]) >= 0) {
                             var $link = $PBJQ(sub_page.submenu_item).find('> a');
                             $link.addClass('has-prerequisite');
                             var title_string = $link.attr('title');
