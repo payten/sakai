@@ -29,7 +29,7 @@ public class ImportedColumn implements Serializable {
 
 	@Getter
 	@Setter
-	private Type type = Type.GB_ITEM_WITHOUT_POINTS;
+	private Type type;
 
 	public enum Type {
 		GB_ITEM_WITH_POINTS,
@@ -52,6 +52,28 @@ public class ImportedColumn implements Serializable {
 	}
 
 	/**
+	 * Helper to determine if the type of column is a gradeItem
+	 * @return
+	 */
+	public boolean isGradeItem() {
+		if(this.type == Type.GB_ITEM_WITH_POINTS || this.type == Type.GB_ITEM_WITHOUT_POINTS) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Helper to determine if the type of column is a comment column - purely for convenience
+	 * @return
+	 */
+	public boolean isComment() {
+		if(this.type == Type.COMMENTS) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Column titles are the only thing we care about for comparisons so that we can filter out duplicates.
 	 * Must also match type and exclude IGNORE
 	 */
@@ -64,7 +86,9 @@ public class ImportedColumn implements Serializable {
 		if(this.type == Type.IGNORE || other.type == Type.IGNORE){
 			return false;
 		}
-		if(StringUtils.equalsIgnoreCase(this.columnTitle, other.getColumnTitle()) && this.type == other.getType()){
+
+		//we allow columns names to be the same but of different cases (eg "Assignment 1" and "assignment 1" are both valid and unique)
+		if(StringUtils.equals(this.columnTitle, other.getColumnTitle()) && this.type == other.getType()){
 			return true;
 		}
 		return false;

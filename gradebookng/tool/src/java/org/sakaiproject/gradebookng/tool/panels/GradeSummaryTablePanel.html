@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd">
+<html xmlns:wicket="http://wicket.apache.org">
+
 <body>
 
 <wicket:panel>
@@ -45,6 +46,7 @@
 								<span wicket:id="isExtraCredit" class="gb-flag-extra-credit"></span>
 								<span wicket:id="isNotCounted" class="gb-flag-not-counted"></span>
 								<span wicket:id="isNotReleased" class="gb-flag-not-released"></span>
+								<span wicket:id="isExternal"></span>
 							</span>
 						</th>
 						<td class="gb-summary-grade-score">
@@ -53,7 +55,7 @@
 						</td>
 						<td wicket:id="weight"><!-- empty --></td>
 						<td class="gb-summary-grade-duedate" wicket:id="dueDate"></td>
-						<td class="gb-summary-grade-comments" wicket:id="comments"></td>
+						<td class="gb-summary-grade-comments"><div wicket:id="comments"></div></td>
 						<td class="gb-summary-grade-category" wicket:id="category"></td>
 					</tr>
 				</tbody>

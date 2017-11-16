@@ -7,20 +7,18 @@ import java.util.stream.Collectors;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.wicket.Component;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.upload.FileUpload;
 import org.apache.wicket.markup.html.form.upload.FileUploadField;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.apache.wicket.util.lang.Bytes;
-import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.gradebookng.business.exception.GbImportCommentMissingItemException;
 import org.sakaiproject.gradebookng.business.exception.GbImportExportDuplicateColumnException;
 import org.sakaiproject.gradebookng.business.exception.GbImportExportInvalidColumnException;
 import org.sakaiproject.gradebookng.business.exception.GbImportExportInvalidFileTypeException;
-import org.sakaiproject.gradebookng.business.exception.GbImportExportUnknownStudentException;
 import org.sakaiproject.gradebookng.business.model.GbStudentGradeInfo;
 import org.sakaiproject.gradebookng.business.model.ImportedSpreadsheetWrapper;
 import org.sakaiproject.gradebookng.business.model.ProcessedGradeItem;
@@ -28,23 +26,21 @@ import org.sakaiproject.gradebookng.business.util.ImportGradesHelper;
 import org.sakaiproject.gradebookng.tool.model.ImportWizardModel;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.gradebookng.tool.pages.ImportExportPage;
+import org.sakaiproject.gradebookng.tool.panels.BasePanel;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.user.api.User;
 
-import au.com.bytecode.opencsv.CSVWriter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Upload/Download page
  */
 @Slf4j
-public class GradeImportUploadStep extends Panel {
+public class GradeImportUploadStep extends BasePanel {
+
 	private static final long serialVersionUID = 1L;
 
 	private final String panelId;
-
-	@SpringBean(name = "org.sakaiproject.gradebookng.business.GradebookNgBusinessService")
-	private GradebookNgBusinessService businessService;
 
 	public GradeImportUploadStep(final String id) {
 		super(id);
@@ -57,6 +53,7 @@ public class GradeImportUploadStep extends Panel {
 
 		add(new ExportPanel("export"));
 		add(new UploadForm("form"));
+
 	}
 
 	/*
@@ -65,6 +62,7 @@ public class GradeImportUploadStep extends Panel {
 	private class UploadForm extends Form<Void> {
 
 		FileUploadField fileUploadField;
+		Button continueButton;
 
 		public UploadForm(final String id) {
 			super(id);
@@ -73,9 +71,18 @@ public class GradeImportUploadStep extends Panel {
 			setMaxSize(Bytes.megabytes(2));
 
 			this.fileUploadField = new FileUploadField("upload");
+			this.fileUploadField.add(new OnChangeAjaxBehavior() {
+				@Override
+				protected void onUpdate(AjaxRequestTarget ajaxRequestTarget) {
+					UploadForm.this.continueButton.setEnabled(true);
+					ajaxRequestTarget.add(UploadForm.this.continueButton);
+				}
+			});
 			add(this.fileUploadField);
 
-			add(new Button("continuebutton"));
+			this.continueButton = new Button("continuebutton");
+			this.continueButton.setEnabled(false);
+			add(this.continueButton);
 
 			final Button cancel = new Button("cancelbutton") {
 				@Override
@@ -110,9 +117,6 @@ public class GradeImportUploadStep extends Panel {
 				} catch (final GbImportExportInvalidFileTypeException | InvalidFormatException e) {
 					log.debug("GBNG import error", e);
 					error(getString("importExport.error.incorrecttype"));
-					return;
-				} catch (final GbImportExportUnknownStudentException e) {
-					error(getString("importExport.error.unknownstudent"));
 					return;
 				} catch (final GbImportExportDuplicateColumnException e) {
 					log.debug("GBNG import error", e);
