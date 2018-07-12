@@ -92,7 +92,7 @@ public class AttendanceGoogleReportJob implements Job {
     private void syncReport() {
         try {
             // FIXME need a real spreadsheet id
-            final String spreadsheetId = "FIXME";
+            final String spreadsheetId = "1D4XcY7fQGfWu3ep_EDKOR-xIAoXPUp3sZyGfLp9ANNs";
             // FIXME need a real range or can we get set of rows?
             final String range = "Sheet1!A1:X20";
 
@@ -110,7 +110,7 @@ public class AttendanceGoogleReportJob implements Job {
             } else {
                 System.out.println("Testing");
                 for (List row : values) {
-                    System.out.printf("%s, %s\n", row.get(0), row.get(4));
+                    System.out.printf("%s %s %s %s %s\n", row.get(0), row.get(1), row.get(2), row.get(3), row.get(4));
                 }
             }
         } catch (Exception e) {
