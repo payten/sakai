@@ -98,8 +98,20 @@ public class AttendanceGoogleReportExport {
         }
     }
 
+    static class DataTable {
+        public Set<AttendanceEvent> events;
+        public List<SiteUser> users;
+        public Map<UserAtEvent, String> statusTable;
 
-    private void dumpAllAttendances() throws Exception {
+        public DataTable(List<SiteUser> users, Set<AttendanceEvent> events, Map<UserAtEvent, String> statusTable) {
+            this.users = users;
+            this.events = events;
+            this.statusTable = statusTable;
+        }
+    }
+
+
+    private DataTable loadAllData() throws Exception {
         // Get a list of all students from the sites of interest
         // Get a list of the attendance events for all sites, joined to any attendance records
 
@@ -124,19 +136,28 @@ public class AttendanceGoogleReportExport {
             rs.close();
             ps.close();
 
-            // Get our list of all events
-            List<AttendanceEvent> events = new ArrayList<>();
-            ps = conn.prepareStatement("select distinct e.name" +
-                                       " from attendance_event_t e");
+            // Get our mapping of events to the sites that have them
+            Map<AttendanceEvent, Set<String>> sitesWithEvent = new HashMap<>();
+            ps = conn.prepareStatement("select e.name, s.site_id" +
+                                       " from attendance_event_t e" +
+                                       " inner join attendance_site_t s on s.a_site_id = e.a_site_id");
 
             rs = ps.executeQuery();
 
             while (rs.next()) {
-                events.add(new AttendanceEvent(rs.getString("name")));
+                AttendanceEvent event = new AttendanceEvent(rs.getString("name"));
+
+                if (!sitesWithEvent.containsKey(event)) {
+                    sitesWithEvent.put(event, new HashSet<>());
+                }
+
+                sitesWithEvent.get(event).add(rs.getString("site_id"));
             }
 
             rs.close();
             ps.close();
+
+            Set<AttendanceEvent> events = sitesWithEvent.keySet();
 
             // Get all users at all events
             ps = conn.prepareStatement("select s.site_id, e.name, r.user_id, m.eid, r.status" +
@@ -148,6 +169,15 @@ public class AttendanceGoogleReportExport {
             rs = ps.executeQuery();
 
             Map<UserAtEvent, String> statusTable = new HashMap<>();
+
+            // If a user is in a site that doesn't have a particular event, that's a "-"
+            for (SiteUser user : users) {
+                for (AttendanceEvent event : events) {
+                    if (!sitesWithEvent.get(event).contains(user.siteid)) {
+                        statusTable.put(new UserAtEvent(user, event), "-");
+                    }
+                }
+            }
 
             // Fill out the values we know
             while (rs.next()) {
@@ -167,28 +197,12 @@ public class AttendanceGoogleReportExport {
                     UserAtEvent key = new UserAtEvent(user, event);
 
                     if (!statusTable.containsKey(key)) {
-                        statusTable.put(key, "-");
+                        statusTable.put(key, "UNKNOWN");
                     }
                 }
             }
 
-            // Print the whole lot!
-            System.err.print("\t");
-            for (AttendanceEvent event : events) {
-                System.err.print(event.name);
-                System.err.print("\t");
-            }
-            System.err.println("");
-
-            for (SiteUser user : users) {
-                System.err.print(user.netid);
-                System.err.print("\t");
-                for (AttendanceEvent event : events) {
-                    System.err.print(statusTable.get(new UserAtEvent(user, event)));
-                    System.err.print("\t");
-                }
-                System.err.println("\n");
-            }
+            return new DataTable(users, events, statusTable);
 
         } finally {
             if (ps != null) { ps.close(); }
@@ -201,12 +215,6 @@ public class AttendanceGoogleReportExport {
 
     public void export() {
         try {
-            try {
-                dumpAllAttendances();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
             // FIXME need a real spreadsheet id
             final String spreadsheetId = "1D4XcY7fQGfWu3ep_EDKOR-xIAoXPUp3sZyGfLp9ANNs";
 
@@ -275,11 +283,29 @@ public class AttendanceGoogleReportExport {
             ValueRange valueRange = new ValueRange();
             List<List<Object>> rows = new ArrayList<>();
 
-            for (int i = 0; i < 10; i++) {
+            DataTable table = loadAllData();
+
+            // Add a row for our header
+            List<Object> header = new ArrayList<>();
+            header.add("");
+            header.add("");
+            for (AttendanceEvent event : table.events) {
+                header.add(event.name);
+                header.add(event.name + " [override]");
+            }
+            rows.add(header);
+
+            // Now our student data
+            for (SiteUser user : table.users) {
                 List<Object> row = new ArrayList<>();
-                for (int j = 0; j < 100; j++) {
-                    row.add(String.valueOf(i*j*100));
+                row.add(user.netid);
+                row.add(user.siteid);
+
+                for (AttendanceEvent event : table.events) {
+                    row.add(table.statusTable.get(new UserAtEvent(user, event)));
+                    row.add("");
                 }
+
                 rows.add(row);
             }
 
