@@ -116,58 +116,42 @@ public class AttendanceGoogleReportExport {
         // Get a list of the attendance events for all sites, joined to any attendance records
 
         Connection conn = SqlService.borrowConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         try {
             // Get out list of users in sites of interest
             List<SiteUser> users = new ArrayList<>();
 
-            ps = conn.prepareStatement("select ssu.user_id, map.eid, ssu.site_id" +
-                                       " from sakai_site_user ssu" +
-                                       " inner join sakai_user_id_map map on map.user_id = ssu.user_id" +
-                                       " where ssu.permission = 1 AND" +
-                                       "   ssu.site_id in (select distinct s.site_id from attendance_site_t s inner join attendance_event_t e on s.a_site_id = e.a_site_id)");
-
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                users.add(new SiteUser(rs.getString("user_id"), rs.getString("eid"), rs.getString("site_id")));
+            try (PreparedStatement ps = conn.prepareStatement("select ssu.user_id, map.eid, ssu.site_id" +
+                                                              " from sakai_site_user ssu" +
+                                                              " inner join sakai_user_id_map map on map.user_id = ssu.user_id" +
+                                                              " where ssu.permission = 1 AND" +
+                                                              "   ssu.site_id in (select distinct s.site_id from attendance_site_t s inner join attendance_event_t e on s.a_site_id = e.a_site_id)");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    users.add(new SiteUser(rs.getString("user_id"), rs.getString("eid"), rs.getString("site_id")));
+                }
             }
 
-            rs.close();
-            ps.close();
 
             // Get our mapping of events to the sites that have them
             Map<AttendanceEvent, Set<String>> sitesWithEvent = new HashMap<>();
-            ps = conn.prepareStatement("select e.name, s.site_id" +
-                                       " from attendance_event_t e" +
-                                       " inner join attendance_site_t s on s.a_site_id = e.a_site_id");
+            try (PreparedStatement ps = conn.prepareStatement("select e.name, s.site_id" +
+                                                              " from attendance_event_t e" +
+                                                              " inner join attendance_site_t s on s.a_site_id = e.a_site_id");
+                 ResultSet rs = ps.executeQuery()) {
 
-            rs = ps.executeQuery();
+                while (rs.next()) {
+                    AttendanceEvent event = new AttendanceEvent(rs.getString("name"));
 
-            while (rs.next()) {
-                AttendanceEvent event = new AttendanceEvent(rs.getString("name"));
+                    if (!sitesWithEvent.containsKey(event)) {
+                        sitesWithEvent.put(event, new HashSet<>());
+                    }
 
-                if (!sitesWithEvent.containsKey(event)) {
-                    sitesWithEvent.put(event, new HashSet<>());
+                    sitesWithEvent.get(event).add(rs.getString("site_id"));
                 }
 
-                sitesWithEvent.get(event).add(rs.getString("site_id"));
             }
 
-            rs.close();
-            ps.close();
-
             Set<AttendanceEvent> events = sitesWithEvent.keySet();
-
-            // Get all users at all events
-            ps = conn.prepareStatement("select s.site_id, e.name, r.user_id, m.eid, r.status" +
-                                       " from attendance_event_t e" +
-                                       " inner join attendance_record_t r on e.a_event_id = r.a_event_id" +
-                                       " inner join attendance_site_t s on e.a_site_id = s.a_site_id" +
-                                       " inner join sakai_user_id_map m on m.user_id = r.user_id");
-
-            rs = ps.executeQuery();
-
             Map<UserAtEvent, String> statusTable = new HashMap<>();
 
             // If a user is in a site that doesn't have a particular event, that's a "-"
@@ -179,15 +163,23 @@ public class AttendanceGoogleReportExport {
                 }
             }
 
-            // Fill out the values we know
-            while (rs.next()) {
-                SiteUser user = new SiteUser(rs.getString("user_id"), rs.getString("eid"), rs.getString("site_id"));
-                AttendanceEvent event = new AttendanceEvent(rs.getString("name"));
+            // Get all users at all events
+            try (PreparedStatement ps = conn.prepareStatement("select s.site_id, e.name, r.user_id, m.eid, r.status" +
+                                                              " from attendance_event_t e" +
+                                                              " inner join attendance_record_t r on e.a_event_id = r.a_event_id" +
+                                                              " inner join attendance_site_t s on e.a_site_id = s.a_site_id" +
+                                                              " inner join sakai_user_id_map m on m.user_id = r.user_id");
+                 ResultSet rs = ps.executeQuery()) {
+                // Fill out the values we know
+                while (rs.next()) {
+                    SiteUser user = new SiteUser(rs.getString("user_id"), rs.getString("eid"), rs.getString("site_id"));
+                    AttendanceEvent event = new AttendanceEvent(rs.getString("name"));
 
-                String status = rs.getString("status");
+                    String status = rs.getString("status");
 
-                if (status != null) {
-                    statusTable.put(new UserAtEvent(user, event), status);
+                    if (status != null) {
+                        statusTable.put(new UserAtEvent(user, event), status);
+                    }
                 }
             }
 
@@ -205,12 +197,8 @@ public class AttendanceGoogleReportExport {
             return new DataTable(users, events, statusTable);
 
         } finally {
-            if (ps != null) { ps.close(); }
-            if (rs != null) { rs.close(); }
-
             SqlService.returnConnection(conn);
         }
-
     }
 
     public void export() {
