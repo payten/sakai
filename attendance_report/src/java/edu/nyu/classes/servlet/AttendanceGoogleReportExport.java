@@ -8,6 +8,7 @@ import org.sakaiproject.component.cover.ServerConfigurationService;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -27,6 +28,33 @@ import java.util.Set;
 public class AttendanceGoogleReportExport {
 
     private static final String APPLICATION_NAME = "AttendanceGoogleReportExport";
+
+    private String spreadsheetId;
+    private GoogleClient client;
+    private Sheets service;
+
+    public AttendanceGoogleReportExport() {
+        String oauthPropertiesFile = HotReloadConfigurationService.getString("attendance-report.oauth-properties", "attendance_report_oauth_properties_not_set");
+        oauthPropertiesFile = ServerConfigurationService.getSakaiHomePath() + "/" + oauthPropertiesFile;
+
+        try {
+            Properties oauthProperties = new Properties();
+            try (FileInputStream fis = new FileInputStream(oauthPropertiesFile)) {
+                oauthProperties.load(fis);
+            }
+
+            oauthProperties.setProperty("credentials_path", new File(new File(oauthPropertiesFile).getParentFile(),
+                "oauth_credentials").getPath());
+
+            this.client = new GoogleClient(oauthProperties);
+            this.service = client.getSheets(APPLICATION_NAME);
+
+            // FIXME from config
+            this.spreadsheetId = "1D4XcY7fQGfWu3ep_EDKOR-xIAoXPUp3sZyGfLp9ANNs";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     abstract static class ValueObject {
         public abstract Object[] interestingFields();
@@ -191,127 +219,133 @@ public class AttendanceGoogleReportExport {
 
     public void export() {
         try {
-            // FIXME need a real spreadsheet id
-            final String spreadsheetId = "1D4XcY7fQGfWu3ep_EDKOR-xIAoXPUp3sZyGfLp9ANNs";
+            Sheet sheet = getTargetSheet();
 
-            String oauthPropertiesFile = HotReloadConfigurationService.getString("attendance-report.oauth-properties", "attendance_report_oauth_properties_not_set");
-
-            oauthPropertiesFile = ServerConfigurationService.getSakaiHomePath() + "/" + oauthPropertiesFile;
-
-            Properties oauthProperties = new Properties();
-            try (FileInputStream fis = new FileInputStream(oauthPropertiesFile)) {
-                oauthProperties.load(fis);
-            }
-
-            oauthProperties.setProperty("credentials_path", new File(new File(oauthPropertiesFile).getParentFile(),
-                                                                     "oauth_credentials").getPath());
-
-            GoogleClient client = new GoogleClient(oauthProperties);
-            Sheets service = client.getSheets(APPLICATION_NAME);
-
-            System.out.println("Get the sheet");
-            List<String> ranges = new ArrayList<>();
-            Sheets.Spreadsheets.Get request = service.spreadsheets().get(spreadsheetId);
-            request.setRanges(ranges);
-            request.setIncludeGridData(false);
-            Spreadsheet spreadsheet = request.execute();
-
-            Sheet sheet = spreadsheet.getSheets().get(0);
-            String sheetName = sheet.getProperties().getTitle();
-//            String sheetId = sheet.getProperties().getId();
-            int columns = sheet.getProperties().getGridProperties().getColumnCount();
-            int rowsCount = sheet.getProperties().getGridProperties().getRowCount();
-
-            System.out.println("Spreadsheet title: " + sheetName);
-            System.out.println("Spreadsheet total columns: " + columns);
-            System.out.println("Spreadsheet total rows: " + rowsCount);
-            System.out.println(spreadsheet);
-
-            System.out.println("Protect it");
-            AddProtectedRangeRequest addProtectedRangeRequest = new AddProtectedRangeRequest();
-            ProtectedRange protectedRange = new ProtectedRange();
-            GridRange gridRange = new GridRange();
-            gridRange.setSheetId(0);
-            protectedRange.setRange(gridRange);
-            protectedRange.setEditors(new Editors());
-            protectedRange.setRequestingUserCanEdit(true);
-            addProtectedRangeRequest.setProtectedRange(protectedRange);
-
-            BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
-            List<Request> requests = new ArrayList<>();
-            Request wrapperRequest = new Request();
-            wrapperRequest.setAddProtectedRange(addProtectedRangeRequest);
-            requests.add(wrapperRequest);
-            batchUpdateSpreadsheetRequest.setRequests(requests);
-            Sheets.Spreadsheets.BatchUpdate batchUpdateRequest =
-                service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateSpreadsheetRequest);
-
-            BatchUpdateSpreadsheetResponse batchUpdateSpreadsheetResponse = batchUpdateRequest.execute();
-            System.out.println(batchUpdateSpreadsheetResponse);
-
-            System.out.println("Clearing the sheet");
-            Sheets.Spreadsheets.Values.Clear clearRequest =
-                service.spreadsheets().values().clear(spreadsheetId, sheetName, new ClearValuesRequest());
-            ClearValuesResponse clearValuesResponse = clearRequest.execute();
-            System.out.println(clearValuesResponse);
-
-            System.out.println("Give it some values");
-            ValueRange valueRange = new ValueRange();
-            List<List<Object>> rows = new ArrayList<>();
-
-            DataTable table = loadAllData();
-
-            // Add a row for our header
-            List<Object> header = new ArrayList<>();
-            header.add("");
-            header.add("");
-            for (AttendanceEvent event : table.events) {
-                header.add(event.name);
-                header.add(event.name + " [override]");
-            }
-            rows.add(header);
-
-            // Now our student data
-            for (SiteUser user : table.users) {
-                List<Object> row = new ArrayList<>();
-                row.add(user.netid);
-                row.add(user.siteid);
-
-                for (AttendanceEvent event : table.events) {
-                    row.add(table.statusTable.get(new UserAtEvent(user, event)));
-                    row.add("");
-                }
-
-                rows.add(row);
-            }
-
-            valueRange.setValues(rows);
-
-            Sheets.Spreadsheets.Values.Update updateRequest =
-                service.spreadsheets().values().update(spreadsheetId, sheetName, valueRange);
-            updateRequest.setValueInputOption("RAW");
-            UpdateValuesResponse updateValuesResponse = updateRequest.execute();
-            System.out.println(updateValuesResponse);
-
-            System.out.println("Unprotect it");
-            requests = new ArrayList<>();
-            Sheets.Spreadsheets.Get getSpreadsheetRequest = service.spreadsheets().get(spreadsheetId);
-            Spreadsheet s = getSpreadsheetRequest.execute();
-            for (ProtectedRange p : s.getSheets().get(0).getProtectedRanges()) {
-                DeleteProtectedRangeRequest deleteProtectedRangeRequest = new DeleteProtectedRangeRequest();
-                deleteProtectedRangeRequest.setProtectedRangeId(p.getProtectedRangeId());
-                wrapperRequest = new Request();
-                wrapperRequest.setDeleteProtectedRange(deleteProtectedRangeRequest);
-                requests.add(wrapperRequest);
-            }
-            batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
-            batchUpdateSpreadsheetRequest.setRequests(requests);
-            batchUpdateRequest = service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateSpreadsheetRequest);
-            batchUpdateSpreadsheetResponse = batchUpdateRequest.execute();
-            System.out.println(batchUpdateSpreadsheetResponse);
+            protectSheet(sheet);
+            clearSheet(sheet);
+            syncValuesToSheet(sheet);
+            clearProtectedRanges(sheet);
         } catch (Exception e) {
             System.out.println("ERROR in AttendanceGoogleReportExport.export");
             System.out.println(e.getMessage());
         }
+    }
+
+    private ProtectedRange protectSheet(Sheet sheet) throws IOException {
+        System.out.println("Protect sheet");
+        AddProtectedRangeRequest addProtectedRangeRequest = new AddProtectedRangeRequest();
+        ProtectedRange protectedRange = new ProtectedRange();
+        GridRange gridRange = new GridRange();
+        gridRange.setSheetId(sheet.getProperties().getSheetId());
+        protectedRange.setRange(gridRange);
+        protectedRange.setEditors(new Editors());
+        protectedRange.setRequestingUserCanEdit(true);
+        addProtectedRangeRequest.setProtectedRange(protectedRange);
+
+        BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
+        List<Request> requests = new ArrayList<>();
+        Request wrapperRequest = new Request();
+        wrapperRequest.setAddProtectedRange(addProtectedRangeRequest);
+        requests.add(wrapperRequest);
+        batchUpdateSpreadsheetRequest.setRequests(requests);
+        Sheets.Spreadsheets.BatchUpdate batchUpdateRequest =
+            service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateSpreadsheetRequest);
+
+        BatchUpdateSpreadsheetResponse batchUpdateSpreadsheetResponse = batchUpdateRequest.execute();
+        System.out.println(batchUpdateSpreadsheetResponse);
+        AddProtectedRangeResponse addProtectedRangeResponse = batchUpdateSpreadsheetResponse.getReplies().get(0).getAddProtectedRange();
+
+        return addProtectedRangeResponse.getProtectedRange();
+    }
+
+    private void clearProtectedRanges(Sheet sheet) throws IOException {
+        System.out.println("Clear all protected ranges");
+        List<Request> requests = new ArrayList<>();
+        Sheets.Spreadsheets.Get getSpreadsheetRequest = service.spreadsheets().get(spreadsheetId);
+        Spreadsheet spreadsheet = getSpreadsheetRequest.execute();
+
+        Sheet sheetToClear = null;
+        for (Sheet freshSheet : spreadsheet.getSheets()) {
+            if (freshSheet.getProperties().getSheetId() == sheet.getProperties().getSheetId()) {
+                sheetToClear = freshSheet;
+                break;
+            }
+        }
+        if (sheetToClear == null) {
+            throw new RuntimeException("Sheet not found");
+        }
+
+        for (ProtectedRange protectedRange : sheetToClear.getProtectedRanges()) {
+            DeleteProtectedRangeRequest deleteProtectedRangeRequest = new DeleteProtectedRangeRequest();
+            deleteProtectedRangeRequest.setProtectedRangeId(protectedRange.getProtectedRangeId());
+            Request request = new Request();
+            request.setDeleteProtectedRange(deleteProtectedRangeRequest);
+            requests.add(request);
+        }
+        BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
+        batchUpdateSpreadsheetRequest.setRequests(requests);
+        Sheets.Spreadsheets.BatchUpdate batchUpdateRequest = service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateSpreadsheetRequest);
+        BatchUpdateSpreadsheetResponse batchUpdateSpreadsheetResponse = batchUpdateRequest.execute();
+
+        System.out.println(batchUpdateSpreadsheetResponse);
+    }
+
+    private void clearSheet(Sheet sheet) throws IOException {
+        System.out.println("Clear the sheet");
+        Sheets.Spreadsheets.Values.Clear clearRequest =
+            service.spreadsheets().values().clear(spreadsheetId, sheet.getProperties().getTitle(), new ClearValuesRequest());
+        ClearValuesResponse clearValuesResponse = clearRequest.execute();
+        System.out.println(clearValuesResponse);
+    }
+
+    private void syncValuesToSheet(Sheet sheet) throws Exception {
+        System.out.println("Give it some values");
+        ValueRange valueRange = new ValueRange();
+        List<List<Object>> rows = new ArrayList<>();
+
+        DataTable table = loadAllData();
+
+        // Add a row for our header
+        List<Object> header = new ArrayList<>();
+        header.add("");
+        header.add("");
+        for (AttendanceEvent event : table.events) {
+            header.add(event.name);
+            header.add(event.name + " [override]");
+        }
+        rows.add(header);
+
+        // Now our student data
+        for (SiteUser user : table.users) {
+            List<Object> row = new ArrayList<>();
+            row.add(user.netid);
+            row.add(user.siteid);
+
+            for (AttendanceEvent event : table.events) {
+                row.add(table.statusTable.get(new UserAtEvent(user, event)));
+                row.add("");
+            }
+
+            rows.add(row);
+        }
+
+        valueRange.setValues(rows);
+
+        Sheets.Spreadsheets.Values.Update updateRequest =
+            service.spreadsheets().values().update(spreadsheetId, sheet.getProperties().getTitle(), valueRange);
+        updateRequest.setValueInputOption("RAW");
+        UpdateValuesResponse updateValuesResponse = updateRequest.execute();
+        System.out.println(updateValuesResponse);
+    }
+
+    private Sheet getTargetSheet() throws IOException {
+        System.out.println("Get the sheet");
+        List<String> ranges = new ArrayList<>();
+        Sheets.Spreadsheets.Get request = service.spreadsheets().get(spreadsheetId);
+        request.setRanges(ranges);
+        request.setIncludeGridData(false);
+        Spreadsheet spreadsheet = request.execute();
+
+        return spreadsheet.getSheets().get(0);
     }
 }
