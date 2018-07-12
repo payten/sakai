@@ -28,9 +28,6 @@ public class AttendanceGoogleReportExport {
 
     private static final String APPLICATION_NAME = "AttendanceGoogleReportExport";
 
-    public AttendanceGoogleReportExport() {
-    }
-
     abstract static class ValueObject {
         public abstract Object[] interestingFields();
 
