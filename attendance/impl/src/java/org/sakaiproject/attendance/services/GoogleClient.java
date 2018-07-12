@@ -51,13 +51,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.sakaiproject.component.cover.ServerConfigurationService;
@@ -69,7 +63,6 @@ import org.slf4j.LoggerFactory;
 // FIXME: split this class up.  Maybe want a .google package?
 public class GoogleClient {
     private static final Logger LOG = LoggerFactory.getLogger(GoogleClient.class);
-    private static final String APPLICATION = "Sakai Attendance Google Sheets Sync";
 
     private int requestsPerBatch = 100;
 
@@ -78,93 +71,78 @@ public class GoogleClient {
 
     private HttpTransport httpTransport = null;
     private JacksonFactory jsonFactory = null;
-    private GoogleClientSecrets clientSecrets = null;
+//    private GoogleClientSecrets clientSecrets = null;
 
-    private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+    private static final Set<String> SCOPES = SheetsScopes.all();
 
     public GoogleClient() {
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             jsonFactory = JacksonFactory.getDefaultInstance();
-            clientSecrets = GoogleClientSecrets.load(jsonFactory,
-                new InputStreamReader(new FileInputStream(ServerConfigurationService.getSakaiHomePath() + "/client_secrets.json")));
+//            clientSecrets = GoogleClientSecrets.load(jsonFactory,
+//                new InputStreamReader(new FileInputStream(ServerConfigurationService.getSakaiHomePath() + "/client_secrets.json")));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public GoogleAuthorizationCodeFlow getAuthFlow() throws Exception {
-        File dataStoreLocation = new File(ServerConfigurationService.getSakaiHomePath() + "/googly-data-store");
-        FileDataStoreFactory store = new FileDataStoreFactory(dataStoreLocation);
-
-        // set up authorization code flow
-        return new GoogleAuthorizationCodeFlow.Builder(
-            httpTransport,
-            jsonFactory,
-            clientSecrets,
-            SCOPES)
-            .setDataStoreFactory(store)
-            .setApprovalPrompt("force")
-            .setAccessType("offline")
-            .build();
-    }
-
-
     public void rateLimitHit() {
         rateLimiter.rateLimitHit();
     }
 
-    public Credential getCredential(String user) {
-        try {
-            GoogleAuthorizationCodeFlow flow = getAuthFlow();
+    public Credential getCredential() throws Exception {
+        String user = System.getenv("ATTENDANCE_GOOGLE_USER");
+        String secret = System.getenv("ATTENDANCE_GOOGLE_SECRET");
 
-            Credential storedCredential = flow.loadCredential(user);
+        File dataStoreLocation = new File(ServerConfigurationService.getSakaiHomePath() + "/attendance_oauth");
+        FileDataStoreFactory store = new FileDataStoreFactory(dataStoreLocation);
 
-            if (storedCredential == null) {
-                return null;
-            }
+        // General idea: create the auth flow backed by a credential store;
+        // check whether the store already has credentials for the user we
+        // want.  If it doesn't, we go through the auth process.
+        GoogleAuthorizationCodeFlow auth = new GoogleAuthorizationCodeFlow.Builder(httpTransport, jsonFactory,
+            user, secret,
+            SCOPES)
+            .setAccessType("offline")
+            .setDataStoreFactory(store)
+            .build();
 
-            // Take our credential and wrap it in a GoogleCredential.  As far as
-            // I can tell, all this gives us is the ability to update our stored
-            // credentials as they get refreshed (using the
-            // DataStoreCredentialRefreshListener).
-            Credential credential = new GoogleCredential.Builder()
-                .setTransport(flow.getTransport())
-                .setJsonFactory(flow.getJsonFactory())
-                .setClientSecrets(clientSecrets)
-                .addRefreshListener(new CredentialRefreshListener() {
-                    public void onTokenErrorResponse(Credential credential, TokenErrorResponse tokenErrorResponse) {
-                        LOG.error("OAuth token refresh error: {}", tokenErrorResponse);
-                    }
+        Credential storedCredential = null;
 
-                    public void onTokenResponse(Credential credential, TokenResponse tokenResponse) {
-                        LOG.info("OAuth token was refreshed");
-                    }
-                })
-                .addRefreshListener(new DataStoreCredentialRefreshListener(user, flow.getCredentialDataStore()))
-                .build();
+        storedCredential = auth.loadCredential(user);
 
-            credential.setAccessToken(storedCredential.getAccessToken());
-            credential.setRefreshToken(storedCredential.getRefreshToken());
-
-            return credential;
-        } catch (Exception e) {
-            LOG.error("Exception during OAuth response handling: {}", e);
-            e.printStackTrace();
-            return null;
+        if (storedCredential == null) {
+            throw new RuntimeException("No stored credential was found for user: " + user);
         }
+
+        // Take our credential and wrap it in a GoogleCredential.  As far as
+        // I can tell, all this gives us is the ability to update our stored
+        // credentials as they get refreshed (using the
+        // DataStoreCredentialRefreshListener).
+        Credential credential = new GoogleCredential.Builder()
+            .setTransport(httpTransport)
+            .setJsonFactory(jsonFactory)
+            .setClientSecrets(user, secret)
+            .addRefreshListener(new CredentialRefreshListener() {
+                public void onTokenErrorResponse(Credential credential, TokenErrorResponse tokenErrorResponse) {
+                    LOG.error("OAuth token refresh error: " + tokenErrorResponse);
+                }
+
+                public void onTokenResponse(Credential credential, TokenResponse tokenResponse) {
+                    LOG.info("OAuth token was refreshed");
+                }
+            })
+            .addRefreshListener(new DataStoreCredentialRefreshListener(user, store))
+            .build();
+
+        credential.setAccessToken(storedCredential.getAccessToken());
+        credential.setRefreshToken(storedCredential.getRefreshToken());
+
+        return credential;
     }
 
-    public boolean deleteCredential(String user) throws Exception {
-        GoogleAuthorizationCodeFlow flow = getAuthFlow();
-
-        DataStore<StoredCredential> credentialStore = flow.getCredentialDataStore();
-
-        return (credentialStore.delete(user) != null);
-    }
-
-    public Sheets getSheets(String googleUser, String applicationName) throws Exception {
-        return new Sheets.Builder(httpTransport, jsonFactory, getCredential(googleUser))
+    public Sheets getSheets(String applicationName) throws Exception {
+        return new Sheets.Builder(httpTransport, jsonFactory, getCredential())
             .setApplicationName(applicationName)
             .build();
     }

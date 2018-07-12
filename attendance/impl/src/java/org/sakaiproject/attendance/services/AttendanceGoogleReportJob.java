@@ -97,7 +97,7 @@ public class AttendanceGoogleReportJob implements Job {
             final String range = "Sheet1!A1:X20";
 
             GoogleClient client = new GoogleClient();
-            Sheets service = client.getSheets("FIXME@nyu.edu", APPLICATION_NAME);
+            Sheets service = client.getSheets(APPLICATION_NAME);
 
             ValueRange response = service.spreadsheets().values()
                 .get(spreadsheetId, range)
