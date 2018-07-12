@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -30,7 +31,21 @@ public class AttendanceGoogleReportExport {
     public AttendanceGoogleReportExport() {
     }
 
-    static class SiteUser {
+    abstract static class ValueObject {
+        public abstract Object[] interestingFields();
+
+        @Override
+        public int hashCode() { return Arrays.hashCode(interestingFields()); }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) { return true; }
+            if (this.getClass() != other.getClass()) { return false; }
+            return Arrays.equals(this.interestingFields(), ((ValueObject) other).interestingFields());
+        }
+    }
+
+    static class SiteUser extends ValueObject {
         public String userid;
         public String netid;
         public String siteid;
@@ -42,17 +57,12 @@ public class AttendanceGoogleReportExport {
         }
 
         @Override
-        public int hashCode() { return (userid + netid + siteid).hashCode(); }
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) { return true; }
-            if (!(other instanceof SiteUser)) { return false; }
-            return ((SiteUser)other).userid.equals(userid) && ((SiteUser)other).netid.equals(netid) && ((SiteUser)other).siteid.equals(siteid);
+        public Object[] interestingFields() {
+            return new Object[] { userid, netid, siteid };
         }
     }
 
-    static class AttendanceEvent {
+    static class AttendanceEvent extends ValueObject {
         public String name;
 
         public AttendanceEvent(String name) {
@@ -60,17 +70,12 @@ public class AttendanceGoogleReportExport {
         }
 
         @Override
-        public int hashCode() { return name.hashCode(); }
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) { return true; }
-            if (!(other instanceof AttendanceEvent)) { return false; }
-            return ((AttendanceEvent)other).name.equals(name);
+        public Object[] interestingFields() {
+            return new Object[] { name };
         }
     }
 
-    static class UserAtEvent {
+    static class UserAtEvent extends ValueObject {
         public SiteUser user;
         public AttendanceEvent event;
 
@@ -80,13 +85,8 @@ public class AttendanceGoogleReportExport {
         }
 
         @Override
-        public int hashCode() { return user.hashCode() ^ event.hashCode(); }
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) { return true; }
-            if (!(other instanceof UserAtEvent)) { return false; }
-            return ((UserAtEvent)other).user.equals(user) && ((UserAtEvent)other).event.equals(event);
+        public Object[] interestingFields() {
+            return new Object[] { user, event };
         }
     }
 
@@ -130,7 +130,6 @@ public class AttendanceGoogleReportExport {
                                                               " from attendance_event_t e" +
                                                               " inner join attendance_site_t s on s.a_site_id = e.a_site_id");
                  ResultSet rs = ps.executeQuery()) {
-
                 while (rs.next()) {
                     AttendanceEvent event = new AttendanceEvent(rs.getString("name"));
 
