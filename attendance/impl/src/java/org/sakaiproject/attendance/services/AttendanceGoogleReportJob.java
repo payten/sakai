@@ -1,7 +1,5 @@
 package org.sakaiproject.attendance.services;
 
-import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
@@ -16,7 +14,6 @@ import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.SessionManager;
 
 import java.util.Date;
-import java.util.List;
 
 @Slf4j
 @DisallowConcurrentExecution
@@ -24,8 +21,6 @@ public class AttendanceGoogleReportJob implements Job {
             private   String serverName   = "N/A";
     final   private   String jobName      = "AttendanceGoogleReportJob";
     final   private   String jobError     = "attend.googlereport.job.error"; // FIXME translation for this?
-
-    private static final String APPLICATION_NAME = "AttendanceGoogleReportJob";
 
     public AttendanceGoogleReportJob() {
         super();
@@ -66,8 +61,8 @@ public class AttendanceGoogleReportJob implements Job {
         }
 
         log.info("Start Job: " + whoAmI.toString());
-        // doeeeeit
-        syncReport();
+
+        new AttendanceGoogleReportExport().export();
 
         logoutFromSakai();
 
@@ -87,36 +82,6 @@ public class AttendanceGoogleReportJob implements Job {
         sakaiSession.setUserEid(whoAs);
 
         authzGroupService.refreshUser(whoAs);
-    }
-
-    private void syncReport() {
-        try {
-            // FIXME need a real spreadsheet id
-            final String spreadsheetId = "1D4XcY7fQGfWu3ep_EDKOR-xIAoXPUp3sZyGfLp9ANNs";
-            // FIXME need a real range or can we get set of rows?
-            final String range = "Sheet1!A1:X20";
-
-            GoogleClient client = new GoogleClient();
-            Sheets service = client.getSheets(APPLICATION_NAME);
-
-            ValueRange response = service.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute();
-
-            List<List<Object>> values = response.getValues();
-
-            if (values == null || values.isEmpty()) {
-                System.out.println("No data found.");
-            } else {
-                System.out.println("Testing");
-                for (List row : values) {
-                    System.out.printf("%s %s %s %s %s\n", row.get(0), row.get(1), row.get(2), row.get(3), row.get(4));
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("AttendanceGoogleReportJob.syncReport error");
-            System.out.println(e.getMessage());
-        }
     }
 
     public void logoutFromSakai() {
