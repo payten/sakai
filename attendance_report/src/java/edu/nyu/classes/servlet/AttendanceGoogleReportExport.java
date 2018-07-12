@@ -19,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,12 +36,9 @@ public class AttendanceGoogleReportExport {
         public String siteid;
 
         public SiteUser(String userid, String netid, String siteid) {
-            if (userid == null || netid == null || siteid == null) {
-                throw new IllegalStateException("No nulls");
-            }
-            this.userid = userid;
-            this.netid = netid;
-            this.siteid = siteid;
+            this.userid = Objects.requireNonNull(userid);
+            this.netid = Objects.requireNonNull(netid);
+            this.siteid = Objects.requireNonNull(siteid);
         }
 
         @Override
@@ -58,10 +56,7 @@ public class AttendanceGoogleReportExport {
         public String name;
 
         public AttendanceEvent(String name) {
-            if (name == null) {
-                throw new IllegalStateException("No nulls");
-            }
-            this.name = name;
+            this.name = Objects.requireNonNull(name);
         }
 
         @Override
@@ -80,11 +75,8 @@ public class AttendanceGoogleReportExport {
         public AttendanceEvent event;
 
         public UserAtEvent(SiteUser user, AttendanceEvent event) {
-            if (user == null || event == null) {
-                throw new IllegalStateException("No nulls");
-            }
-            this.user = user;
-            this.event = event;
+            this.user = Objects.requireNonNull(user);
+            this.event = Objects.requireNonNull(event);
         }
 
         @Override
