@@ -50,7 +50,9 @@ public class AttendanceGoogleReportExport {
             this.service = client.getSheets(APPLICATION_NAME);
 
             // FIXME from config
-            this.spreadsheetId = "1D4XcY7fQGfWu3ep_EDKOR-xIAoXPUp3sZyGfLp9ANNs";
+            // this.spreadsheetId = "1D4XcY7fQGfWu3ep_EDKOR-xIAoXPUp3sZyGfLp9ANNs";
+            // this.spreadsheetId = "1BhsfNJl-3gfXyXMGqgoncMKvofQxFxICAHcdeO2iTDs";
+            this.spreadsheetId = "1RVVvJIYPgazujEty_3MkQlX9oip66ItgY9ieF236py4";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -221,10 +223,17 @@ public class AttendanceGoogleReportExport {
         try {
             Sheet sheet = getTargetSheet();
 
-            protectSheet(sheet);
+            // sheet
+            System.err.println("\n*** DEBUG " + System.currentTimeMillis() + "[AttendanceGoogleReportExport.java:225 1d7b7a]: " + "\n    sheet => " + (sheet) + "\n");
+
+            ProtectedRange range = protectSheet(sheet);
+
             clearSheet(sheet);
+
             syncValuesToSheet(sheet);
-            clearProtectedRanges(sheet);
+
+            unprotectRange(sheet, range);
+
         } catch (Exception e) {
             System.out.println("ERROR in AttendanceGoogleReportExport.export");
             System.out.println(e.getMessage());
@@ -258,30 +267,29 @@ public class AttendanceGoogleReportExport {
         return addProtectedRangeResponse.getProtectedRange();
     }
 
-    private void clearProtectedRanges(Sheet sheet) throws IOException {
-        System.out.println("Clear all protected ranges");
+    private void unprotectRange(Sheet sheet, ProtectedRange range) throws IOException {
+        // Sheets.Spreadsheets.Get getSpreadsheetRequest = service.spreadsheets().get(spreadsheetId);
+        // Spreadsheet spreadsheet = getSpreadsheetRequest.execute();
+        //
+        // Sheet sheetToClear = null;
+        // for (Sheet freshSheet : spreadsheet.getSheets()) {
+        //     if (freshSheet.getProperties().getSheetId() == sheet.getProperties().getSheetId()) {
+        //         sheetToClear = freshSheet;
+        //         break;
+        //     }
+        // }
+        // if (sheetToClear == null) {
+        //     throw new RuntimeException("Sheet not found");
+        // }
+
         List<Request> requests = new ArrayList<>();
-        Sheets.Spreadsheets.Get getSpreadsheetRequest = service.spreadsheets().get(spreadsheetId);
-        Spreadsheet spreadsheet = getSpreadsheetRequest.execute();
 
-        Sheet sheetToClear = null;
-        for (Sheet freshSheet : spreadsheet.getSheets()) {
-            if (freshSheet.getProperties().getSheetId() == sheet.getProperties().getSheetId()) {
-                sheetToClear = freshSheet;
-                break;
-            }
-        }
-        if (sheetToClear == null) {
-            throw new RuntimeException("Sheet not found");
-        }
+        DeleteProtectedRangeRequest deleteProtectedRangeRequest = new DeleteProtectedRangeRequest();
+        deleteProtectedRangeRequest.setProtectedRangeId(range.getProtectedRangeId());
+        Request request = new Request();
+        request.setDeleteProtectedRange(deleteProtectedRangeRequest);
+        requests.add(request);
 
-        for (ProtectedRange protectedRange : sheetToClear.getProtectedRanges()) {
-            DeleteProtectedRangeRequest deleteProtectedRangeRequest = new DeleteProtectedRangeRequest();
-            deleteProtectedRangeRequest.setProtectedRangeId(protectedRange.getProtectedRangeId());
-            Request request = new Request();
-            request.setDeleteProtectedRange(deleteProtectedRangeRequest);
-            requests.add(request);
-        }
         BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
         batchUpdateSpreadsheetRequest.setRequests(requests);
         Sheets.Spreadsheets.BatchUpdate batchUpdateRequest = service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateSpreadsheetRequest);
@@ -291,7 +299,6 @@ public class AttendanceGoogleReportExport {
     }
 
     private void clearSheet(Sheet sheet) throws IOException {
-        System.out.println("Clear the sheet");
         Sheets.Spreadsheets.Values.Clear clearRequest =
             service.spreadsheets().values().clear(spreadsheetId, sheet.getProperties().getTitle(), new ClearValuesRequest());
         ClearValuesResponse clearValuesResponse = clearRequest.execute();
@@ -307,11 +314,17 @@ public class AttendanceGoogleReportExport {
 
         // Add a row for our header
         List<Object> header = new ArrayList<>();
-        header.add("");
-        header.add("");
+        header.add("NetID");
+        header.add("Last Name");
+        header.add("First Name");
+        header.add("Term");
+        header.add("Course Title");
+        header.add("Roster ID");
+        header.add("Site URL");
+
         for (AttendanceEvent event : table.events) {
             header.add(event.name);
-            header.add(event.name + " [override]");
+            header.add(event.name + "\nOVERRIDE");
         }
         rows.add(header);
 
@@ -319,7 +332,12 @@ public class AttendanceGoogleReportExport {
         for (SiteUser user : table.users) {
             List<Object> row = new ArrayList<>();
             row.add(user.netid);
-            row.add(user.siteid);
+            row.add("Last");
+            row.add("First");
+            row.add("Term");
+            row.add("Site Title");
+            row.add("Roster ID");
+            row.add("https://newclasses.nyu.edu/portal/site/" + user.siteid);
 
             for (AttendanceEvent event : table.events) {
                 row.add(table.statusTable.get(new UserAtEvent(user, event)));
@@ -332,7 +350,7 @@ public class AttendanceGoogleReportExport {
         valueRange.setValues(rows);
 
         Sheets.Spreadsheets.Values.Update updateRequest =
-            service.spreadsheets().values().update(spreadsheetId, sheet.getProperties().getTitle(), valueRange);
+            service.spreadsheets().values().update(spreadsheetId, sheet.getProperties().getTitle() + "!A2:ZZ", valueRange);
         updateRequest.setValueInputOption("RAW");
         UpdateValuesResponse updateValuesResponse = updateRequest.execute();
         System.out.println(updateValuesResponse);
