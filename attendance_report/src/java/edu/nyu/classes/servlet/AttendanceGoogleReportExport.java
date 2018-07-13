@@ -42,7 +42,7 @@ import org.sakaiproject.user.api.UserNotDefinedException;
 public class AttendanceGoogleReportExport {
 
     private static final String APPLICATION_NAME = "AttendanceGoogleReportExport";
-
+    private static final String BACKUP_SHEET_NAME = "_backup_";
     private String spreadsheetId;
     private GoogleClient client;
     private Sheets service;
@@ -295,11 +295,14 @@ public class AttendanceGoogleReportExport {
             try {
                 storeOverrides(pullOverrides(sheet));
 
+                backupSheet(sheet);
                 clearSheet(sheet);
 
                 syncValuesToSheet(sheet);
 
                 protectNonEditableColumns(sheet, range);
+
+                deleteSheet(BACKUP_SHEET_NAME);
             } finally {
                 unprotectRange(sheet, range);
             }
@@ -309,6 +312,63 @@ public class AttendanceGoogleReportExport {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void deleteSheet(String sheetName) throws IOException {
+        System.out.println("Delete sheet: " + sheetName);
+
+        Sheets.Spreadsheets.Get getSpreadsheetRequest = service.spreadsheets().get(spreadsheetId);
+        Spreadsheet spreadsheet = getSpreadsheetRequest.execute();
+        List<Request> requests = new ArrayList<>();
+
+        for (Sheet sheet : spreadsheet.getSheets()) {
+            if (sheet.getProperties().getTitle().equals(sheetName)) {
+                DeleteSheetRequest deleteSheetRequest = new DeleteSheetRequest();
+                deleteSheetRequest.setSheetId(sheet.getProperties().getSheetId());
+
+                Request request = new Request();
+                request.setDeleteSheet(deleteSheetRequest);
+                requests.add(request);
+            }
+        }
+
+        if (requests.isEmpty()) {
+            return;
+        }
+
+        BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
+        batchUpdateSpreadsheetRequest.setRequests(requests);
+        Sheets.Spreadsheets.BatchUpdate batchUpdateRequest =
+            service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateSpreadsheetRequest);
+
+        BatchUpdateSpreadsheetResponse batchUpdateSpreadsheetResponse = batchUpdateRequest.execute();
+        System.out.println(batchUpdateSpreadsheetResponse);
+    }
+
+    private void backupSheet(Sheet sheet) throws IOException {
+        System.out.println("Backup sheet");
+
+        deleteSheet(BACKUP_SHEET_NAME);
+
+        DuplicateSheetRequest duplicateSheetRequest = new DuplicateSheetRequest();
+        duplicateSheetRequest.setSourceSheetId(sheet.getProperties().getSheetId());
+        duplicateSheetRequest.setInsertSheetIndex(1);
+        duplicateSheetRequest.setNewSheetName(BACKUP_SHEET_NAME);
+
+        BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
+        List<Request> requests = new ArrayList<>();
+        Request request = new Request();
+        request.setDuplicateSheet(duplicateSheetRequest);
+        requests.add(request);
+        batchUpdateSpreadsheetRequest.setRequests(requests);
+        Sheets.Spreadsheets.BatchUpdate batchUpdateRequest =
+            service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateSpreadsheetRequest);
+
+        BatchUpdateSpreadsheetResponse batchUpdateSpreadsheetResponse = batchUpdateRequest.execute();
+        Response response = batchUpdateSpreadsheetResponse.getReplies().get(0);
+
+        DuplicateSheetResponse duplicateSheetResponse = response.getDuplicateSheet();
+        protectSheet(duplicateSheetResponse.getProperties().getSheetId());
     }
 
     private void storeOverrides(List<AttendanceOverride> overrides) {
@@ -416,13 +476,12 @@ public class AttendanceGoogleReportExport {
         return result;
     }
 
-
-    private ProtectedRange protectSheet(Sheet sheet) throws IOException {
-        System.out.println("Protect sheet");
+    private ProtectedRange protectSheet(Integer sheetId) throws IOException {
+        System.out.println("Protect sheet: " + sheetId);
         AddProtectedRangeRequest addProtectedRangeRequest = new AddProtectedRangeRequest();
         ProtectedRange protectedRange = new ProtectedRange();
         GridRange gridRange = new GridRange();
-        gridRange.setSheetId(sheet.getProperties().getSheetId());
+        gridRange.setSheetId(sheetId);
         protectedRange.setRange(gridRange);
         protectedRange.setEditors(new Editors());
         protectedRange.setRequestingUserCanEdit(true);
@@ -442,6 +501,10 @@ public class AttendanceGoogleReportExport {
         AddProtectedRangeResponse addProtectedRangeResponse = batchUpdateSpreadsheetResponse.getReplies().get(0).getAddProtectedRange();
 
         return addProtectedRangeResponse.getProtectedRange();
+    }
+
+    private ProtectedRange protectSheet(Sheet sheet) throws IOException {
+        return protectSheet(sheet.getProperties().getSheetId());
     }
 
     private void unprotectRange(Sheet sheet, ProtectedRange range) throws IOException {
