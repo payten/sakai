@@ -293,6 +293,8 @@ public class AttendanceGoogleReportExport {
                 clearSheet(sheet);
 
                 syncValuesToSheet(sheet);
+
+                protectNonEditableColumns(sheet, range);
             } finally {
                 unprotectRange(sheet, range);
             }
@@ -517,5 +519,72 @@ public class AttendanceGoogleReportExport {
         Spreadsheet spreadsheet = request.execute();
 
         return spreadsheet.getSheets().get(0);
+    }
+
+    private void protectNonEditableColumns(Sheet targetSheet, ProtectedRange sheetProtectedRange) throws IOException {
+        System.out.println("Protect non editable columns");
+
+        // All requests to apply to the spreadsheet
+        List<Request> requests = new ArrayList<>();
+
+        // Build requests to drop all existing protected ranges (except sheetProtectingRange)
+        System.out.println("- get existing protected ranges for deletion");
+        Sheets.Spreadsheets.Get getSpreadsheetRequest = service.spreadsheets().get(spreadsheetId);
+        Spreadsheet spreadsheet = getSpreadsheetRequest.execute();
+        for (Sheet sheet : spreadsheet.getSheets()) {
+            if (sheet.getProperties().getSheetId() == targetSheet.getProperties().getSheetId()) {
+                for (ProtectedRange protectedRange : sheet.getProtectedRanges()) {
+                    if (protectedRange.getProtectedRangeId() == sheetProtectedRange.getProtectedRangeId()) {
+                        continue;
+                    }
+
+                    DeleteProtectedRangeRequest deleteProtectedRangeRequest = new DeleteProtectedRangeRequest();
+                    deleteProtectedRangeRequest.setProtectedRangeId(protectedRange.getProtectedRangeId());
+                    Request request = new Request();
+                    request.setDeleteProtectedRange(deleteProtectedRangeRequest);
+                    requests.add(request);
+                }
+            }
+        }
+
+        // Build requests to protected each non-OVERRIDE column
+        System.out.println("- build new protected ranges from headers");
+        Sheets.Spreadsheets.Values.Get spreadsheetGetRequest = service.spreadsheets().values().get(spreadsheetId, targetSheet.getProperties().getTitle() + "!A1:ZZ");
+        ValueRange values = spreadsheetGetRequest.execute();
+
+        List<Object> headers = values.getValues().get(0);
+        for (int i=0; i < headers.size(); i++) {
+            String header = (String) headers.get(i);
+            if (header.endsWith("\nOVERRIDE")) {
+                continue;
+            }
+
+            ProtectedRange protectedRange = new ProtectedRange();
+            GridRange gridRange = new GridRange();
+            gridRange.setSheetId(targetSheet.getProperties().getSheetId());
+            gridRange.setStartColumnIndex(i);
+            gridRange.setEndColumnIndex(i);
+            protectedRange.setRange(gridRange);
+            protectedRange.setEditors(new Editors());
+            protectedRange.setRequestingUserCanEdit(true);
+
+            AddProtectedRangeRequest addProtectedRangeRequest = new AddProtectedRangeRequest();
+            addProtectedRangeRequest.setProtectedRange(protectedRange);
+
+            Request request = new Request();
+            request.setAddProtectedRange(addProtectedRangeRequest);
+            requests.add(request);
+        }
+
+        // Do the request!
+        System.out.println("- do the batch request");
+        BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
+        batchUpdateSpreadsheetRequest.setRequests(requests);
+        Sheets.Spreadsheets.BatchUpdate batchUpdateRequest =
+            service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateSpreadsheetRequest);
+
+        BatchUpdateSpreadsheetResponse batchUpdateSpreadsheetResponse = batchUpdateRequest.execute();
+
+        System.out.println(batchUpdateSpreadsheetResponse);
     }
 }
