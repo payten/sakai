@@ -550,7 +550,7 @@ public class AttendanceGoogleReportExport {
 
         // Build requests to protected each non-OVERRIDE column
         System.out.println("- build new protected ranges from headers");
-        Sheets.Spreadsheets.Values.Get spreadsheetGetRequest = service.spreadsheets().values().get(spreadsheetId, targetSheet.getProperties().getTitle() + "!A1:ZZ");
+        Sheets.Spreadsheets.Values.Get spreadsheetGetRequest = service.spreadsheets().values().get(spreadsheetId, targetSheet.getProperties().getTitle() + "!A1:ZZ1");
         ValueRange values = spreadsheetGetRequest.execute();
 
         List<Object> headers = values.getValues().get(0);
