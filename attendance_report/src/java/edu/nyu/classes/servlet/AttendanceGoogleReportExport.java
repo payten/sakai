@@ -147,17 +147,22 @@ public class AttendanceGoogleReportExport {
     static class AttendanceOverride extends ValueObject {
         public UserAtEvent userAtEvent;
         public String override;
+        public String oldStatus;
         public String rawText;
 
-        public AttendanceOverride(UserAtEvent userAtEvent, String override) {
+        public AttendanceOverride(UserAtEvent userAtEvent, String override, String oldStatus) {
             this.userAtEvent = Objects.requireNonNull(userAtEvent);
             this.rawText = Objects.requireNonNull(override);
+            this.oldStatus = Objects.requireNonNull(oldStatus);
 
             for (Map.Entry<String, String> entry : statusMapping.entrySet()) {
                 if (override.equals(entry.getValue())) {
                     this.override = entry.getKey();
-                    break;
                 }
+                if (oldStatus.equals(entry.getValue())) {
+                    this.oldStatus = entry.getKey();
+                }
+
             }
 
             if (this.override == null) {
@@ -171,7 +176,7 @@ public class AttendanceGoogleReportExport {
 
         @Override
         public Object[] interestingFields() {
-            return new Object[] { userAtEvent, override };
+            return new Object[] { userAtEvent, override, oldStatus };
         }
     }
 
@@ -339,9 +344,13 @@ public class AttendanceGoogleReportExport {
                     if (override.userAtEvent.event.name.equals(record.getAttendanceEvent().getName())) {
                         Status oldStatus = record.getStatus();
 
-                        record.setStatus(Status.valueOf(override.override));
-                        attendance.updateAttendanceRecord(attendanceSite, record, oldStatus);
-
+                        if (oldStatus.toString().equals(override.oldStatus)) {
+                            record.setStatus(Status.valueOf(override.override));
+                            attendance.updateAttendanceRecord(attendanceSite, record, oldStatus);
+                        } else {
+                            // FIXME
+                            System.err.println("WARNING: database status " + oldStatus + " doesn't match incoming " + override.oldStatus);
+                        }
                         updated = true;
                         break;
                     }
@@ -400,7 +409,7 @@ public class AttendanceGoogleReportExport {
                 AttendanceEvent event = new AttendanceEvent(overrideEvents[override]);
                 UserAtEvent userAtEvent = new UserAtEvent(user, event);
 
-                result.add(new AttendanceOverride(userAtEvent, (String)row.get(override)));
+                result.add(new AttendanceOverride(userAtEvent, (String)row.get(override), (String)row.get(override - 1)));
             }
         }
 
