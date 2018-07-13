@@ -453,6 +453,7 @@ public class AttendanceGoogleReportExport {
     }
 
     private void clearSheet(Sheet sheet) throws IOException {
+        System.out.println("Clear the sheet");
         Sheets.Spreadsheets.Values.Clear clearRequest =
             service.spreadsheets().values().clear(spreadsheetId, sheet.getProperties().getTitle(), new ClearValuesRequest());
         ClearValuesResponse clearValuesResponse = clearRequest.execute();
@@ -563,7 +564,7 @@ public class AttendanceGoogleReportExport {
             GridRange gridRange = new GridRange();
             gridRange.setSheetId(targetSheet.getProperties().getSheetId());
             gridRange.setStartColumnIndex(i);
-            gridRange.setEndColumnIndex(i);
+            gridRange.setEndColumnIndex(i+1);
             protectedRange.setRange(gridRange);
             protectedRange.setEditors(new Editors());
             protectedRange.setRequestingUserCanEdit(true);
@@ -575,6 +576,21 @@ public class AttendanceGoogleReportExport {
             request.setAddProtectedRange(addProtectedRangeRequest);
             requests.add(request);
         }
+
+        // protect the header row
+        ProtectedRange protectedRange = new ProtectedRange();
+        GridRange gridRange = new GridRange();
+        gridRange.setSheetId(targetSheet.getProperties().getSheetId());
+        gridRange.setStartRowIndex(0);
+        gridRange.setEndRowIndex(1);
+        protectedRange.setRange(gridRange);
+        protectedRange.setEditors(new Editors());
+        protectedRange.setRequestingUserCanEdit(true);
+        AddProtectedRangeRequest addProtectedRangeRequest = new AddProtectedRangeRequest();
+        addProtectedRangeRequest.setProtectedRange(protectedRange);
+        Request request = new Request();
+        request.setAddProtectedRange(addProtectedRangeRequest);
+        requests.add(request);
 
         // Do the request!
         System.out.println("- do the batch request");
