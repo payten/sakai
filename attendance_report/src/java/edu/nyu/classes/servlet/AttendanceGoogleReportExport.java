@@ -532,9 +532,9 @@ public class AttendanceGoogleReportExport {
         Sheets.Spreadsheets.Get getSpreadsheetRequest = service.spreadsheets().get(spreadsheetId);
         Spreadsheet spreadsheet = getSpreadsheetRequest.execute();
         for (Sheet sheet : spreadsheet.getSheets()) {
-            if (sheet.getProperties().getSheetId() == targetSheet.getProperties().getSheetId()) {
+            if (targetSheet.getProperties().getSheetId().equals(sheet.getProperties().getSheetId())) {
                 for (ProtectedRange protectedRange : sheet.getProtectedRanges()) {
-                    if (protectedRange.getProtectedRangeId() == sheetProtectedRange.getProtectedRangeId()) {
+                    if (sheetProtectedRange.getProtectedRangeId().equals(protectedRange.getProtectedRangeId())) {
                         continue;
                     }
 
