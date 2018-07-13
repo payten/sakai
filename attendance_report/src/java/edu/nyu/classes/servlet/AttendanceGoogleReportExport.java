@@ -290,12 +290,18 @@ public class AttendanceGoogleReportExport {
         try {
             Sheet sheet = getTargetSheet();
 
+            if (backupExists()) {
+                // FIXME
+                throw new RuntimeException("Backup sheet exists! Stop everything!");
+            }
+
             ProtectedRange range = protectSheet(sheet);
 
             try {
                 storeOverrides(pullOverrides(sheet));
 
                 backupSheet(sheet);
+
                 clearSheet(sheet);
 
                 syncValuesToSheet(sheet);
@@ -312,6 +318,19 @@ public class AttendanceGoogleReportExport {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private boolean backupExists() throws IOException {
+        Sheets.Spreadsheets.Get getSpreadsheetRequest = service.spreadsheets().get(spreadsheetId);
+        Spreadsheet spreadsheet = getSpreadsheetRequest.execute();
+
+        for (Sheet sheet : spreadsheet.getSheets()) {
+            if (BACKUP_SHEET_NAME.equals(sheet.getProperties().getTitle())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void deleteSheet(String sheetName) throws IOException {
@@ -347,8 +366,6 @@ public class AttendanceGoogleReportExport {
 
     private void backupSheet(Sheet sheet) throws IOException {
         System.out.println("Backup sheet");
-
-        deleteSheet(BACKUP_SHEET_NAME);
 
         DuplicateSheetRequest duplicateSheetRequest = new DuplicateSheetRequest();
         duplicateSheetRequest.setSourceSheetId(sheet.getProperties().getSheetId());
