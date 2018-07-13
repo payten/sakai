@@ -5,6 +5,9 @@ import com.google.api.services.sheets.v4.model.*;
 
 import org.sakaiproject.component.cover.HotReloadConfigurationService;
 import org.sakaiproject.component.cover.ServerConfigurationService;
+import org.sakaiproject.component.cover.ComponentManager;
+import org.sakaiproject.attendance.logic.AttendanceLogic;
+
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +27,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.HashSet;
 import java.util.Set;
+
+import java.util.Collections;
+import org.sakaiproject.attendance.model.AttendanceSite;
+import org.sakaiproject.attendance.model.AttendanceRecord;
+import org.sakaiproject.attendance.model.Status;
+import org.sakaiproject.user.cover.UserDirectoryService;
+import org.sakaiproject.user.api.User;
+import org.sakaiproject.user.api.UserNotDefinedException;
+
+
+
 
 public class AttendanceGoogleReportExport {
 
@@ -70,22 +84,25 @@ public class AttendanceGoogleReportExport {
             if (this.getClass() != other.getClass()) { return false; }
             return Arrays.equals(this.interestingFields(), ((ValueObject) other).interestingFields());
         }
+
+        @Override
+        public String toString() {
+            return this.interestingFields().toString();
+        }
     }
 
     static class SiteUser extends ValueObject {
-        public String userid;
         public String netid;
         public String siteid;
 
-        public SiteUser(String userid, String netid, String siteid) {
-            this.userid = Objects.requireNonNull(userid);
+        public SiteUser(String netid, String siteid) {
             this.netid = Objects.requireNonNull(netid);
             this.siteid = Objects.requireNonNull(siteid);
         }
 
         @Override
         public Object[] interestingFields() {
-            return new Object[] { userid, netid, siteid };
+            return new Object[] { netid, siteid };
         }
     }
 
@@ -117,6 +134,48 @@ public class AttendanceGoogleReportExport {
         }
     }
 
+    static Map<String, String> statusMapping = null;
+    static {
+        statusMapping = new HashMap<>();
+        statusMapping.put("PRESENT", "P");
+        statusMapping.put("UNEXCUSED_ABSENCE", "A");
+        statusMapping.put("EXCUSED_ABSENCE", "E");
+        statusMapping.put("LATE", "L");
+        statusMapping.put("LEFT_EARLY", "LE");
+    }
+
+    static class AttendanceOverride extends ValueObject {
+        public UserAtEvent userAtEvent;
+        public String override;
+        public String rawText;
+
+        public AttendanceOverride(UserAtEvent userAtEvent, String override) {
+            this.userAtEvent = Objects.requireNonNull(userAtEvent);
+            this.rawText = Objects.requireNonNull(override);
+
+            for (Map.Entry<String, String> entry : statusMapping.entrySet()) {
+                if (override.equals(entry.getValue())) {
+                    this.override = entry.getKey();
+                    break;
+                }
+            }
+
+            if (this.override == null) {
+                this.override = "";
+            }
+        }
+
+        public boolean isValid() {
+            return !"".equals(this.override);
+        }
+
+        @Override
+        public Object[] interestingFields() {
+            return new Object[] { userAtEvent, override };
+        }
+    }
+
+
     static class DataTable {
         public Set<AttendanceEvent> events;
         public List<SiteUser> users;
@@ -129,6 +188,9 @@ public class AttendanceGoogleReportExport {
         }
     }
 
+    private String mapStatus(String status) {
+        return statusMapping.get(status);
+    }
 
     private DataTable loadAllData() throws Exception {
         // Get a list of all students from the sites of interest
@@ -139,14 +201,14 @@ public class AttendanceGoogleReportExport {
             // Get out list of users in sites of interest
             List<SiteUser> users = new ArrayList<>();
 
-            try (PreparedStatement ps = conn.prepareStatement("select ssu.user_id, map.eid, ssu.site_id" +
+            try (PreparedStatement ps = conn.prepareStatement("select map.eid, ssu.site_id" +
                                                               " from sakai_site_user ssu" +
                                                               " inner join sakai_user_id_map map on map.user_id = ssu.user_id" +
                                                               " where ssu.permission = 1 AND" +
                                                               "   ssu.site_id in (select distinct s.site_id from attendance_site_t s inner join attendance_event_t e on s.a_site_id = e.a_site_id)");
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    users.add(new SiteUser(rs.getString("user_id"), rs.getString("eid"), rs.getString("site_id")));
+                    users.add(new SiteUser(rs.getString("eid"), rs.getString("site_id")));
                 }
             }
 
@@ -182,7 +244,7 @@ public class AttendanceGoogleReportExport {
             }
 
             // Get all users at all events
-            try (PreparedStatement ps = conn.prepareStatement("select s.site_id, e.name, r.user_id, m.eid, r.status" +
+            try (PreparedStatement ps = conn.prepareStatement("select s.site_id, e.name, m.eid, r.status" +
                                                               " from attendance_event_t e" +
                                                               " inner join attendance_record_t r on e.a_event_id = r.a_event_id" +
                                                               " inner join attendance_site_t s on e.a_site_id = s.a_site_id" +
@@ -190,10 +252,10 @@ public class AttendanceGoogleReportExport {
                  ResultSet rs = ps.executeQuery()) {
                 // Fill out the values we know
                 while (rs.next()) {
-                    SiteUser user = new SiteUser(rs.getString("user_id"), rs.getString("eid"), rs.getString("site_id"));
+                    SiteUser user = new SiteUser(rs.getString("eid"), rs.getString("site_id"));
                     AttendanceEvent event = new AttendanceEvent(rs.getString("name"));
 
-                    String status = rs.getString("status");
+                    String status = mapStatus(rs.getString("status"));
 
                     if (status != null) {
                         statusTable.put(new UserAtEvent(user, event), status);
@@ -223,22 +285,126 @@ public class AttendanceGoogleReportExport {
         try {
             Sheet sheet = getTargetSheet();
 
-            // sheet
-            System.err.println("\n*** DEBUG " + System.currentTimeMillis() + "[AttendanceGoogleReportExport.java:225 1d7b7a]: " + "\n    sheet => " + (sheet) + "\n");
-
             ProtectedRange range = protectSheet(sheet);
 
-            clearSheet(sheet);
+            try {
+                storeOverrides(pullOverrides(sheet));
 
-            syncValuesToSheet(sheet);
+                clearSheet(sheet);
 
-            unprotectRange(sheet, range);
+                syncValuesToSheet(sheet);
+            } finally {
+                unprotectRange(sheet, range);
+            }
 
         } catch (Exception e) {
             System.out.println("ERROR in AttendanceGoogleReportExport.export");
             System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
+
+    private void storeOverrides(List<AttendanceOverride> overrides) {
+        // netid, siteid, event name...
+        AttendanceLogic attendance = (AttendanceLogic) ComponentManager.get("org.sakaiproject.attendance.logic.AttendanceLogic");
+
+        for (AttendanceOverride override : overrides) {
+            if (!override.isValid()) {
+                // "INVALID OVERRIDE", override.rawText
+                System.err.println("\n*** DEBUG " + System.currentTimeMillis() + "[AttendanceGoogleReportExport.java:315 f46b87]: " + "\n    'INVALID OVERRIDE' => " + ("INVALID OVERRIDE") + "\n    override.rawText => " + (override.rawText) + "\n");
+                continue;
+            }
+
+            boolean updated = false;
+
+            String netid = override.userAtEvent.user.netid;
+            try {
+                User user = UserDirectoryService.getUserByEid(netid);
+
+                AttendanceSite attendanceSite = attendance.getAttendanceSite(override.userAtEvent.user.siteid);
+
+                List<AttendanceRecord> records =
+                    attendance
+                    .getAttendanceRecordsForUsers(Collections.singletonList(user.getId()),
+                                                  attendanceSite)
+                    .get(user.getId());
+
+                if (records == null) {
+                    records = Collections.emptyList();
+                }
+
+                for (AttendanceRecord record : records) {
+                    if (override.userAtEvent.event.name.equals(record.getAttendanceEvent().getName())) {
+                        Status oldStatus = record.getStatus();
+
+                        record.setStatus(Status.valueOf(override.override));
+                        attendance.updateAttendanceRecord(attendanceSite, record, oldStatus);
+
+                        updated = true;
+                        break;
+                    }
+                }
+
+                if (!updated) {
+                    // "FAILED TO FIND MATCH", override.userAtEvent.event.name, override.userAtEvent.user.netid
+                    System.err.println("\n*** DEBUG " + System.currentTimeMillis() + "[AttendanceGoogleReportExport.java:349 f69489]: " + "\n    'FAILED TO FIND MATCH' => " + ("FAILED TO FIND MATCH") + "\n    override.userAtEvent.event.name => " + (override.userAtEvent.event.name) + "\n    override.userAtEvent.user.netid => " + (override.userAtEvent.user.netid) + "\n");
+                }
+            } catch (UserNotDefinedException e) {
+                // FIXME: failed to match user
+            }
+
+        }
+    }
+
+    private List<AttendanceOverride> pullOverrides(Sheet sheet) throws IOException {
+        Sheets.Spreadsheets.Values.Get request = service.spreadsheets().values().get(spreadsheetId, sheet.getProperties().getTitle());
+        ValueRange values = request.execute();
+
+        List<Object> headers = values.getValues().get(0);
+
+        String[] overrideEvents = new String[headers.size()];
+
+        for (int i = 0; i < headers.size(); i++) {
+            if (((String) headers.get(i)).endsWith("\nOVERRIDE")) {
+                String eventName = (String) headers.get(i - 1);
+                overrideEvents[i] = eventName;
+            }
+        }
+
+        List<AttendanceOverride> result = new ArrayList<>();
+
+        for (int i = 1; i < values.getValues().size(); i++) {
+            List<Object> row = values.getValues().get(i);
+            String netId = (String)row.get(0);
+            String siteUrl = (String)row.get(6);
+
+            for (int override = 0; override < overrideEvents.length && override < row.size(); override++) {
+                if (overrideEvents[override] == null) {
+                    // This isn't an override column.  Ignore.
+                    continue;
+                }
+
+                if ("-".equals(row.get(override - 1))) {
+                    // You can't override an event the student isn't in.
+                    continue;
+                }
+
+                if (row.get(override) == null || "".equals(row.get(override))) {
+                    // No override specified for this student.
+                    continue;
+                }
+
+                SiteUser user = new SiteUser(netId, siteUrl.replaceAll(".*/", ""));
+                AttendanceEvent event = new AttendanceEvent(overrideEvents[override]);
+                UserAtEvent userAtEvent = new UserAtEvent(user, event);
+
+                result.add(new AttendanceOverride(userAtEvent, (String)row.get(override)));
+            }
+        }
+
+        return result;
+    }
+
 
     private ProtectedRange protectSheet(Sheet sheet) throws IOException {
         System.out.println("Protect sheet");
@@ -268,20 +434,6 @@ public class AttendanceGoogleReportExport {
     }
 
     private void unprotectRange(Sheet sheet, ProtectedRange range) throws IOException {
-        // Sheets.Spreadsheets.Get getSpreadsheetRequest = service.spreadsheets().get(spreadsheetId);
-        // Spreadsheet spreadsheet = getSpreadsheetRequest.execute();
-        //
-        // Sheet sheetToClear = null;
-        // for (Sheet freshSheet : spreadsheet.getSheets()) {
-        //     if (freshSheet.getProperties().getSheetId() == sheet.getProperties().getSheetId()) {
-        //         sheetToClear = freshSheet;
-        //         break;
-        //     }
-        // }
-        // if (sheetToClear == null) {
-        //     throw new RuntimeException("Sheet not found");
-        // }
-
         List<Request> requests = new ArrayList<>();
 
         DeleteProtectedRangeRequest deleteProtectedRangeRequest = new DeleteProtectedRangeRequest();
@@ -350,7 +502,7 @@ public class AttendanceGoogleReportExport {
         valueRange.setValues(rows);
 
         Sheets.Spreadsheets.Values.Update updateRequest =
-            service.spreadsheets().values().update(spreadsheetId, sheet.getProperties().getTitle() + "!A2:ZZ", valueRange);
+            service.spreadsheets().values().update(spreadsheetId, sheet.getProperties().getTitle() + "!A1:ZZ", valueRange);
         updateRequest.setValueInputOption("RAW");
         UpdateValuesResponse updateValuesResponse = updateRequest.execute();
         System.out.println(updateValuesResponse);

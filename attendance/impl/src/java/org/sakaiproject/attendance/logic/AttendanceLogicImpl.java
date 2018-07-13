@@ -188,14 +188,21 @@ public class AttendanceLogicImpl implements AttendanceLogic {
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean updateAttendanceRecord(AttendanceRecord aR, Status oldStatus) throws IllegalArgumentException {
+	public boolean updateAttendanceRecord(AttendanceSite site, AttendanceRecord aR, Status oldStatus) throws IllegalArgumentException {
 		if(aR == null) {
 			throw new IllegalArgumentException("AttendanceRecord cannot be null");
 		}
 
 		updateStats(aR, oldStatus);
-		regradeForAttendanceRecord(getCurrentAttendanceSite(), aR);
+		regradeForAttendanceRecord(site, aR);
 		return dao.updateAttendanceRecord(aR);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean updateAttendanceRecord(AttendanceRecord aR, Status oldStatus) throws IllegalArgumentException {
+		return updateAttendanceRecord(getCurrentAttendanceSite(), aR, oldStatus);
 	}
 
 	/**
