@@ -1,3 +1,17 @@
+// Things left to do:
+//
+//   * Email error reports to someone who cares
+//
+//   * clean up logging
+//
+//   * Pull in rosters/schools/real user information from the right NYU_* tables
+//
+//   * Pull out config stuff into sakai.properties if useful (hot reload)
+//
+//   * Audit FIXMEs
+//
+
+
 package edu.nyu.classes.servlet;
 
 import com.google.api.services.sheets.v4.Sheets;
