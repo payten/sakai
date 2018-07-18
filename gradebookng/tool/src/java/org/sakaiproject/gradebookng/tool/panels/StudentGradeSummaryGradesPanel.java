@@ -20,6 +20,7 @@ import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CourseGrade;
 import org.sakaiproject.service.gradebook.shared.GradingType;
+import org.sakaiproject.service.gradebook.shared.SortType;
 import org.sakaiproject.tool.gradebook.Gradebook;
 
 /**
@@ -76,7 +77,8 @@ public class StudentGradeSummaryGradesPanel extends BasePanel {
 
 		// build up table data
 		final Map<Long, GbGradeInfo> grades = this.businessService.getGradesForStudent(userId);
-		final List<Assignment> assignments = this.businessService.getGradebookAssignmentsForStudent(userId);
+		final SortType sortedBy = this.isGroupedByCategory ? SortType.SORT_BY_CATEGORY : SortType.SORT_BY_SORTING;
+		final List<Assignment> assignments = this.businessService.getGradebookAssignmentsForStudent(userId, sortedBy);
 
 		final List<String> categoryNames = new ArrayList<String>();
 		final Map<String, List<Assignment>> categoryNamesToAssignments = new HashMap<String, List<Assignment>>();
@@ -108,7 +110,6 @@ public class StudentGradeSummaryGradesPanel extends BasePanel {
 					categoryNamesToAssignments.get(categoryName).add(assignment);
 				}
 			}
-			Collections.sort(categoryNames);
 		}
 
 		// build the model for table

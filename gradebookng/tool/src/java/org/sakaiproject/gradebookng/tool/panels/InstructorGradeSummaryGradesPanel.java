@@ -21,6 +21,7 @@ import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CourseGrade;
 import org.sakaiproject.service.gradebook.shared.GradingType;
+import org.sakaiproject.service.gradebook.shared.SortType;
 import org.sakaiproject.tool.gradebook.Gradebook;
 
 public class InstructorGradeSummaryGradesPanel extends BasePanel {
@@ -64,7 +65,8 @@ public class InstructorGradeSummaryGradesPanel extends BasePanel {
 
 		// build the grade matrix for the user
 		final Gradebook gradebook = getGradebook();
-		final List<Assignment> assignments = this.businessService.getGradebookAssignmentsForStudent(userId);
+		final SortType sortedBy = this.isGroupedByCategory ? SortType.SORT_BY_CATEGORY : SortType.SORT_BY_SORTING;
+		final List<Assignment> assignments = this.businessService.getGradebookAssignmentsForStudent(userId, sortedBy);
 
 		final boolean isCourseGradeVisible = this.businessService.isCourseGradeVisible(this.businessService.getCurrentUser().getId());
 		final GbRole userRole = gradebookPage.getCurrentRole();
@@ -103,7 +105,6 @@ public class InstructorGradeSummaryGradesPanel extends BasePanel {
 
 			categoryNamesToAssignments.get(categoryName).add(assignment);
 		}
-		Collections.sort(categoryNames);
 
 		// build the model for table
 		final Map<String, Object> tableModel = new HashMap<>();
