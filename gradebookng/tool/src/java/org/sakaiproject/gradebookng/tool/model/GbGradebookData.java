@@ -254,7 +254,7 @@ public class GbGradebookData {
 	}
 
 	private String serializeGrades(final List<Score> gradeList) {
-		if (gradeList.stream().anyMatch(score -> score.isLarge())) {
+		if (gradeList.stream().anyMatch(score -> !score.isPackable())) {
 			return "json:" + serializeLargeGrades(gradeList);
 		} else {
 			return "packed:" + serializeSmallGrades(gradeList);
@@ -304,6 +304,11 @@ public class GbGradebookData {
 			}
 
 			final double grade = score.getScore();
+
+			if (grade < 0) {
+			    throw new IllegalStateException("serializeSmallGrades doesn't support negative scores");
+			}
+
 
 			final boolean hasFraction = ((int) grade != grade);
 
@@ -610,8 +615,8 @@ public class GbGradebookData {
 			return score == null;
 		}
 
-		public boolean isLarge() {
-			return score != null && Double.valueOf(score) >= 16384;
+		public boolean isPackable() {
+			return isNull() || (Double.valueOf(score) >= 0 && Double.valueOf(score) < 16384);
 		}
 	}
 
