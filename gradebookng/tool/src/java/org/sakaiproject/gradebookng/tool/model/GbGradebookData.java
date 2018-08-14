@@ -262,7 +262,7 @@ public class GbGradebookData {
 	}
 
 	private String serializeLargeGrades(final List<Score> gradeList) {
-		final List<Double> scores = gradeList.stream().map(score -> score.isNull() ? -1 : score.getScore()).collect(Collectors.toList());
+		final List<Double> scores = gradeList.stream().map(score -> score.isNull() ? null : score.getScore()).collect(Collectors.toList());
 
 		try {
 			final ObjectMapper mapper = new ObjectMapper();
