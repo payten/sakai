@@ -1,6 +1,6 @@
 <textarea id="commons-inplace-post-editor-{{postId}}" style="width: 100%; resize: none">{{{content}}}</textarea>
 <div>
-    <button id="commons-inplace-post-editor-post-button-{{postId}}">Post</button>
-    <button onclick="commons.utils.cancelPostEdit('{{postId}}');">Cancel</button>
-    <span class="commons-comment-help-text"><small><code><span class="mac-only">Cmd</span><span class="pc-only">CTRL</span> + Return</code> to Post</small></span>
+    <button id="commons-inplace-post-editor-post-button-{{postId}}">{{tr 'commons' 'post'}}</button>
+    <button onclick="commons.utils.cancelPostEdit('{{postId}}');">{{tr 'commons' 'cancel'}}</button>
+    <span class="commons-comment-help-text">{{tr 'commons' 'keyboard_support'}}</span>
 </div>
