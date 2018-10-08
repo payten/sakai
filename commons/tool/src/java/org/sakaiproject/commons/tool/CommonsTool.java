@@ -118,7 +118,6 @@ public class CommonsTool extends HttpServlet {
         request.setAttribute("commonsId", isUserSite ? CommonsConstants.SOCIAL : siteId);
 
         try {
-            // FIXME what do we do if there are more than two commons tools in a site? EEEEEEP
             Site site = SiteService.getSite(siteId);
             ToolConfiguration commonsTool = site.getToolForCommonId("sakai.commons");
             request.setAttribute("commonsToolTitle", commonsTool.getTitle());

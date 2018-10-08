@@ -398,7 +398,6 @@ public class CommonsEntityProvider extends AbstractEntityProvider implements Req
         }
 
         try {
-            // FIXME what do we do if there are more than two commons tools in a site? EEEEEEP
             Site site = SiteService.getSite(siteId);
             ToolConfiguration commonsTool = site.getToolForCommonId("sakai.commons");
             commonsTool.setTitle(title);
