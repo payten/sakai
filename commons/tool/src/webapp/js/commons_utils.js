@@ -84,7 +84,7 @@ commons.utils = {
         var postEditButtons = $('#commons-post-edit-buttons-'+ postId);
         postEditButtons.show();
 
-        // CLASSES-3272 Add CTRL+Return to submit post
+        // Add CTRL+Return to submit post
         contentDiv.off('keydown').on('keydown', function(event) {
             if (event.keyCode == 13 && (event.metaKey || event.ctrlKey)) {
                 $('#commons-inplace-post-editor-post-button-' + postId).trigger('click');
@@ -157,7 +157,7 @@ commons.utils = {
             var tmp = commons.utils.fromHtml(comment.content);
             textarea.val(commons.utils.fromHtml(comment.content));
             textarea.each(function () { autosize(this); }).focus();
-            // CLASSES-3272 Add CTRL+Return to submit post
+            // Add CTRL+Return to submit post
             textarea.on('keydown', function(event) {
                 if (event.keyCode == 13 && (event.metaKey || event.ctrlKey)) {
                     $('#commons-inplace-comment-editor-post-button-' + commentId).trigger('click');
@@ -504,7 +504,7 @@ commons.utils = {
             $('#commons-post-delete-link-' + post.id).click(self.deletePostHandler);
             var textarea = $('#commons-comment-textarea-' + post.id);
             textarea.each(function () { autosize(this); });
-            // CLASSES-3272 Add CTRL+Return to submit post
+            // Add CTRL+Return to submit post
             textarea.off('keydown').on('keydown', function(event) {
                 if (event.keyCode == 13 && (event.metaKey || event.ctrlKey)) {
                     $('#commons-inplace-comment-editor-post-button-' + post.id).trigger('click');

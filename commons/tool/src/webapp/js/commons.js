@@ -292,7 +292,7 @@ commons.switchState = function (state, arg) {
                 }
             }
 
-            // CLASSES-3272 Add CTRL+Return to submit post
+            // Add CTRL+Return to submit post
             editor.on('keydown', function(event) {
                 if (event.keyCode == 13 && (event.metaKey || event.ctrlKey)) {
                     editorPostButton.trigger('click');
