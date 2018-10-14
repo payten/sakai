@@ -113,7 +113,7 @@ commons.switchState = function (state, arg) {
                     $('#commons-editor-post-button').prop('disabled', false);
                     editorPostButton.prop('disabled', false);
                     editorCancelButton.prop('disabled', false);
-                    editorHelpText.show();
+                    editorHelpText.removeClass('hide');
                 }
             }).on('paste', function (e) {
 
@@ -128,7 +128,7 @@ commons.switchState = function (state, arg) {
                     editor.html(commons.i18n.post_editor_initial_text);
                     editorPostButton.prop('disabled', true);
                     editorCancelButton.prop('disabled', true);
-                    editorHelpText.hide();
+                    editorHelpText.addClass('hide');
                 } else {
                     var sel = commons.getSelection();
                     commons.selectedText = (document.selection) ? sel.createRange().htmlText : sel.toString();
@@ -143,7 +143,7 @@ commons.switchState = function (state, arg) {
                         editor.html(commons.i18n['post_editor_initial_text']);
                         editorPostButton.prop('disabled', true);
                         editorCancelButton.prop('disabled', true);
-                        editorHelpText.hide();
+                        editorHelpText.addClass('hide');
                         fileField.val('');
 
                         var newPlaceholderId = 'commons-post-' + post.id;
@@ -161,7 +161,7 @@ commons.switchState = function (state, arg) {
                 editor.html(commons.i18n['post_editor_initial_text']);
                 editorPostButton.prop('disabled', true);
                 editorCancelButton.prop('disabled', true);
-                editorHelpText.hide();
+                editorHelpText.addClass('hide');
             });
 
             var textField = $('#commons-link-dialog-text');
