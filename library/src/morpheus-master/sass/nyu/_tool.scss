@@ -1,275 +1,77 @@
-//@import "font-awesome";
-//
+@import "font-awesome";
+
 // -------------------------------------------------------------------------------------------------------------------
 //  Tool Warning mixin
 // -------------------------------------------------------------------------------------------------------------------
-//@mixin toolWarningMessage( $content ) {
-//  content: $content;
-//  background: $warn-background-color;
-//  padding: 10px;
-//  color: $warn-color;
-//  border: 1px solid lighten($warn-color, 25%);
-//  text-align: center;
-//  display: block;
-//  margin: 0 10px 20px;
-//}
-//
+@mixin toolWarningMessage( $content ) {
+  content: $content;
+  background: $warn-background-color;
+  padding: 10px;
+  color: $warn-color;
+  border: 1px solid lighten($warn-color, 25%);
+  text-align: center;
+  display: block;
+  margin: 0 10px 20px;
+}
+
 // -------------------------------------------------------------------------------------------------------------------
 //  Form things
 // -------------------------------------------------------------------------------------------------------------------
-//
-//body {
-//  .select, body select.form-control, select {
-//    background-color: $nyu-dropdown-background-color;
-//
-//    &:disabled,&[disabled="disabled"],&[disabled],&[disabled="true"] {
-//      background-color: $button-background-color;
-//      color: lighten( $button-text-color, 5% );
-//      cursor: not-allowed;
-//      opacity: 0.7;
-//    }
-//  }
-//}
-//
+
+body {
+  .select, body select.form-control, select {
+    background-color: $nyu-dropdown-background-color;
+
+    &:disabled,&[disabled="disabled"],&[disabled],&[disabled="true"] {
+      background-color: $button-background-color;
+      color: lighten( $button-text-color, 5% );
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+  }
+}
+
 // -------------------------------------------------------------------------------------------------------------------
 //  Buttons
 // -------------------------------------------------------------------------------------------------------------------
-//
-// hide the directtool action
-//.#{$namespace}toolTitleNav__link.#{$namespace}toolTitleNav__link--directurl {
-//  display:  none !important;
-//}
-// fix cray z-index on tool headers and buttons
-//.#{$namespace}toolTitleNav__button_container,
-//.#{$namespace}multipleTools .#{$namespace}toolTitleNav .#{$namespace}toolTitleNav__title {
-//  z-index: 0 !important;
-//}
-//
-// -------------------------------------------------------------------------------------------------------------------
-//  Tool Tabs
-//   - restyle tabs with blue bar for current
-//   - ensure the new and help actions are rendered above the tabs
-// -------------------------------------------------------------------------------------------------------------------
-//@media #{$nonPhone} {
-//  body {
-//    #content {
-//      overflow: visible !important;
-//    }
-//    .#{$namespace}toolTitleNav {
-//      margin-top: 0 !important;
-//    }
-//    .#{$namespace}pageColumns--single {
-//      .#{$namespace}toolTitleNav__button_container {
-//        top: -30px !important;
-//        right: 0 !important;
-//        position: absolute !important;
-//        float: none !important;
-//        left: initial !important;
-//      }
-//    }
-//    .#{$namespace}multipleTools {
-//      //.#{$namespace}toolTitleNav__button_container {
-//      //  top: -4px !important;
-//      //  right: -11px !important;
-//      //}
-//      .#{$namespace}pageColumns--single {
-//        .#{$namespace}toolTitleNav__button_container {
-//          top: 5px !important;
-//          right: 5px !important;
-//        }
-//      }
-//    }
-//    ul.navIntraTool {
-//      font-size: 0;
-//    }
-//    .navIntraTool {
-//      padding-left: 0 !important;
-//      padding-right: 1em !important;
-//
-//      ul {
-//        font-size: 0;
-//      }
-//
-//      li {
-//        margin-right: -1px !important;
-//        font-size: $nyu-tool-tab-text-size;
-//        display: inline-block;
-//
-//        a {
-//          height: $nyu-tool-tab-height;
-//          margin-right: 0 !important;
-//          font-size: $nyu-tool-tab-text-size !important;
-//          padding: 0 10px !important;
-//          line-height: $nyu-tool-tab-height;
-//          text-transform: $nyu-tool-tab-text-transform !important;
-//          letter-spacing: $nyu-tool-tab-text-letter-spacing !important;
-//
-//          &:hover {
-//            background-color: $nyu-tool-tab-hover-background-color !important;
-//            color: $nyu-tool-tab-hover-text-color !important;
-//            text-decoration: none !important;
-//            position: relative;
-//
-//            &:before {
-//              border-top: 4px solid $nyu-tool-tab-hover-highlight-color !important;
-//              content: '';
-//              display: block;
-//              position: absolute;
-//              left: -1px;
-//              right: -1px;
-//              top: -1px;
-//            }
-//          }
-//        }
-//
-//        span.current {
-//          margin: 0 !important;
-//          padding: 0 10px !important;
-//          color: $nyu-tool-tab-active-text-color !important;
-//          height: $nyu-tool-tab-height + 1;
-//          line-height: $nyu-tool-tab-height + 1;
-//          font-size: $nyu-tool-tab-active-text-size !important;
-//          background-color: $nyu-tool-tab-active-background-color !important;
-//          text-transform: $nyu-tool-tab-text-transform !important;
-//
-//          &:before {
-//            border-top: 4px solid $nyu-tool-tab-active-highlight-color !important;
-//            content: '';
-//            display: block;
-//            position: absolute;
-//            left: -1px;
-//            right: -1px;
-//            top: -1px;
-//          }
-//        }
-//
-//        .formItem {
-//          input[type="submit"] {
-//            margin: 0;
-//          }
-//          &.form-inline {
-//            input[type="submit"] {
-//              margin: 0;
-//              height: $nyu-tool-tab-height - 6;
-//              padding: 0px 10px;
-//            }
-//          }
-//          input[type="text"] {
-//            height: $nyu-tool-tab-height - 2;
-//            margin: 0px 0 0 6px;
-//            border: 1px solid #EAEAEA;
-//
-//            &.form-control {
-//              height: $nyu-tool-tab-height - 6;
-//              margin: 0px 0 1px 6px;
-//            }
-//          }
-//        }
-//      }
-//    }
-//  }
-//}
-//
-// -------------------------------------------------------------------------------------------------------------------
-//  Content and Site Status
-// -------------------------------------------------------------------------------------------------------------------
-//@media #{$desktop} {
-//  body {
-//    #content {
-//      > #siteStatus {
-//       display: none;
-//      }
-//    }
-//  }
-//}
-//
+
+ hide the directtool action
+.#{$namespace}toolTitleNav__link.#{$namespace}toolTitleNav__link--directurl {
+  display:  none !important;
+}
+
 // -------------------------------------------------------------------------------------------------------------------
 //  CKEditor
 // -------------------------------------------------------------------------------------------------------------------
 /* CLASSES-1355 Show a helpful tooltip  */
-//span.cke_bottom {
-//    height: 33px;
-//}
-//span.cke_bottom:after {
-//    content: 'Ctrl+Right-Click to access the editor\'s context menu';
-//    position: absolute;
-//    bottom: 3px;
-//    left: 13px;
-//    text-shadow: 1px 1px 1px #FFF;
-//}
-//
-//span.cke_bottom .cke_resizer.cke_resizer_ltr {
-//    position: relative;
-//    top: 13px;
-//}
-//
+span.cke_bottom {
+    height: 33px;
+}
+span.cke_bottom:after {
+    content: 'Ctrl+Right-Click to access the editor\'s context menu';
+    position: absolute;
+    bottom: 3px;
+    left: 13px;
+    text-shadow: 1px 1px 1px #FFF;
+}
+
+span.cke_bottom .cke_resizer.cke_resizer_ltr {
+    position: relative;
+    top: 13px;
+}
+
 /* CLASSES-2655 Force the button color back to white */
-//a.cke_dialog_ui_button.cke_dialog_ui_button_ok {
-//    color: white !important;
-//}
-//
-//a.cke_dialog_ui_button {
-//    color: black !important;
-//}
-//
-//
-// -------------------------------------------------------------------------------------------------------------------
-//  Date Picker
-// -------------------------------------------------------------------------------------------------------------------
-/* SU-95 */
-//.time-picker {
-//  margin-top: 27px;
-//}
-//#bbb_container .time-picker-field {
-//  width: 60px !important;
-//}
-//#bbb_container .date-picker-field {
-//  width: 120px !important;
-//}
-//#datepick-div .datepick-header {
-//  height: 25px !important;
-//  padding: 2px 0 !important;
-//}
-//#datepick-div .datepick-new-month {
-//  margin-right: 4px !important;
-//}
-//#datepick-div .datepick-new-month,
-//#datepick-div .datepick-new-year {
-//  background-image: url(data:image/png;base64,R0lGODlhDQAEAIAAAAAAAP8A/yH5BAEHAAEALAAAAAANAAQAAAILhA+hG5jMDpxvhgIAOw==) !important;
-//  background-repeat: no-repeat !important;
-//  background-position: right center !important;
-//
-//  background-color: white !important;
-//  color: #444 !important;
-//  border: 1px solid #888 !important;
-//}
-//#datepick-div .datepick-days-cell.datepick-current-day a {
-//  background-color: #15A885 !important;
-//  color: #FFF !important
-//}
-//
+a.cke_dialog_ui_button.cke_dialog_ui_button_ok {
+    color: white !important;
+}
+
+a.cke_dialog_ui_button {
+    color: black !important;
+}
+
 // -------------------------------------------------------------------------------------------------------------------
 //  Changes to Overview (synoptic tools)
 // -------------------------------------------------------------------------------------------------------------------
-//.nyu-hide-tool-header-on-desktop {
-//  min-height: 10px;
-//  border-left: 1px solid $nyu-content-border-color;
-//  background: #FFFFFF;
-//
-//  .#{$namespace}siteHierarchy {
-//    display: none !important;
-//  }
-//}
-//
-//.#{$namespace}toolBody--sakai-iframe-site {
-//  border-bottom: none !important;
-//}
-//
-//form[name^='announcementListForm'] .instruction {
-//  background-color: inherit !important;
-//  border: 0 !important;
-//}
-//
 //.#{$namespace}multipleTools {
 //  .#{$namespace}container {
 //    border: 1px solid $nyu-overview-portlet-border-color;
