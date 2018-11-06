@@ -165,6 +165,7 @@ PASystemPopup.prototype.showPopup = function() {
                    afterClose : function (event) {
                      var acknowledgement = self.permanentlyAcknowledged ? 'permanent' : 'temporary';
                      self.acknowledge(acknowledgement);
+                     $("#pasystem-popup-wrapper").remove();
                    },
                    afterContent : function (event) {
                      $('#popup-acknowledged-button').on('click', function () {
@@ -184,6 +185,10 @@ PASystemPopup.prototype.showPopup = function() {
                      this.$instance.find(".featherlight-content").focus();
                    }
                  });
+
+  $(".featherlight").after($('<div/>', {id:"pasystem-popup-wrapper"}));
+  $("#pasystem-popup-wrapper").append($(".featherlight"));
+
 };
 
 
