@@ -140,6 +140,7 @@
                 <module>webjars</module>
                 <module>webservices</module>
                 <module>wiris</module>
+                <module>hedex</module>
             </modules>
         </profile>
         <profile>
