@@ -92,6 +92,7 @@ public class GbGradebookData {
 
 		private String categoryId;
 		private String categoryName;
+		private String abbrevCategoryName;
 		private String categoryColor;
 		private String categoryWeight;
 		private boolean isCategoryExtraCredit;
@@ -504,6 +505,7 @@ public class GbGradebookData {
 
 					nullable(a1.getCategoryId()),
 					a1.getCategoryName(),
+					FormatHelper.abbreviateMiddle(a1.getCategoryName()),
 					userSettings.getCategoryColor(a1.getCategoryName(), a1.getCategoryId()),
 					nullable(categoryWeight),
 					a1.isCategoryExtraCredit(),
