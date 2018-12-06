@@ -953,3 +953,8 @@ run_block(33, "Add hedex tables",
     alter table hdx_session_duration
         add constraint UK_87n5hpjvluyl1daqejawni6ca  unique (session_id);
 ")
+
+run_block(34, "Add index on ASN_SUBMISSION",
+          "
+CREATE INDEX IDX_ASN_SUBMISSION ON ASN_SUBMISSION (ASSIGNMENT_ID,SUBMITTED);
+")
