@@ -299,7 +299,7 @@ sakai.editor.editors.ckeditor.launch = function(targetId, config, w, h) {
         CKEDITOR.plugins.addExternal('kalturaflash',basePath+'kalturaflash/', 'plugin.js');
         CKEDITOR.plugins.addExternal('magicembed',basePath+'magicembed/', 'plugin.js');
         CKEDITOR.plugins.addExternal('youtube',basePath+'youtube/', 'plugin.js');
-        CKEDITOR.plugins.addExternal('ckeditor_wiris',basePath+'ckeditor_wiris/', 'plugin.js');
+        CKEDITOR.plugins.addExternal('ckeditor_wiris',basePath+'ckeditor_wiris/', 'ckeditor_wiris_plugin.js');
         CKEDITOR.plugins.addExternal('nyupreview', basePath + 'nyupreview/', 'plugin.js');
         CKEDITOR.plugins.addExternal('autosave',basePath+'autosave/', 'plugin.js');
         CKEDITOR.plugins.addExternal('encodedimage', basePath + 'encodedimage/', 'plugin.js');
