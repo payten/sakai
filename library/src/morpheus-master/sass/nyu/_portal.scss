@@ -160,17 +160,8 @@ body {
         margin: 1em 0;
         position: relative;
 
-        &:before {
-          content: '\f002';
-          position: absolute;
-          color: #AAA;
-          top: 4px;
-          left: 8px;
-          font-family: FontAwesome;
-        }
-
         #txtSearch {
-          padding-left: 28px;
+          padding-left: 10px;
         }
       }
 
