@@ -130,7 +130,12 @@
 						<th id="worksite" scope="col" class="attach">
 							$tlang.getString("gen.worksite")
 						</th>
+						<th scope="col" id="instructor">Instructor</th>
 						<th scope="col" id="description">$tlang.getString("gen.description")</th>
+						<th scope="col" id="term">Term</th>
+						<th scope="col" id="datecreated">Date Created</th>
+						<th scope="col" id="status">Status</th>
+
 					</tr>
 					<tbody>
 						#set ($rowCount =0)
@@ -149,8 +154,12 @@
 								</td>
 
 								<th scope="row" headers="worksite" class="attach noWrap" id="mcstR-$rowCount">
-									<a href="$site.Url" target="_top" title="$tlang.getString('mb.gotosite') $validator.escapeHtml($site.Title)">$validator.escapeHtml($site.Title)</a>
+									<a href="${site.Url}" target="_top" title="$tlang.getString('mb.gotosite') $validator.escapeHtml(${site.Title})">$validator.escapeHtml(${site.Title})</a>
 								</th>
+
+								<td headers="instructor mcstR-$rowCount">
+									<span>$site.FormattedInstructorList</span>
+								</td>
 
 								<td headers="description mcstR-$rowCount" class="specialLink">
 									#if ($validator.escapeHtml($site.Description) != '')
@@ -158,16 +167,17 @@
 										<span class="itemAction"><a class="getSiteDesc" id="$site.Id" href="#">$tlang.getString("list.desc.more")</a></span>
 									#end
 								</td>
-								<td headers="term">
-									$meta.term
+
+								<td headers="term mcstR-$rowCount">
+									<span>$site.FormattedTerm</span>
 								</td>
 
-								<td headers="status">
-									#if($site.Published)
-										$meta.siteStatus
-									#else
-										<i>$meta.siteStatus</i>
-									#end
+								<td headers="datecreated mcstR-$rowCount">
+									<span>$site.FormattedDateCreated</span>
+								</td>
+
+								<td headers="status mcstR-$rowCount">
+									<span>$site.FormattedPublicationStatus</span>
 								</td>
 							</tr>
 						#end

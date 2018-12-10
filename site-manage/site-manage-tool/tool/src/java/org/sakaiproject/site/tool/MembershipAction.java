@@ -211,6 +211,16 @@ public class MembershipAction extends PagedResourceActionII
 		return rv;
 	}
 
+	private List<ExtendedMembershipInfo> extendWithMembershipInfo(List<Site> sites) {
+		List<ExtendedMembershipInfo> result = new ArrayList<>(sites.size());
+
+		for (Site s : sites) {
+			result.add(new ExtendedMembershipInfo(s));
+		}
+
+		return result;
+	}
+
 	/**
 	 * build the context
 	 * @param portlet
@@ -226,7 +236,7 @@ public class MembershipAction extends PagedResourceActionII
 		// read the group ids to join
 		if (state.getAttribute(SORT_ASC) == null)
 		{
-			state.setAttribute(SORT_ASC, Boolean.TRUE);
+			state.setAttribute(SORT_ASC, Boolean.FALSE);
 		}
 		Boolean sortAsc = (Boolean) state.getAttribute(SORT_ASC);
 		context.put("currentSortAsc", sortAsc);
@@ -255,7 +265,7 @@ public class MembershipAction extends PagedResourceActionII
 				site.setTitle(SITE_SERV.getUserSpecificSiteTitle(site, userDirectoryService.getCurrentUser().getId()));
 			}
 			pagingInfoToContext(state, context);
-			context.put("unjoinableSites", unjoinableSites);
+			context.put("unjoinableSites", extendWithMembershipInfo(unjoinableSites));
 			context.put("tlang", RB);
 			context.put("SiteService", SITE_SERV);
 
