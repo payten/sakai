@@ -128,6 +128,13 @@ sakai.editor.editors.ckeditor.launch = function(targetId, config, w, h) {
         }
     }
 
+    var mathRelatedPlugins = ['-']
+    if (sakai.editor.enableMathJax) {
+      mathRelatedPlugins.push('Mathjax');
+    }
+    mathRelatedPlugins.push('ckeditor_wiris_formulaEditor');
+    mathRelatedPlugins.push('ckeditor_wiris_CAS');
+
     var ckconfig = {
 	//Some defaults for audio recorder
         audiorecorder : {
@@ -188,7 +195,7 @@ sakai.editor.editors.ckeditor.launch = function(targetId, config, w, h) {
 
 
             ['Cut','Copy','Paste','PasteText','PasteFromWord','-','RemoveFormat'],
-            [imageType,'AudioRecorder','Audio','magicembed',kalturaPluginToUse,'Youtube','-','fmath_formula','ckeditor_wiris_formulaEditor','ckeditor_wiris_CAS','-','NYUPreview'],
+            [imageType,'AudioRecorder','Audio','magicembed',kalturaPluginToUse,'Youtube'].concat(mathRelatedPlugins, ['-','NYUPreview']),
             extraToolbarButtons,
             ['Maximize'],
 
@@ -347,7 +354,6 @@ sakai.editor.editors.ckeditor.launch = function(targetId, config, w, h) {
         if (sakai.editor.enableMathJax) {
           ckconfig.mathJaxLib = sakai.editor.mathJaxPath;
           ckconfig.extraPlugins+=",mathjax";
-          ckconfig.toolbar_Full = ckconfig.toolbar_Full.concat([["Mathjax"]]);
         }
 
         // CLASSES-1937
