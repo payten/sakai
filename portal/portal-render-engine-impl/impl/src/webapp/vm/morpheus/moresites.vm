@@ -11,7 +11,7 @@
         <div class="hidden" id="max-favorite-entries">${tabsSites.maxFavoritesShown}</div>
 
         <ul id="otherSitesMenu" role="menu">
-            #if (${tabsSites.worksiteToolUrl})
+            #if (false && ${tabsSites.worksiteToolUrl})
 
                 <li><a role="menuitem" id="allSites" href="${tabsSites.mrphs_worksiteToolUrl}"><span>${rloader.sit_allsites}</span></a></li>
 
@@ -23,7 +23,7 @@
 
             #end ## END of IF (${tabsSites.worksiteToolUrl})
 
-            #if (${tabsSites.prefsToolUrl})
+            #if (false && ${tabsSites.prefsToolUrl})
 
                 <li><a role="menuitem" href="${tabsSites.prefsToolUrl}"><span>${rloader.sit_preferences}</span></a></li>
 
