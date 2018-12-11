@@ -177,12 +177,16 @@ body {
           }
 
           .fav-drag-handle {
-            right: -4px !important;
-            top: 4px !important;
-            display: inline-block;
-            position: relative;
-            padding: 0 6px;
-            color: $nyu-all-sites-button-drag-color !important;
+            right: 0 !important;
+            top: 0 !important;
+            position: absolute;
+            padding: 0;
+            color: #E5E5E5 !important;
+            text-decoration: none;
+            text-align: center;
+            width: 20px;
+            height: 30px;
+            overflow: hidden;
 
             i {
               display: none;
@@ -192,6 +196,10 @@ body {
               font-family: 'nyu-classes-icons' !important;
               content: '\f1c5' !important;
               font-size: 18px;
+              text-align: center;
+              display: inline-block;
+              width: 6px;
+              line-height: 32px;
             }
 
             &:hover {
@@ -231,6 +239,15 @@ body {
           padding-right: 5px;
         }
       }
+    }
+  }
+}
+
+// CLASSES-3468 Styling issues
+body {
+  #selectSiteModal {
+    ul.favoriteSiteList > li {
+      overflow: visible;
     }
   }
 }
