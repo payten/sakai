@@ -112,9 +112,7 @@ public class AddOrEditGradeItemPanel extends BasePanel {
 				final Assignment assignment = (Assignment) form.getModelObject();
 
 				setISODates();
-				if (AddOrEditGradeItemPanel.this.dueDate != null) {
-					assignment.setDueDate(AddOrEditGradeItemPanel.this.dueDate);
-				}
+				assignment.setDueDate(AddOrEditGradeItemPanel.this.dueDate);
 
 				boolean validated = true;
 
