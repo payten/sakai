@@ -19,8 +19,11 @@
 // -------------------------------------------------------------------------------------------------------------------
 
 // hide the directtool action
-.#{$namespace}toolTitleNav__link.#{$namespace}toolTitleNav__link--directurl {
-  display:  none !important;
+body {
+  button.#{$namespace}toolTitleNav__link.#{$namespace}toolTitleNav__link--directurl,
+  a.#{$namespace}toolTitleNav__link.#{$namespace}toolTitleNav__link--directurl {
+    display:  none !important;
+  }
 }
 // fix cray z-index on tool headers and buttons
 .#{$namespace}toolTitleNav__button_container,
