@@ -5,8 +5,9 @@
     	title="Site Members"
         description="A widget that shows the members of the site">
     	
+<!-- CLASSES-3472
     	<category name="project" />
-    	<category name="course" />
+    	<category name="course" /> -->
 		
 		<configuration name="reset.button" value="false" />
 		<configuration name="help.button" value="false" />

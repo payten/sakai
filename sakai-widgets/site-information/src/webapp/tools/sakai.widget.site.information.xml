@@ -5,8 +5,9 @@
     	title="Site Information Widget"
         description="A widget that shows site information">
     	
+<!-- CLASSES-3472
     	<category name="project" />
-    	<category name="course" />
+    	<category name="course" /> -->
 		
 		<configuration name="reset.button" value="false" />
 		<configuration name="help.button" value="false" />

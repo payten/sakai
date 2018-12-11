@@ -5,9 +5,10 @@
     	title="Connections"
         description="A widget that shows a user's connections">
     	
+<!-- CLASSES-3472
     	<category name="myworkspace" />
     	<category name="project" />
-    	<category name="course" />
+    	<category name="course" /> -->
 		
 		<configuration name="reset.button" value="false" />
 		<configuration name="help.button" value="false" />
