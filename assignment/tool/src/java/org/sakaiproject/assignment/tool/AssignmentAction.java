@@ -8878,6 +8878,15 @@ public class AssignmentAction extends PagedResourceActionII {
         state.setAttribute(VIEW_ASSIGNMENT_HIDE_STUDENT_VIEW_FLAG, Boolean.TRUE);
 
         String assignmentId = params.getString("assignmentId");
+
+        // CLASSES-3485 prioritize the assignmentReference param
+        // as some directtool links pass a UUID for assignmentId
+        // instead of a reference string.
+        String assignmentReference = params.getString("assignmentReference");
+        if (StringUtils.isNoneBlank(assignmentReference)) {
+            assignmentId = assignmentReference;
+        }
+
         state.setAttribute(VIEW_ASSIGNMENT_ID, assignmentId);
 
         Assignment a = getAssignment(assignmentId, "doView_assignment", state);
