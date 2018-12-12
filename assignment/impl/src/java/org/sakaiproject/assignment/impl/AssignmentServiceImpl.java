@@ -1671,6 +1671,7 @@ public class AssignmentServiceImpl implements AssignmentService, EntityTransferr
                                 assignment.getTypeOfGrade().toString(),
                                 assignment.getTypeOfSubmission(),
                                 new SortedIterator(submissions.iterator(), new AssignmentSubmissionComparator(applicationContext.getBean(AssignmentService.class), siteService, userDirectoryService)),
+                                submitterGroups,
                                 out,
                                 exceptionMessage,
                                 withStudentSubmissionText,
@@ -3002,7 +3003,7 @@ public class AssignmentServiceImpl implements AssignmentService, EntityTransferr
     }
 
     // TODO zipSubmissions and zipGroupSubmissions should be combined
-    protected void zipGroupSubmissions(String assignmentReference, String assignmentTitle, String gradeTypeString, Assignment.SubmissionType typeOfSubmission, Iterator submissions, OutputStream outputStream, StringBuilder exceptionMessage, boolean withStudentSubmissionText, boolean withStudentSubmissionAttachment, boolean withGradeFile, boolean withFeedbackText, boolean withFeedbackComment, boolean withFeedbackAttachment, boolean withoutFolders, String gradeFileFormat, boolean includeNotSubmitted) {
+    protected void zipGroupSubmissions(String assignmentReference, String assignmentTitle, String gradeTypeString, Assignment.SubmissionType typeOfSubmission, Iterator submissions, Collection<Group> submitterGroups, OutputStream outputStream, StringBuilder exceptionMessage, boolean withStudentSubmissionText, boolean withStudentSubmissionAttachment, boolean withGradeFile, boolean withFeedbackText, boolean withFeedbackComment, boolean withFeedbackAttachment, boolean withoutFolders, String gradeFileFormat, boolean includeNotSubmitted) {
         ZipOutputStream out = null;
         try {
             out = new ZipOutputStream(outputStream);
@@ -3030,6 +3031,9 @@ public class AssignmentServiceImpl implements AssignmentService, EntityTransferr
             while (submissions.hasNext()) {
                 final AssignmentSubmission s = (AssignmentSubmission) submissions.next();
 
+                // Find the group who submitted it
+                Group submitterGroup = submitterGroups.stream().filter(g -> s.getGroupId().equals(g.getId())).findFirst().get();
+
                 log.debug(this + " ZIPGROUP " + (s == null ? "null" : s.getId()));
 
                 //SAK-29314 added a new value where it's by default submitted but is marked when the user submits
@@ -3046,7 +3050,7 @@ public class AssignmentServiceImpl implements AssignmentService, EntityTransferr
                             }
                         }).filter(Objects::nonNull).toArray(User[]::new);
 
-                        final String submitterString = submitters[0].getDisplayName();// TODO gs.getGroup().getTitle() + " (" + gs.getGroup().getId() + ")";
+                        final String submitterString = String.format("%s - %s", submitters[0].getDisplayName(), submitterGroup.getTitle());
                         final StringBuilder submittersString = new StringBuilder();
                         final StringBuilder submitters2String = new StringBuilder();
 
@@ -3092,7 +3096,7 @@ public class AssignmentServiceImpl implements AssignmentService, EntityTransferr
                                 // include student submission text
                                 if (withStudentSubmissionText) {
                                     // create the text file only when a text submission is allowed
-                                	final String zipEntryName = submittersName + submitterString + "_submissionText" + AssignmentConstants.ZIP_SUBMITTED_TEXT_FILE_TYPE;
+                                	final String zipEntryName = submittersName + "submissionText" + AssignmentConstants.ZIP_SUBMITTED_TEXT_FILE_TYPE;
                                 	createTextZipEntry(out, zipEntryName, submittedText);
                                 }
 
