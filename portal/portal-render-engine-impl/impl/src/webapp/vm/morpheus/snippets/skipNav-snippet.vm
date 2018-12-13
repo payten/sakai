@@ -16,25 +16,17 @@
             </a>
         </li>
         <li class="Mrphs-skipNav__menuitem Mrphs-skipNav__menuitem--worksite">
-            <a href="#txtSearch" id="more-sites-menu" class="Mrphs-skipNav__link js-toggle-sites-nav" title="${rloader.sit_jumpworksite}" accesskey="w">
-                <i class="fa fa-th all-sites-icon" aria-hidden="true"></i> ${rloader.sit_worksites}
+            <a href="#txtSearch" id="more-sites-menu" class="Mrphs-skipNav__link js-toggle-sites-nav" title="Sites list" accesskey="w">
+                <i class="fa fa-th all-sites-icon" aria-hidden="true"></i> Sites list
                 <span class="accesibility_key">[w]</span>
             </a>
         </li>
         <li class="Mrphs-skipNav__menuitem Mrphs-skipNav__menuitem--tools">
-            <a href="#totoolmenu" class="Mrphs-skipNav__link js-toggle-tools-nav" title="${rloader.sit_jumptools}" accesskey="l">
+            <a href="#totoolmenu" class="Mrphs-skipNav__link js-toggle-tools-nav" title="Tools list" accesskey="l">
                 <i class="fa fa-bars tools-icon" aria-hidden="true"></i>
-                ${rloader.sit_menutools}
+                Tools list
                 <span class="accesibility_key">[l]</span>
             </a>
-			#foreach( $page in $sitePages.pageNavTools )
-				#if (${page.current})
-					<a href="${page.pageResetUrl}" title="$rloader.sit_reset" class="xs-visible Mrphs-skipNav--toolName">
-						<span class="Mrphs-breadcrumb--icon ${page.menuClass} $!{page.menuClassOverride}"></span>
-						<span>${page.pageTitle}</span>
-					</a>
-				#end
-			#end
         </li>
     </ul>
 </nav>
