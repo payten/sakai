@@ -220,6 +220,9 @@ public class NYUGradesWS extends HttpServlet
 
             String result = fillTemplate("grades_response", new String[] {});
 
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setHeader("Content-Type", "text/xml");
+
             respondWithString(result.replace("{{LIST_OF_GRADES}}", gradeString.toString()));
         }
 
