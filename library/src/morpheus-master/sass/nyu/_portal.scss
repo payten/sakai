@@ -426,3 +426,33 @@ body {
     }
   }
 }
+
+// -------------------------------------------------------------------------------------------------------------------
+//  Accessibility
+// -------------------------------------------------------------------------------------------------------------------
+body {
+  *:focus,
+  input:focus,
+  select:focus,
+  button:focus,
+  .button:focus,
+  #mastLogin #loginForm .Mrphs-loginForm__button:focus,
+  .Mrphs-siteStatus.is-unpublished button:focus,
+  .Mrphs-sakai-schedule .viewLinkControl:focus,
+  .lessonsToolButton:focus,
+  .Mrphs-sakai-message-bundle-manager .dataTables_wrapper table a[role="button"]:focus,
+  .Mrphs-sakai-message-bundle-manager .dataTables_export a:focus,
+  ul#otherSitesMenu li:not(.otherSitesMenuClose) a:focus,
+  #cookie-notice #cookie-notice-close:focus,
+  button.ui-state-default:focus,
+  .btn.btn-default:focus,
+  #toolMenu ul li.Mrphs-collapseTools button:focus,
+  #subSites ul li.Mrphs-collapseTools button:focus,
+  .floatingToolMenu ul li.Mrphs-collapseTools button:focus,
+  .Mrphs-toolTitleNav .Mrphs-toolTitleNav__link:focus {
+    outline: $focus-outline-width $focus-outline-style $focus-outline-color !important;
+    outline-offset: $focus-outline-offset !important;
+    overflow: -moz-hidden-unscrollable;
+    z-index: 1;
+  }
+}

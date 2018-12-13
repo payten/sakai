@@ -370,7 +370,13 @@ $footer-color: $nyu-text-color;
 // Accessibility
 // This should be visible based on your button colors and is based on webkit's default
 
-//$focus-outline-color: #5b9dd9;
+$focus-outline-color: #3dbbdb;
+
+// NYU added these ones:
+$focus-outline-style: solid;
+$focus-outline-width: 3px;
+$focus-outline-offset: 2px;
+
 
 
 //@import url(#{$font-family-url});
