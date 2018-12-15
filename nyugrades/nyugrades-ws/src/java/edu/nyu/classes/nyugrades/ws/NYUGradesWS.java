@@ -136,7 +136,7 @@ public class NYUGradesWS extends HttpServlet
             if (request.getQueryString() != null && request.getQueryString().toLowerCase().indexOf("wsdl") >= 0) {
                 try {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.setHeader("Content-Type", "text/xml");
+                    response.setHeader("Content-Type", "text/xml;charset=utf-8");
                     respondWithTemplate("wsdl", new String[] { "REQUEST_SUFFIX", request.getRequestURI().endsWith("Production.jws") ? "Production" : "" });
                 } catch (Exception e) {
                     LOG.error("Error while serving WSDL: " + e);
@@ -161,13 +161,13 @@ public class NYUGradesWS extends HttpServlet
                     String sessionId = login(soapRequest.get("username"), soapRequest.get("password"));
 
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.setHeader("Content-Type", "text/xml");
+                    response.setHeader("Content-Type", "text/xml;charset=utf-8");
                     respondWithTemplate("login_response", new String[] { "SESSION", StringEscapeUtils.escapeXml(sessionId) });
                 } else if (action.startsWith("logout")) {
                     String status = logout(soapRequest.get("sessionId"));
 
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.setHeader("Content-Type", "text/xml");
+                    response.setHeader("Content-Type", "text/xml;charset=utf-8");
                     respondWithTemplate("logout_response", new String[] { "STATUS", StringEscapeUtils.escapeXml(status) });
                 } else if (action.startsWith("getGradesForSite")) {
                     GradeSet grades = getGradesForSite(soapRequest.get("sessionId"),
@@ -221,7 +221,7 @@ public class NYUGradesWS extends HttpServlet
             String result = fillTemplate("grades_response", new String[] {});
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setHeader("Content-Type", "text/xml");
+            response.setHeader("Content-Type", "text/xml;charset=utf-8");
 
             respondWithString(result.replace("{{LIST_OF_GRADES}}", gradeString.toString()));
         }
