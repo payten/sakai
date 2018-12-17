@@ -3050,14 +3050,17 @@ public class AssignmentServiceImpl implements AssignmentService, EntityTransferr
                             }
                         }).filter(Objects::nonNull).toArray(User[]::new);
 
-                        final String submitterString = String.format("%s - %s", submitters[0].getDisplayName(), submitterGroup.getTitle());
+                        final String submitterString = String.format("%s (%s)_%s",
+                                                                     submitters[0].getSortName(),
+                                                                     submitters[0].getEid(),
+                                                                     submitterGroup.getTitle());
                         final StringBuilder submittersString = new StringBuilder();
-                        final StringBuilder submitters2String = new StringBuilder();
+//                        final StringBuilder submitters2String = new StringBuilder();
 
                         for (int i = 0; i < submitters.length; i++) {
                             if (i > 0) {
                                 submittersString.append("; ");
-                                submitters2String.append("; ");
+//                                submitters2String.append("; ");
                             }
                             String fullName = submitters[i].getSortName();
                             // in case the user doesn't have first name or last name
@@ -3065,7 +3068,7 @@ public class AssignmentServiceImpl implements AssignmentService, EntityTransferr
                                 fullName = fullName.concat(",");
                             }
                             submittersString.append(fullName);
-                            submitters2String.append(submitters[i].getDisplayName());
+//                            submitters2String.append(submitters[i].getDisplayName());
                             // add the eid to the end of it to guarantee folder name uniqness
                             submittersString.append("(" + submitters[i].getEid() + ")");
                         }
@@ -3075,7 +3078,7 @@ public class AssignmentServiceImpl implements AssignmentService, EntityTransferr
                         
                         //Adding the row
 
-                        sheet.addRow(submitterString, submittersString.toString(), submitters2String.toString(), // TODO gs.getGroup().getTitle(), gs.getGroup().getId(), submitters2String,
+                        sheet.addRow(submitterGroup.getTitle(), submitterGroup.getId(), submittersString.toString(), // TODO gs.getGroup().getTitle(), gs.getGroup().getId(), submitters2String,
                         		gradeDisplay, s.getDateSubmitted() != null ? s.getDateSubmitted().toString(): StringUtils.EMPTY, latenessStatus);
 
 
