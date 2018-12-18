@@ -139,7 +139,6 @@
                 <module>web</module>
                 <module>webjars</module>
                 <module>webservices</module>
-                <module>wiris</module>
                 <module>hedex</module>
                 <module>sakai-widgets</module>
                 <module>wiris</module>
