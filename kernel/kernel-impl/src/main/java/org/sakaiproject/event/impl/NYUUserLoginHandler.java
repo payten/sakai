@@ -31,16 +31,90 @@ class NYUUserLoginHandler {
 
 
     public void invoke(Session sakaiSession) {
+        long startTime = System.currentTimeMillis();
+        Connection connection = null;
+
+        List<Exception> exceptions = new ArrayList<>();
+
         try {
-            long startTime = System.currentTimeMillis();
+            connection = SqlService.borrowConnection();
 
-            handleAutoTools(sakaiSession);
-            handleInstructorAutoTools(sakaiSession);
+            try {
+                handleAutoTools(sakaiSession);
+            } catch (Exception e) {
+                exceptions.add(e);
+            }
 
-            LOG.info("Processed user tools in " + (System.currentTimeMillis() - startTime) + " ms");
-        } catch (Exception e) {
-            LOG.error("Failure while applying auto tools: " + e);
-            e.printStackTrace();
+            try {
+                handleInstructorAutoTools(sakaiSession, connection);
+            } catch (Exception e) {
+                exceptions.add(e);
+            }
+
+            try {
+                handleMyConnectionVisibility(sakaiSession, connection);
+            } catch (Exception e) {
+                exceptions.add(e);
+            }
+
+        } catch (SQLException e) {
+            exceptions.add(e);
+        } finally {
+            if (connection != null) {
+                SqlService.returnConnection(connection);
+            }
+        }
+
+        LOG.info("Processed user tools in " + (System.currentTimeMillis() - startTime) + " ms");
+
+        if (!exceptions.isEmpty()) {
+            LOG.error(String.format("Failure in NYU Login handler for user '%s'",
+                                    ((sakaiSession != null) ? sakaiSession.getUserId() : "<null>")));
+
+            for (Exception e : exceptions) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private void handleMyConnectionVisibility(Session sakaiSession, Connection connection) throws Exception {
+        String userId = sakaiSession.getUserId();
+
+        if (userId == null || userId.isEmpty()) {
+            return;
+        }
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+
+        try {
+            // If the user is a member of any site with the
+            // "my-connections-widget-activated" property, show the widget.
+            ps = connection.prepareStatement("select count(1)" +
+                                             " from sakai_site_user ssu" +
+                                             " inner join sakai_site_property ssp on ssu.site_id = ssp.site_id" +
+                                             "   AND ssp.name = ?" +
+                                             " where ssu.user_id = ?");
+
+            ps.setString(1, "my-connections-widget-activated");
+            ps.setString(2, userId);
+
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                if (rs.getInt(1) == 1) {
+                    sakaiSession.setAttribute("my-connections-widget-activated", "true");
+                }
+            }
+        } finally {
+            if (ps != null) {
+                try { ps.close (); } catch (Exception e) {}
+            }
+            if (rs != null) {
+                try { rs.close (); } catch (Exception e) {}
+            }
         }
     }
 
@@ -62,7 +136,7 @@ class NYUUserLoginHandler {
     }
 
 
-    private void handleInstructorAutoTools(Session sakaiSession) throws Exception {
+    private void handleInstructorAutoTools(Session sakaiSession, Connection connection) throws Exception {
         String userId = sakaiSession.getUserId();
 
         String instructorToolsStr = HotReloadConfigurationService.getString("nyu.instructor-auto-tools", "");
@@ -77,7 +151,7 @@ class NYUUserLoginHandler {
         // Creates the workspace if it doesn't already exist
         Site workspace = SiteService.getSite("~" + userId);
 
-        if (isInstructor(user)) {
+        if (isInstructor(user, connection)) {
             addToolsIfMissing(workspace, instructorTools);
         } else {
             removeToolsIfPresent(workspace, instructorTools);
@@ -146,7 +220,7 @@ class NYUUserLoginHandler {
         }
     }
 
-    private boolean isInstructor(User user) throws SQLException {
+    private boolean isInstructor(User user, Connection connection) throws SQLException {
         String eid = user.getEid();
 
         if (eid == null) {
@@ -158,13 +232,10 @@ class NYUUserLoginHandler {
             return true;
         }
 
-        Connection connection = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
-            connection = SqlService.borrowConnection();
-
             if (SqlService.getVendor().equals("oracle")) {
                 ps = connection.prepareStatement("select 1 from nyu_t_instructors where netid = ? AND rownum <= 1");
             } else {
@@ -186,8 +257,6 @@ class NYUUserLoginHandler {
             if (rs != null) {
                 try { rs.close (); } catch (Exception e) {}
             }
-
-            SqlService.returnConnection (connection);
         }
     }
 

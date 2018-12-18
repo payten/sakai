@@ -172,6 +172,11 @@ public class MoreSiteViewImpl extends AbstractSiteViewImpl
 		if ( calendarToolUrl != null ) {
 			renderContextMap.put("calendarToolUrl", calendarToolUrl);
 		}
+
+		if (session.getAttribute("my-connections-widget-activated") != null) {
+		    renderContextMap.put("showMyConnections", "true");
+		}
+
 		if ( prefsToolUrl != null ) {
 			renderContextMap.put("prefsToolUrl", prefsToolUrl);
 			renderContextMap.put("mrphs_prefsToolUrl", mrphs_prefsToolUrl);
