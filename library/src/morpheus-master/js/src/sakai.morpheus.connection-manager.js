@@ -40,6 +40,9 @@
     var shown = 0;
     var pendingTabBaseHtml = '';
 
+    var searchBoxKeyUpTimeout = null;
+    var moreSearchBoxKeyUpTimeout = null;
+
     portal.connectionManager.show = function (options) {
 
         var connectionManager = $PBJQ('#connection-manager');
@@ -511,14 +514,34 @@
                 console.log('Failed to get incoming requests. errorThrown: ' + errorThrown);
             });
 
-        searchBox.keyup(function (e) { search(this.value, false); });
+        searchBox.keyup(function (e) {
+          var self = this;
+
+          if (typeof searchBoxKeyUpTimeout != 'undefined') {
+            clearTimeout(searchBoxKeyUpTimeout);
+          }
+
+          searchBoxKeyUpTimeout = setTimeout(function() {
+            search(self.value, false);
+          }, 1000);
+        });
         searchBox.keydown(function (e) {
 
             if (e.which == 13 && this.value.length >= 4) {
                 $PBJQ('#connection-manager-connectionsview-searchresults-more').click();
             }
         });
-        moreSearchBox.keyup(function (e) { search(this.value, true); });
+        moreSearchBox.keyup(function (e) {
+          var self = this;
+
+          if (typeof moreSearchBoxKeyUpTimeout != 'undefined') {
+            clearTimeout(moreSearchBoxKeyUpTimeout);
+          }
+
+          moreSearchBoxKeyUpTimeout = setTimeout(function() {
+            search(self.value, true);
+          }, 1000);
+        });
 
         if (options && options.state === 'pending') {
             showPendingTab();
