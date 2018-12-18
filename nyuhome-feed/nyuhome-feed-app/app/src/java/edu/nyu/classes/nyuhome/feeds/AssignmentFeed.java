@@ -6,6 +6,7 @@ import lombok.experimental.Builder;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Collection;
 import java.util.List;
 
 import edu.nyu.classes.nyuhome.api.QueryUser;
@@ -17,12 +18,13 @@ import org.sakaiproject.component.cover.ComponentManager;
 import org.sakaiproject.time.cover.TimeService;
 import org.sakaiproject.time.api.Time;
 import org.sakaiproject.assignment.api.AssignmentService;
-import org.sakaiproject.assignment.api.Assignment;
-import org.sakaiproject.assignment.api.AssignmentContent;
+import org.sakaiproject.assignment.api.model.Assignment;
 import org.sakaiproject.entity.api.ResourceProperties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Instant;
 
 
 @Builder
@@ -60,11 +62,12 @@ public class AssignmentFeed extends SakaiToolFeed {
         AssignmentService assignmentService = (AssignmentService) ComponentManager.get("org.sakaiproject.assignment.api.AssignmentService");
 
         for (String siteId : user.listSites()) {
-            List<Assignment> assignments = assignmentService.getListAssignmentsForContext(siteId);
+            Collection<Assignment> assignments = assignmentService.getAssignmentsForContext(siteId);
 
             for (Assignment assignment : assignments) {
                 if (isAssignmentVisible(assignment)) {
-                    AssignmentResponse response = prepareAssignment(assignment);
+                    AssignmentResponse response = prepareAssignment(assignment,
+                                                                    assignmentService.assignmentReference(assignment.getId()));
 
                     if (filter.accept(response.getSortDate())) {
                         result.add(response);
@@ -81,33 +84,28 @@ public class AssignmentFeed extends SakaiToolFeed {
     }
 
 
-    private AssignmentResponse prepareAssignment(Assignment assignment) {
-        AssignmentContent content = assignment.getContent();
-
+    private AssignmentResponse prepareAssignment(Assignment assignment, String assignmentReference) {
         return new AssignmentResponse.AssignmentResponseBuilder()
-            .openDate(new Date(assignment.getOpenTime().getTime()))
-            .lastModified(new Date(assignment.getTimeLastModified().getTime()))
-            .dueDate(new Date(assignment.getDueTime().getTime()))
+            .openDate(Date.from(assignment.getOpenDate()))
+            .lastModified(Date.from(assignment.getDateModified()))
+            .dueDate(Date.from(assignment.getDueDate()))
             .id(assignment.getId())
-            .creator__userid(content.getCreator())
-            .context__siteid(content.getContext())
-            .title(content.getTitle())
-            .instructions(content.getInstructions())
-            .reference(content.getReference())
-            .toolUrl(buildUrl(content.getContext(), "sakai.assignment.grades"))
+            .creator__userid(assignment.getAuthor())
+            .context__siteid(assignment.getContext())
+            .title(assignment.getTitle())
+            .instructions(assignment.getInstructions())
+            .reference(assignmentReference)
+            .toolUrl(buildUrl(assignment.getContext(), "sakai.assignment.grades"))
             .build();
     }
 
 
     private boolean isAssignmentVisible(Assignment assignment) {
-        Time currentTime = TimeService.newTime();
-            
-        String deletedProperty = assignment.getProperties().getProperty(ResourceProperties.PROP_ASSIGNMENT_DELETED);
-        boolean isDeleted = !((deletedProperty == null) || "".equals(deletedProperty));
+        Instant currentTime = Instant.now();
 
-        return !isDeleted &&
-            assignment.getOpenTime() != null &&
-            currentTime.after(assignment.getOpenTime()) &&
+        return !assignment.getDeleted() &&
+            assignment.getOpenDate() != null &&
+            currentTime.isAfter(assignment.getOpenDate()) &&
             !assignment.getDraft();
     }
 
