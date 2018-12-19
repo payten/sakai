@@ -2179,6 +2179,7 @@ nav.Mrphs-container--toolTitleNav .Mrphs-directUrl__dropDown .active {
 }
 .multipleChoiceAnswer {
   color: #888;
+  position: relative;
 }
 .multipleChoiceAnswer.correct-answer,
 .multipleChoiceAnswer.correct-answer label {
