@@ -7,14 +7,14 @@
   <name>pages-tool</name>
   <groupId>org.sakaiproject.pages</groupId>
   <artifactId>pages-tool</artifactId>
-  <version>11.2</version>
+  <version>12.5</version>
 
   <packaging>war</packaging>
 
   <parent>
     <artifactId>pages-base</artifactId>
     <groupId>org.sakaiproject.pages</groupId>
-    <version>11.2</version>
+    <version>12.5</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
