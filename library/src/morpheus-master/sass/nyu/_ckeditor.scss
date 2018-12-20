@@ -123,6 +123,25 @@ body {
         }
       }
     }
+    // Source - hide label
+    .cke_button__source_label,
+    .cke_button__sourcedialog_label {
+      display: none;
+    }
+    // a11ychecker plugin -show label but override wording
+    .cke_button__a11ychecker_label {
+      font-size: 1px;
+      letter-spacing: -1px;
+      color: transparent;
+      display: inline;
+
+      &:before {
+        content: 'Accessibility';
+        font-size: 12px;
+        letter-spacing: normal;
+        color: #484848;
+      }
+    }
   }
   // CLASSES-3179 Info Message
   .cke_dialog {
