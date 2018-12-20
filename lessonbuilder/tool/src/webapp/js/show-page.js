@@ -3266,7 +3266,9 @@ function openDropdown(dropDiv, button, title, dialogOpts) {
     closeDropdowns();
     hideMultimedia();
     dropDiv.dialog('option', 'title', title);
-    dropDiv.dialog('option', 'position', { my: 'left top', at: 'left bottom', of: button });
+//    dropDiv.dialog('option', 'position', { my: 'left top', at: 'left bottom', of: button });
+    dropDiv.dialog('option', 'position', { my: "center", at: "center", of: window });
+    dropDiv.parent().css({ position:" fixed" });
     dropDiv.dialog('option', dialogOpts);
     dropDiv.dialog('open');
     dropDiv.find("a").first().focus();
