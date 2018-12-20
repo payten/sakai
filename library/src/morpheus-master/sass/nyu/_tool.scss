@@ -883,8 +883,24 @@ body {
       overflow: hidden;
       min-height: 24px;
     }
+    .mainList {
+      > .item,
+      > .listType {
+        position: relative;
+      }
+    }
+
     .edit-col {
       right: 0;
+      top: 0;
+      margin-top: 0;
+
+      a.usebutton {
+        padding: 2px 4px !important;
+        border: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+      }
     }
     .gradingarea {
       margin-top: 20px;
@@ -1048,7 +1064,11 @@ body {
     }
 
     .navIntraTool ~ div.itemclass {
-      margin-top: 0 !important;
+      margin-top: 10px !important;
+    }
+
+    .columnopen, .add-bottom {
+      text-decoration: none !important;
     }
   }
 
