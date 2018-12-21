@@ -453,6 +453,6 @@ body {
     outline: $focus-outline-width $focus-outline-style $focus-outline-color !important;
     outline-offset: $focus-outline-offset !important;
     overflow: -moz-hidden-unscrollable;
-    z-index: 1;
+    z-index: 999999;
   }
 }
