@@ -282,6 +282,25 @@ body {
     }
   }
 }
+// CLASSES-3499 CLASSES-3554 show different label for skipnav depending on viewport
+body {
+  #skipNav {
+    .mobile-only {
+      display: none;
+    }
+    .desktop-only {
+      display: inline-block
+    }
+    @media #{$phone} {
+      .mobile-only {
+        display: inline-block;
+      }
+      .desktop-only {
+        display: none;
+      }
+    }
+  }
+}
 
 
 // --------------------------------------------------------------------------------------------------------------------
