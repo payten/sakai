@@ -270,6 +270,19 @@ body {
     }
   }
 }
+// CLASSES-3499 CLASSES-3556 show reset button for mobile, but nothing else
+body {
+  #skipNav {
+    .#{$namespace}skipNav--toolName {
+      display: none;
+
+      @media #{$phone} {
+        display: block !important;
+      }
+    }
+  }
+}
+
 
 // --------------------------------------------------------------------------------------------------------------------
 //  Main Content
