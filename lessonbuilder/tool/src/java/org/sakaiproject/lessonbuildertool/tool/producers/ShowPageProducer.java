@@ -4259,7 +4259,7 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 			log.warn("SecurityException thrown by expandZippedResource method lookup", e);
 		    }
 		    //Adding 'Embed Announcements' component
-		    UIOutput.make(tofill, "announcements-li");
+//		    UIOutput.make(tofill, "announcements-li");
 		    UILink announcementsLink = UIInternalLink.makeURL(tofill, "announcements-link", "#");
 		    announcementsLink.decorate(new UITooltipDecorator(messageLocator.getMessage("simplepage.announcements-descrip")));
 		    UIOutput.make(tofill, "assignment-li");
@@ -4267,7 +4267,7 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 
 		    boolean showEmbedCalendarLink = ServerConfigurationService.getBoolean("lessonbuilder.show.calendar.link", true);
 		    if (showEmbedCalendarLink){
-			UIOutput.make(tofill, "calendar-li");
+//			UIOutput.make(tofill, "calendar-li");
 			UIOutput.make(tofill, "calendar-link").decorate(new UITooltipDecorator(messageLocator.getMessage("simplepage.calendar-descrip")));
 			UIForm form = UIForm.make(tofill, "add-calendar-form");
 			UIInput.make(form, "calendar-addBefore", "#{simplePageBean.addBefore}");
