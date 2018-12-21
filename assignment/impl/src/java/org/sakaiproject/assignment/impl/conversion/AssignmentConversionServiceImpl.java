@@ -658,6 +658,7 @@ public class AssignmentConversionServiceImpl implements AssignmentConversionServ
             submitter.setSubmission(s);
             submitters.add(submitter);
         }
+
         if (s.getSubmitters().isEmpty()) {
             // every submission must have at least one submitter
             if (submission.getIsUserSubmission() != null && !submission.getIsUserSubmission()) {
@@ -676,7 +677,36 @@ public class AssignmentConversionServiceImpl implements AssignmentConversionServ
             }
 
 
-            return SubmissionReintegrationResult.failed("USER_ASSIGNMENT_BLANK_SUBMITTER");
+            // If we don't have a submitter0 try to extract one from the CHEF:creator property
+            boolean fixed = false;
+            for (O11Property property : submission.getProperties()) {
+                if (ResourceProperties.PROP_CREATOR.equals(property.getName())) {
+                    String creatorUserId = property.getDecodedValue();
+
+                    try {
+                        if (org.sakaiproject.user.cover.UserDirectoryService.getUser(creatorUserId) != null) {
+                            AssignmentSubmissionSubmitter submitter = new AssignmentSubmissionSubmitter();
+
+                            submitter.setSubmitter(creatorUserId);
+                            submitter.setSubmittee(true);
+                            submitter.setGrade(submission.getScaled_grade());
+                            submitter.setSubmission(s);
+                            submitters.add(submitter);
+
+                            log.info("Added user {} as submitter for submission: {}", creatorUserId, submission.getId());
+                            fixed = true;
+                        }
+                    } catch (org.sakaiproject.user.api.UserNotDefinedException e) {
+                        log.warn("Tried to add user {} as submitter for submission: {} but the user wasn't found.", creatorUserId, submission.getId());
+                    }
+
+                    break;
+                }
+            }
+
+            if (!fixed) {
+                return SubmissionReintegrationResult.failed("USER_ASSIGNMENT_BLANK_SUBMITTER");
+            }
         }
 
         for (O11Property property : submission.getProperties()) {
