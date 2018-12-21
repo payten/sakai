@@ -128,7 +128,7 @@
                                 </li>
                                 #end
 
-                                    #if (${tabsSites.calendarToolUrl})
+                                    #if (false && ${tabsSites.calendarToolUrl})
             
                                         <li class="Mrphs-userNav__submenuitem Mrphs-userNav__submenuitem-indented">
                                             <a role="menuitem" href="${tabsSites.calendarToolUrl}" class="Mrphs-userNav__submenuitem--calendar">
