@@ -1315,6 +1315,52 @@ body {
 }
 
 // -------------------------------------------------------------------------------------------------------------------
+//  Noodle Widgets
+// -------------------------------------------------------------------------------------------------------------------
+body {
+  .#{$namespace}multipleTools {
+    .#{$namespace}container {
+      &.#{$namespace}sakai-widget-my-connections,
+      &.#{$namespace}sakai-widget-site-information,
+      &.#{$namespace}sakai-widget-site-members {
+        .#{$namespace}toolTitleNav.#{$namespace}container--toolTitleNav {
+          text-align: left;
+
+          .#{$namespace}toolTitleNav__title {
+            padding-left: 14px !important;
+          }
+        }
+      }
+
+      &.#{$namespace}sakai-widget-my-connections,
+      &.#{$namespace}sakai-widget-site-information,
+      &.#{$namespace}sakai-widget-site-members,
+      &.#{$namespace}sakai-widget-my-calendar {
+        .#{$namespace}toolTitleNav.#{$namespace}container--toolTitleNav,
+        .ui-datepicker-header {
+          height: 42px;
+          line-height: 42px;
+          padding: 0 !important;
+
+          background: #FAFAFA !important;
+          border-bottom: 1px solid #E5E5E5 !important;
+
+          .#{$namespace}toolTitleNav__title,
+          .ui-datepicker-title, {
+            color: #4C4C4C !important;
+            text-transform: none !important;
+            font-size: 1em !important;
+            letter-spacing: normal !important;
+            font-weight: normal !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+// -------------------------------------------------------------------------------------------------------------------
 //  Random Bits and Bobs
 // -------------------------------------------------------------------------------------------------------------------
 body {
