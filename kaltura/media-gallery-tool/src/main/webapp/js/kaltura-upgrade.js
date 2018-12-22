@@ -104,7 +104,12 @@ function processKalturaLtiMedia() {
 
             var kvcdiv = $("<div id='kaltura-video-container'/>");
             kvcdiv.css("position", "relative");
-            kvcdiv.css("max-width", $(media).attr("width") + "px");
+            // NYU patch to respect placeholder image width
+            if ($(media).attr("width")) {
+                kvcdiv.css("max-width", $(media).attr("width") + "px");
+            } else if ($(media).css("width")) {
+                kvcdiv.css("max-width", $(media).css("width"));
+            }
             kvcdiv.append(kvdiv);
             return kvcdiv;
         },
