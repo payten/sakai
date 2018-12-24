@@ -2013,7 +2013,9 @@ public class ResourcesHelperAction extends VelocityPortletPaneledAction
 		String collectionName=null;
 		String resourceId = null;
 		String overwrite = request.getParameter("overwrite");
-		
+
+		overwrite = "true";
+
 		String resourceGroup = toolSession.getAttribute("resources.request.create_wizard_collection_id").toString();
 
 		if (!("undefined".equals(fullPath) || "".equals(fullPath)))

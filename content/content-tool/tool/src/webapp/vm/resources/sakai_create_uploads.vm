@@ -27,15 +27,7 @@
         <input type="hidden" name="pipe-init-id" id="pipe-init-id" value="$!{pipe-init-id}" />
         <input type="hidden" name="requestStateId" id="requestStateId" value="$!{requestStateId}" />
 
-        <fieldset>
-            <legend><h4>$tlang.getString("versioning.title") <small>$tlang.getString("versioning.hint") </small></h4></legend>
-            <div class="form-group">
-                <input type="radio" name="overwrite" id="overwrite_1" value="false" checked="checked"/>
-                <label for="overwrite_1">$tlang.getString("versioning.newversion")</label>
-                <input type="radio" name="overwrite" id="overwrite_2" value="true"/>
-                <label for="overwrite_2">$tlang.getString("versioning.overwrite")</label>
-            </div>
-        </fieldset>
+        <input type="hidden" name="overwrite" value="true" />
 
         #if ($model.resourceTypeDef.hasNotificationDialog())
             #if($model.isDropbox())
@@ -196,8 +188,8 @@ Dropzone.options.fileUploader = {
         });
 
         this.on("sending", function(file, xhr, formData) {
-            var overwrite = document.querySelector('input[name="overwrite"]:checked').value;
-            formData.append("overwrite",overwrite);
+            /* var overwrite = document.querySelector('input[name="overwrite"]:checked').value;*/
+            formData.append("overwrite","true");
             formData.append("fullPath",file.fullPath);
             #if($model.isDropbox() || $model.isUserSite() || !$availability_is_enabled)
                 formData.append("hidden", false);
