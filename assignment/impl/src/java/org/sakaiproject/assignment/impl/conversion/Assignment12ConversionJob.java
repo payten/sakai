@@ -95,7 +95,8 @@ public class Assignment12ConversionJob implements Job {
             ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_COUNT);
 
             List<String> termsToProcess = new ArrayList<>();
-            termsToProcess.addAll(Arrays.asList("Fall_2018", "Summer_2018", "Spring_2018", "January_2018",
+            termsToProcess.addAll(Arrays.asList("Spring_2019", "January_2019",
+                                                "Fall_2018", "Summer_2018", "Spring_2018", "January_2018",
                                                 "Fall_2017", "Summer_2017", "Spring_2017", "January_2017",
                                                 "Fall_2016", "Summer_2016", "Spring_2016", "January_2016",
                                                 "Fall_2015", "Summer_2015", "Spring_2015", "January_2015",
