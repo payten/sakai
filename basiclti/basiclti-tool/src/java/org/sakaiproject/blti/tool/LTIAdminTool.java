@@ -527,7 +527,8 @@ public class LTIAdminTool extends VelocityPortletPaneledAction
 		context.put("ltiService", ltiService);
 		context.put("isAdmin",new Boolean(ltiService.isAdmin(getSiteId(state))) );
 		context.put("doEndHelper", BUTTON + "doEndHelper");
-		if (ltiService.isAdmin(getSiteId(state)) &&
+		// CLASSES-3566 suppress warning message
+		if (false && ltiService.isAdmin(getSiteId(state)) &&
 			serverConfigurationService.getString(SakaiBLTIUtil.BASICLTI_ENCRYPTION_KEY, null) == null) {
                         context.put("configMessage",rb.getString("error.tool.no.encryption.key"));
 		}
