@@ -6,6 +6,9 @@
   <title>Upload-Download Multiple Resources</title>
 
   <script type="text/javascript" language="JavaScript" src="/library/js/headscripts.js"></script>
+  <script>includeLatestJQuery('webdav_instructions.html');</script>
+
+
   <script language="JavaScript" type="text/JavaScript">
 		<!--
 			var i, a, href
@@ -103,9 +106,8 @@
 		</script>
 
   <link href="/library/skin/morpheus-nyu/tool.css?version=9a0e75a" rel="stylesheet" media="screen, tty, tv, handheld, projection"/>
-  <script src="/library/webjars/jquery/1.11.3/jquery.min.js?version=9a0e75a"></script>
 </head>
-<body onload="(window.frameElement) ? setMainFrameHeight(trim(window.frameElement.id)):'';localizeData()">
+<body>
 <div>
   <p>Using <strong>WebDAV</strong>, you can then easily copy files and folders between NYU Classes and your computer. The following instructions detail the process for downloading <strong>Cyberduck</strong> and using it to connect to this site's Resources.</p>
 
@@ -150,5 +152,11 @@
     <p>You will now see a window on your screen showing the Resources in your site. Simply drag-and-drop files/folders between your computer and this window to transfer content to/from the Resources tool.</p>
   </div>
 </div>
+
+<script>
+ (window.frameElement) ? setMainFrameHeight(trim(window.frameElement.id)):'';
+ localizeData()
+</script>
+
 </body>
 </html>
