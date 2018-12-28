@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.*;
 
 class GradeSyncProcessor {
@@ -236,6 +238,8 @@ class GradeSyncProcessor {
 
             LOG.info(courseId + ": Found " + registrationList.size() + " registrations to sync");
 
+            Map<String, Double> batch = new HashMap<>();
+
             for (RegistrationData registration : registrationList) {
                 String registrationId = registration.getRegistrationId();
                 String registrationResult = registration.getResultsData();
@@ -276,12 +280,15 @@ class GradeSyncProcessor {
                     LOG.debug("Recording score for registration: " + registrationId +
                             ": " + scoreFromResult.getRawScore());
 
-                    store.recordScore(registrationId, scoreFromResult.getScore());
-                    if (course.getGraded()) {
-                        gradebook.sendScore(registrationId, scoreFromResult.getScore());
-                    }
+                    batch.put(registrationId, scoreFromResult.getScore());
                 }
             }
+
+            store.recordScores(batch);
+            if (course.getGraded()) {
+                gradebook.sendScores(courseId, batch);
+            }
+
         } catch (Exception e) {
             throw new ScormException("Failure when syncing grades for " + courseId, e);
         }

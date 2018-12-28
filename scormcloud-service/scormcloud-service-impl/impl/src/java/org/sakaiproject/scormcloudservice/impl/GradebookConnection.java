@@ -8,6 +8,9 @@ import org.sakaiproject.service.gradebook.shared.AssessmentNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+import java.util.HashMap;
+
 
 public class GradebookConnection {
 
@@ -25,18 +28,28 @@ public class GradebookConnection {
     }
 
 
-    public void sendScore(String registrationId, double scoreFromResult) throws ScormException {
-        String userId = store.getUserForRegistration(registrationId);
-        ScormCourse course = store.getCourseForRegistration(registrationId);
+    public void sendScores(String courseId, Map<String, Double> registrationToScore) throws ScormException {
+        ScormCourse course = store.getCourseForId(courseId);
 
         if (course == null) {
-            LOG.warn("No course could be found for registration {}", registrationId);
+            LOG.warn("No course could be found for ID {}", courseId);
             return;
         }
 
+        Map<String, String> registrationToUser = store.getUsersForRegistrations(registrationToScore.keySet());
+
+        Map<String, String> userScores = new HashMap<>(registrationToScore.size());
+
+        for (String registrationId : registrationToScore.keySet()) {
+            String userId = registrationToUser.get(registrationId);
+
+            if (userId != null) {
+                userScores.put(userId, registrationToScore.get(registrationId).toString());
+            }
+        }
 
         createAssessmentIfMissing(course.getSiteId(), course.getId(), course.getTitle());
-        gradebookService.updateExternalAssessmentScore(course.getSiteId(), course.getId(), userId, String.valueOf(scoreFromResult));
+        gradebookService.updateExternalAssessmentScoresString(course.getSiteId(), course.getId(), userScores);
     }
 
 

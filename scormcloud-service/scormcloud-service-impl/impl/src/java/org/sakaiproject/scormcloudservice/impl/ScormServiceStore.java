@@ -7,12 +7,17 @@ import org.sakaiproject.scormcloudservice.api.ScormUploadStatus;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 
 import java.sql.Connection;
+import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 
 /*
@@ -581,31 +586,48 @@ public class ScormServiceStore {
     }
 
 
-    public void recordScore(final String registrationId, final double score) throws ScormException {
+    private void checkBatchSuccess(int[] jdbcReturnCodes) throws SQLException {
+        for (int code : jdbcReturnCodes) {
+            if (code == Statement.EXECUTE_FAILED) {
+                throw new SQLException("Failure executing batch.  Code was: " + code);
+            }
+        }
+    }
+
+    public void recordScores(final Map<String, Double> userToScore) throws ScormException {
         try {
+            if (userToScore.isEmpty()) {
+                return;
+            }
+
             DB.connection(new DBAction() {
                 public void execute(Connection connection) throws SQLException {
-                    PreparedStatement ps = null;
+                    PreparedStatement deletes = connection.prepareStatement("delete from scs_scorm_scores where registrationid = ?");
+                    PreparedStatement inserts = connection.prepareStatement("insert into scs_scorm_scores (registrationid, score) values (?, ?)");
 
                     try {
-                        ps = connection.prepareStatement("delete from scs_scorm_scores where registrationid = ?");
-                        ps.setString(1, registrationId);
-                        ps.executeUpdate();
+                        for (String registrationId : userToScore.keySet()) {
+                            Double score = userToScore.get(registrationId);
 
-                        ps = connection.prepareStatement("insert into scs_scorm_scores (registrationid, score) values (?, ?)");
-                        ps.setString(1, registrationId);
-                        ps.setDouble(2, score);
-                        ps.executeUpdate();
-                    } finally {
-                        connection.commit();
-                        if (ps != null) {
-                            ps.close();
+                            deletes.setString(1, registrationId);
+                            deletes.addBatch();
+
+                            inserts.setString(1, registrationId);
+                            inserts.setDouble(2, score);
+                            inserts.addBatch();
                         }
+
+                        checkBatchSuccess(deletes.executeBatch());
+                        checkBatchSuccess(inserts.executeBatch());
+                        connection.commit();
+                    } finally {
+                        deletes.close();
+                        inserts.close();
                     }
                 }
             });
         } catch (SQLException e) {
-            throw new ScormException("Couldn't record score for registration: " + registrationId, e);
+            throw new ScormException("Couldn't record score for registrations", e);
         }
     }
 
@@ -773,6 +795,51 @@ public class ScormServiceStore {
         return result[0];
     }
 
+    public Map<String, String> getUsersForRegistrations(final Collection<String> registrationIdsCollection) throws ScormException {
+        final Map<String, String> result = new HashMap<>(registrationIdsCollection.size());
+        List<String> registrationIds = new ArrayList<>(registrationIdsCollection);
+
+        try {
+            DB.connection(new DBAction() {
+                public void execute(Connection connection) throws SQLException {
+                    int pageSize = 500;
+                    for (int start = 0; start < registrationIds.size(); start += pageSize) {
+                        int end = Math.min(registrationIds.size(), start + pageSize);
+
+                        List<String> subList = registrationIds.subList(start, end);
+                        String placeholders = subList.stream().map(s -> "?").collect(Collectors.joining(","));
+
+                        PreparedStatement ps = null;
+                        ResultSet rs = null;
+                        try {
+                            ps = connection.prepareStatement(String.format("select userId, uuid from scs_scorm_registration where uuid in (%s)", placeholders));
+
+                            for (int i = 0; i < subList.size(); i++) {
+                                ps.setString(i + 1, subList.get(i));
+                            }
+
+                            rs = ps.executeQuery();
+
+                            while (rs.next()) {
+                                result.put(rs.getString("uuid"), rs.getString("userId"));
+                            }
+                        } finally {
+                            if (ps != null) {
+                                ps.close();
+                            }
+                            if (rs != null) {
+                                rs.close();
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            throw new ScormException("Failure looking up users for registrations", e);
+        }
+
+        return result;
+    }
 
     public ScormUploadStatus getUploadStatus(final String siteId, final String externalId) {
         final ScormUploadStatus[] result = {null};
