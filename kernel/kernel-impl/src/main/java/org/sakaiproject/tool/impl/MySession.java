@@ -396,36 +396,45 @@ public class MySession implements Session, HttpSession, Serializable
 			m_nonPortalSession.clear();
 		}
 
-		// clear each tool session
-		for (Iterator i = toolMap.entrySet().iterator(); i.hasNext();)
-		{
-			Map.Entry e = (Map.Entry) i.next();
-			ToolSession t = (ToolSession) e.getValue();
-			t.clearAttributes();
-		}
+		final Map unbindMapFinal = unbindMap;
+		final Map toolMapFinal = toolMap;
+		final Map contextMapFinal = contextMap;
+		final Map<String,Object> nonPortableMapFinal = nonPortableMap;
 
-		// clear each context session
-		for (Iterator i = contextMap.entrySet().iterator(); i.hasNext();)
-		{
-			Map.Entry e = (Map.Entry) i.next();
-			ToolSession t = (ToolSession) e.getValue();
-			t.clearAttributes();
-		}
+		org.sakaiproject.db.cover.SqlService.transact(new Runnable() {
+		    public void run() {
+			// clear each tool session
+			for (Iterator i = toolMapFinal.entrySet().iterator(); i.hasNext();)
+			{
+			    Map.Entry e = (Map.Entry) i.next();
+			    ToolSession t = (ToolSession) e.getValue();
+			    t.clearAttributes();
+			}
 
-		// send unbind events for normal (possibly clustered) session data
-		for (Iterator i = unbindMap.entrySet().iterator(); i.hasNext();)
-		{
-			Map.Entry e = (Map.Entry) i.next();
-			String name = (String) e.getKey();
-			Object value = e.getValue();
-			unBind(name, value);
-		}
+			// clear each context session
+			for (Iterator i = contextMapFinal.entrySet().iterator(); i.hasNext();)
+			{
+			    Map.Entry e = (Map.Entry) i.next();
+			    ToolSession t = (ToolSession) e.getValue();
+			    t.clearAttributes();
+			}
 
-		// send unbind events for non clustered session data (in a clustered environment)
-		for (Map.Entry<String, Object> e: nonPortableMap.entrySet())
-		{
-			unBind(e.getKey(), e.getValue());
-		}
+			// send unbind events for normal (possibly clustered) session data
+			for (Iterator i = unbindMapFinal.entrySet().iterator(); i.hasNext();)
+			{
+			    Map.Entry e = (Map.Entry) i.next();
+			    String name = (String) e.getKey();
+			    Object value = e.getValue();
+			    unBind(name, value);
+			}
+
+			// send unbind events for non clustered session data (in a clustered environment)
+			for (Map.Entry<String, Object> e: nonPortableMapFinal.entrySet())
+			{
+			    unBind(e.getKey(), e.getValue());
+			}
+		    }
+		}, "MySessionUnbind");
 	}
 	
 	/**
