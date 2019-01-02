@@ -192,7 +192,15 @@ public class SyllabusDataImpl implements SyllabusData, Comparable
   
   public void setAttachments(Set attachments)
   {
-    this.attachments = attachments;
+    if (this.attachments instanceof TreeSet) {
+        this.attachments = attachments;
+    } else {
+        this.attachments.clear();
+
+        if (attachments != null) {
+            this.attachments.addAll(attachments);
+        }
+    }
   }
     
   /**
