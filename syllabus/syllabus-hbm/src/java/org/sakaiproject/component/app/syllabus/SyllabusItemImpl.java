@@ -218,6 +218,13 @@ public class SyllabusItemImpl implements SyllabusItem
     return sb.toString();
   }
 
+  public String getEmbedURL() {
+    if (getRedirectURL() != null && getRedirectURL().length() > 0 && getRedirectURL().startsWith("https:")) {
+      return getRedirectURL();
+    }
+
+    return null;
+  };
 }
 
 

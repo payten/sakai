@@ -341,6 +341,16 @@
 					<h:outputText escape="false" value="#{SyllabusTool.syllabusItem.redirectURL}" />
 				</h:outputLink>
 			</syllabus:syllabus_ifnot>
+			<syllabus:syllabus_ifnot test="#{SyllabusTool.syllabusItem.embedURL}">
+				<f:verbatim>
+					<iframe
+						src="</f:verbatim><h:outputText escape="false" value="#{SyllabusTool.syllabusItem.embedURL}" /><f:verbatim>"
+						style="margin-top:1em;clear:both;border:0;height:80vh;width:100%;"
+						frameborder="0"
+						scrolling="auto"
+					></iframe>
+				</f:verbatim>
+			</syllabus:syllabus_ifnot>
 			<f:verbatim>
 				<div id="confirmDelete" style="display:none">
 			</f:verbatim>

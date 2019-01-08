@@ -78,5 +78,6 @@ public interface SyllabusItem
    */
   public void setRedirectURL(String redirectURL);
 
+  public String getEmbedURL();
 }
 
