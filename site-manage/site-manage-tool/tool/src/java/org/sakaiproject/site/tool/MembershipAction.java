@@ -136,7 +136,7 @@ public class MembershipAction extends PagedResourceActionII
 		}
 		else
 		{
-			size = SITE_SERV.countSites(SelectionType.ACCESS, null, search, null);
+			size = SITE_SERV.countSites(SelectionType.MEMBER, null, search, null);
 		}
 
 		return size;
@@ -200,11 +200,11 @@ public class MembershipAction extends PagedResourceActionII
 		{
 			if (sortAsc)
 			{
-				rv = SITE_SERV.getSites(SelectionType.ACCESS, null, search, null, SortType.TITLE_ASC, page);
+				rv = SITE_SERV.getSites(SelectionType.MEMBER, null, search, null, SortType.TITLE_ASC, page);
 			}
 			else
 			{
-				rv = SITE_SERV.getSites(SelectionType.ACCESS, null, search, null, SortType.TITLE_DESC, page);
+				rv = SITE_SERV.getSites(SelectionType.MEMBER, null, search, null, SortType.TITLE_DESC, page);
 			}
 		}
 
