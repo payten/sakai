@@ -1299,7 +1299,7 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 				case SimplePageItem.ANNOUNCEMENTS: itemClassName += "announcementsType"; break;
 				case SimplePageItem.CALENDAR: itemClassName += "calendar"; break;
 				case SimplePageItem.CHECKLIST: itemClassName += "checklistType"; break;
-				case SimplePageItem.SCORM: itemClassName = "scormType"; break;
+				case SimplePageItem.SCORM: itemClassName += "scormType"; break;
 				}
 
 				// inline LTI. Our code calls all BLTI items listItem, but the inline version really isn't
