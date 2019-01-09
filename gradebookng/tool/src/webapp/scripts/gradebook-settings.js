@@ -9,6 +9,13 @@ function GradebookSettings($container) {
   this.$container = $container;
 
   this.categories = new GradebookCategorySettings($container.find("#settingsCategories"));
+
+  // CLASSES-3580 suppress return to submit
+  $container.on('keypress', 'input', function(event) {
+    if (event.keyCode == 13){
+      event.preventDefault();
+    }
+  });
 };
 
 

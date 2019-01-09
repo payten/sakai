@@ -247,6 +247,9 @@ public class SettingsPage extends BasePage {
 		form.add(this.categoryPanel);
 		form.add(this.gradingSchemaPanel);
 
+		// CLASSES-3580 if wicket needs to do something, then do something useful
+		form.setDefaultButton(submit);
+
 		add(form);
 
 		// expand/collapse panel actions
