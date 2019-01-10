@@ -154,7 +154,11 @@
 								</td>
 
 								<th scope="row" headers="worksite" class="attach noWrap" id="mcstR-$rowCount">
-									<a href="${site.Url}" target="_top" title="$tlang.getString('mb.gotosite') $validator.escapeHtml(${site.Title})">$validator.escapeHtml(${site.Title})</a>
+									#if($site.Published)
+										<a href="${site.Url}" target="_top" title="$tlang.getString('mb.gotosite') $validator.escapeHtml(${site.Title})">$validator.escapeHtml(${site.Title})</a>
+									#else
+										$validator.escapeHtml($site.Title)
+									#end
 								</th>
 
 								<td headers="instructor mcstR-$rowCount">

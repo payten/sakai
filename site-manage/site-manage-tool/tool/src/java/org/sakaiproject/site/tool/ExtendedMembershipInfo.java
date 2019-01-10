@@ -55,5 +55,9 @@ public class ExtendedMembershipInfo {
 
         return result;
     }
+
+    public boolean getPublished() {
+        return site.isPublished();
+    }
 }
 
