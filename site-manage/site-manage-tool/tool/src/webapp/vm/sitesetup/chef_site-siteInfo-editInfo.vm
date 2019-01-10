@@ -195,7 +195,7 @@
 					$tlang.getString("sitediinf.term")
 				</label>
 				<div class="col-sm-6">
-					#if ( $!allowTermEdit )
+					#if ( $!allowTermEdit && !$existingSite )
 						<select name="edit-term" class="indnt2" id="locales" >
 							<option value="" #if ($selectedTerm == "")selected="true" #end></option>
 							<option value="Sandboxes" #if ($selectedTerm == "Sandboxes")selected="true" #end>Sandboxes</option>
