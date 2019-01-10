@@ -1088,6 +1088,14 @@ body {
   }
 }
 
+// CLASSES-3588
+body {
+  @media #{$phone}{
+    .Mrphs-skipNav__menu a.Mrphs-skipNav--toolName {
+      max-width: calc(100% - 80px);
+    }
+  }
+}
 
 // -------------------------------------------------------------------------------------------------------------------
 //  Delegated Access tool
