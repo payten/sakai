@@ -1383,3 +1383,14 @@ body {
     }
   }
 }
+
+// CLASSES-3488 remove box from instruction boxes
+body {
+  .instruction {
+    border: none;
+    margin: 0;
+    padding: 10px 0;
+    color: $nyu-text-color;
+    background: transparent;
+  }
+}
