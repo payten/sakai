@@ -889,14 +889,6 @@ body {
 					}
 				}
 			}
-
-			@media #{$tablet} {
-				&.expanded {
-					.lessons-goto-top-page {
-						display: inline-block;
-					}
-				}
-			}
 		}
 	}
 	&.#{$namespace}toolMenu-collapsed {
