@@ -252,6 +252,24 @@ body {
   }
 }
 
+// CLASSES-3588
+body {
+  @media #{$phone} {
+    .Mrphs-siteHierarchy {
+      max-width: calc(100% - 100px);
+      overflow: hidden;
+      display: block;
+
+      .Mrphs-hierarchy--siteName a {
+        text-overflow: ellipsis;
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+      }
+    }
+  }
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 //  Timeout Alert
 // --------------------------------------------------------------------------------------------------------------------
