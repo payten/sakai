@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -54,6 +55,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.sakaiproject.assignment.api.AssignmentServiceConstants.*;
 
 @Slf4j
+@Ignore
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {AssignmentTestConfiguration.class})
 public class AssignmentConversionTest extends AbstractTransactionalJUnit4SpringContextTests {

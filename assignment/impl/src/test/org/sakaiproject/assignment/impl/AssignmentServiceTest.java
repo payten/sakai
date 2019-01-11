@@ -49,6 +49,7 @@ import javax.annotation.Resource;
 import org.hibernate.NonUniqueResultException;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.sakaiproject.assignment.api.AssignmentConstants;
@@ -618,6 +619,7 @@ public class AssignmentServiceTest extends AbstractTransactionalJUnit4SpringCont
                 duplicateAssignment.getProperties());
     }
 
+    @Ignore
     @Test
     public void submissionStatus() {
         // gen.resub         = Re-submitted
