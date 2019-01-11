@@ -166,6 +166,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
+import org.sakaiproject.component.cover.HotReloadConfigurationService;
+
+
 /**
  * Created by enietzel on 3/3/17.
  */
@@ -2058,7 +2061,26 @@ public class AssignmentServiceImpl implements AssignmentService, EntityTransferr
                         }
                         if (submitter != null) {
                             try {
-                                submission = addSubmission(assignment.getId(), submitter);
+                                if ("true".equals(HotReloadConfigurationService.getString("nyu.asn-submit-perm-fix-active", "true"))) {
+                                    // https://jira.sakaiproject.org/browse/SAK-40636
+                                    // We need asn.submit permission to be able to create the dummy submission
+                                    //
+                                    SecurityAdvisor securityAdvisor = new MySecurityAdvisor(
+                                                                                            sessionManager.getCurrentSessionUserId(),
+                                                                                            new ArrayList<>(Arrays.asList(SECURE_ADD_ASSIGNMENT_SUBMISSION)),
+                                                                                            ""/* no submission id yet, pass the empty string to advisor*/);
+
+                                    securityService.pushAdvisor(securityAdvisor);
+
+                                    try {
+                                        submission = addSubmission(assignment.getId(), submitter);
+                                    } finally {
+                                        securityService.popAdvisor(securityAdvisor);
+                                    }
+                                } else {
+                                    submission = addSubmission(assignment.getId(), submitter);
+                                }
+
                                 if (submission != null) {
                                     // Note: If we had s.setSubmitted(false);, this would put it in 'draft mode'
                                     submission.setSubmitted(true);
