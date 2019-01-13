@@ -14164,23 +14164,28 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		return sortCmObject(sections, keys, orders);
 	} // sortCourseOffering
 
-	/**
-	 * Helper method for sortCmObject 
-	 * by order from sakai properties if specified or 
-	 * by default of eid, title
-	 * using velocity SortTool
-	 * 
-	 * @param sessions
-	 * @return
-	 */
+	// Sort academic sessions from most recent to least recent
 	private Collection sortAcademicSessions(Collection<AcademicSession> sessions) {
-		// Get the keys from sakai.properties
-		String[] keys = ServerConfigurationService.getStrings(SORT_KEY_SESSION);
-		String[] orders = ServerConfigurationService.getStrings(SORT_ORDER_SESSION);
+	    ArrayList<AcademicSession> sorted = new ArrayList<>(sessions);
 
-		return sortCmObject(sessions, keys, orders);
-	} // sortCourseOffering
-	
+	    Collections.sort(sorted, (AcademicSession a, AcademicSession b) -> {
+			    if (a.getStartDate() == null && b.getStartDate() == null) {
+				    return a.getEid().compareTo(b.getEid());
+			    } else if (a.getStartDate() == null) {
+				    // Null to the end
+				    return 1;
+			    } else if (b.getStartDate() == null) {
+				    // Null to the end
+				    return -1;
+			    } else {
+				    // Reverse chronological
+				    return b.getStartDate().compareTo(a.getStartDate());
+			    }
+		    });
+
+	    return sorted;
+	}
+
 	/**
 	 * Custom sort CM collections using properties provided object has getter & setter for 
 	 * properties in keys and orders
