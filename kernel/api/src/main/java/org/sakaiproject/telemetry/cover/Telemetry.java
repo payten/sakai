@@ -545,7 +545,7 @@ public class Telemetry
 
 
     // Finish time recording and log to the DB
-    public static void finishTimer(TelemetryTimer timer) {
+    public static void finishTimer(TelemetryTimer timer, String subkey) {
         if (timer == null) {
             // Handle nulls for the convenience of the caller.
             return;
@@ -566,7 +566,19 @@ public class Telemetry
             duration = 0;
         }
 
-        recordUpdates(metric.produceUpdates(timer.getMetricName(), timer.getStartTime(), duration));
+        List<DBUpdate> updates = metric.produceUpdates(timer.getMetricName(), timer.getStartTime(), duration);
+
+        if (subkey != null) {
+            for (DBUpdate update : updates) {
+                update.setSubkey(subkey);
+            }
+        }
+
+        recordUpdates(updates);
+    }
+
+    public static void finishTimer(TelemetryTimer timer) {
+        finishTimer(timer, null);
     }
 
 

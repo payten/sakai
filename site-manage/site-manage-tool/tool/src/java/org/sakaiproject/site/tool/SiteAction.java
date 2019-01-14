@@ -6996,7 +6996,10 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			timer = org.sakaiproject.telemetry.cover.Telemetry.startTimer("site_creation_time");
 			doFinishUninstrumented(data);
 		} finally {
-			org.sakaiproject.telemetry.cover.Telemetry.finishTimer(timer);
+			SessionState state = ((JetspeedRunData) data)
+				.getPortletSessionState(((JetspeedRunData) data).getJs_peid());
+
+			org.sakaiproject.telemetry.cover.Telemetry.finishTimer(timer, (String)state.getAttribute(STATE_NEW_SITE_STATUS_ID));
 		}
 	}
 
