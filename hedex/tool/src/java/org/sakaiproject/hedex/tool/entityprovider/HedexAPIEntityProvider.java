@@ -36,6 +36,10 @@ import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.SessionManager;
 
+import org.sakaiproject.user.api.User;
+import org.sakaiproject.user.cover.UserDirectoryService;
+import org.sakaiproject.user.api.UserNotDefinedException;
+
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -94,6 +98,7 @@ public class HedexAPIEntityProvider extends AbstractEntityProvider
         String sendChangesOnly = (String) params.get(SEND_CHANGES_ONLY);
         String lastRunDate = (String) params.get(LAST_RUN_DATE);
         String includeAllTermHistory = (String) params.get(INCLUDE_ALL_TERM_HISTORY);
+        HashMap<String, String> userLookup = new HashMap<String, String>();
 
         Session session = sessionFactory.openSession();
         try {
@@ -108,8 +113,10 @@ public class HedexAPIEntityProvider extends AbstractEntityProvider
             List<EngagementActivityRecord> records = new ArrayList<>();
             for (CourseVisits cv : courseVisitss) {
                 String personLmsId = cv.getUserId();
+                String personSisId = getPersonSisId(personLmsId, userLookup);
                 EngagementActivityRecord record = new EngagementActivityRecord();
                 record.setPersonLmsId(personLmsId);
+                record.setPersonSisId(personSisId);
                 record.setLmsSectionId(cv.getSiteId());
                 record.setLmsTotalLogin(cv.getNumVisits());
                 record.setLmsLastAccessDate(cv.getLatestVisit().getTime());
@@ -138,6 +145,7 @@ public class HedexAPIEntityProvider extends AbstractEntityProvider
         String sendChangesOnly = (String) params.get(SEND_CHANGES_ONLY);
         String lastRunDate = (String) params.get(LAST_RUN_DATE);
         String includeAllTermHistory = (String) params.get(INCLUDE_ALL_TERM_HISTORY);
+        HashMap<String, String> userLookup = new HashMap<String, String>();
 
         Session session = sessionFactory.openSession();
         try {
@@ -156,6 +164,7 @@ public class HedexAPIEntityProvider extends AbstractEntityProvider
             Map<String, EngagementActivityRecord> records = new HashMap<>();
             for (SessionDuration sd : sessionDurations) {
                 String personLmsId = sd.getUserId();
+                String personSisId = getPersonSisId(personLmsId, userLookup);
                 if (!totalTimes.containsKey(personLmsId)) {
                     totalTimes.put(personLmsId, 0L);
                 }
@@ -210,6 +219,7 @@ public class HedexAPIEntityProvider extends AbstractEntityProvider
         String sendChangesOnly = (String) params.get(SEND_CHANGES_ONLY);
         String lastRunDate = (String) params.get(LAST_RUN_DATE);
         String includeAllTermHistory = (String) params.get(INCLUDE_ALL_TERM_HISTORY);
+        HashMap<String, String> userLookup = new HashMap<String, String>();
 
         Session session = sessionFactory.openSession();
         try {
@@ -224,7 +234,10 @@ public class HedexAPIEntityProvider extends AbstractEntityProvider
                 for (AssignmentSubmissions submissions : assignmentSubmissionss) {
                     AssignmentRecord assignmentRecord = new AssignmentRecord();
                     assignmentRecord.setAssignmentLmsId(submissions.getAssignmentId());
-                    assignmentRecord.setPersonLmsId(submissions.getUserId());
+                    String personLmsId = submissions.getUserId();
+                    String personSisId = getPersonSisId(personLmsId, userLookup);
+                    assignmentRecord.setPersonLmsId(personLmsId);
+                    assignmentRecord.setPersonLmsId(personSisId);
                     assignmentRecord.setAssignTitle(submissions.getTitle());
                     Date dueDate = submissions.getDueDate();
                     String assignDueDate = (dueDate==null) ? "" : dueDate.toString();
@@ -309,4 +322,31 @@ public class HedexAPIEntityProvider extends AbstractEntityProvider
         final String termsString = (String) params.get(TERMS);
         return termsString != null ? termsString.split(",") : new String[] {};
     }
+
+    private String getPersonSisId(String personLmsId, HashMap<String, String> userLookup) {
+        if(userLookup == null || personLmsId == null) {
+            return(null);
+        }
+        String personSisId = userLookup.get(personLmsId);
+        if(personSisId != null) {
+            return(personSisId);
+        }
+        if(userLookup.containsKey(personLmsId)) {
+            // User EID is unknown - don't keep trying to look it up
+            return(null);
+        }
+        User user = null;
+        try {
+            user = UserDirectoryService.getUser(personLmsId);
+        } catch (UserNotDefinedException e) {
+            // This shouldn't actually happen
+        }
+        if(user == null) {
+            return(null);
+        }
+        personSisId = user.getEid();
+        userLookup.put(personLmsId, personSisId);
+        return(personSisId);
+    }
+
 }
