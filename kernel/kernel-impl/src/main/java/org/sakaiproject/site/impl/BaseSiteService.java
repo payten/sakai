@@ -2039,7 +2039,7 @@ public abstract class BaseSiteService implements SiteService, Observer
 		String userID = sessionManager().getCurrentSessionUserId();
 		List<Site> userSites = getCachedUserSites( userID );
 		
-
+		org.sakaiproject.telemetry.cover.Telemetry.TelemetryTimer timer = org.sakaiproject.telemetry.cover.Telemetry.startTimer("load_user_sites");
 		// Retrieve sites on cache miss or anonymous user
 		if( userSites == null )
 		{
@@ -2048,6 +2048,7 @@ public abstract class BaseSiteService implements SiteService, Observer
 			// Cache the results
 			setCachedUserSites( userID, userSites );
 		}
+		org.sakaiproject.telemetry.cover.Telemetry.finishTimer(timer);
 
 		return userSites;
 	}
