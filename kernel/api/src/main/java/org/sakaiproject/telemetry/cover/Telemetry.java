@@ -45,6 +45,7 @@ public class Telemetry
     private static Log LOG = LogFactory.getLog(Telemetry.class);
     private static Map<String, BaseMetric> metrics;
     private static Map<String, Long> retentionDays;
+    private static ArrayBlockingQueue<DBUpdate> updateQueue = new ArrayBlockingQueue<>(524288);
     private static Thread telemetryWriterThread;
 
 
@@ -252,7 +253,6 @@ public class Telemetry
     }
 
     //// House keeping
-    private static ArrayBlockingQueue<DBUpdate> updateQueue = new ArrayBlockingQueue<>(524288);
 
     private static void recordUpdates(List<DBUpdate> updates) {
         for (DBUpdate update : updates) {
