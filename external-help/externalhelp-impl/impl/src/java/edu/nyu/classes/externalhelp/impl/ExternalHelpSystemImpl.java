@@ -10,6 +10,8 @@ import java.util.HashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 
 public class ExternalHelpSystemImpl implements ExternalHelpSystem {
 
@@ -37,11 +39,19 @@ public class ExternalHelpSystemImpl implements ExternalHelpSystem {
             Map<String, ExternalHelp> result = new HashMap<String, ExternalHelp>(count);
 
             for (int i = 1; i <= count; i++) {
-                String tool = ServerConfigurationService.getString(String.format("%s.%d.tool", basename, i));
-                String url = ServerConfigurationService.getString(String.format("%s.%d.url", basename, i));
-                String label = ServerConfigurationService.getString(String.format("%s.%d.label", basename, i));
+                try {
+                    String tool = ServerConfigurationService.getString(String.format("%s.%d.tool", basename, i));
+                    String serviceLinkUrl = ServerConfigurationService.getString(String.format("%s.%d.url", basename, i));
+                    String label = ServerConfigurationService.getString(String.format("%s.%d.label", basename, i));
 
-                result.put(tool, new ExternalHelpImpl(tool, url, label));
+                    String url = ServerConfigurationService.getPortalUrl() + String.format("/show-help?key=%s.%d&url=%s",
+                                                                                           basename, i,
+                                                                                           URLEncoder.encode(serviceLinkUrl, "UTF-8"));
+
+                    result.put(tool, new ExternalHelpImpl(tool, url, label));
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             return result;

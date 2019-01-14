@@ -93,7 +93,10 @@ public abstract class AbstractSiteViewImpl implements SiteView
 		
 		
                 boolean showMyWorkspace = serverConfigurationService.getBoolean("myworkspace.show",true);
+
+		org.sakaiproject.telemetry.cover.Telemetry.TelemetryTimer timer = org.sakaiproject.telemetry.cover.Telemetry.startTimer("load_user_sites");
                 mySites = siteNeighbourhoodService.getSitesAtNode(request, session, showMyWorkspace);
+		org.sakaiproject.telemetry.cover.Telemetry.finishTimer(timer);
 		
 		
 		loggedIn = session.getUserId() != null;

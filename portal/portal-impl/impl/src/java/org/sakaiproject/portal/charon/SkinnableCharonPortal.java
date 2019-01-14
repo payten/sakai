@@ -83,6 +83,7 @@ import org.sakaiproject.portal.charon.handlers.LMSLoginHandler;
 import org.sakaiproject.portal.charon.handlers.LoginHandler;
 import org.sakaiproject.portal.charon.handlers.LogoutHandler;
 import org.sakaiproject.portal.charon.handlers.NavLoginHandler;
+import org.sakaiproject.portal.charon.handlers.NYUHelpHandler;
 import org.sakaiproject.portal.charon.handlers.OpmlHandler;
 import org.sakaiproject.portal.charon.handlers.PageHandler;
 import org.sakaiproject.portal.charon.handlers.PageResetHandler;
@@ -2216,6 +2217,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 		addHandler(new FavoritesHandler());
 		addHandler(new GenerateBugReportHandler());
 		addHandler(new YouTubeHandler());
+		addHandler(new NYUHelpHandler());
 	}
 
 	/**

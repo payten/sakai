@@ -79,6 +79,8 @@ public class ErrorReporter
 
 	public ErrorReporter()
 	{
+		org.sakaiproject.telemetry.cover.Telemetry.addToCount("bugreport_counts", null, 1);
+
 		censoredParameters.put("pw", "pw");
 		censoredParameters.put("eid", "eid");
 		censoredParameters.put("javax.faces.ViewState", "javax.faces.ViewState");
