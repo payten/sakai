@@ -372,7 +372,7 @@ public class SiteListBean {
 		thisUserId = M_session.getCurrentSessionUserId();
 		setSakaiSessionUser(userId);
 		log.debug("Switched CurrentSessionUserId: " + M_session.getCurrentSessionUserId());
-		List siteList = org.sakaiproject.site.cover.SiteService.getSites(SelectionType.ACCESS, null, null, null, SortType.TITLE_ASC, null);
+		List siteList = org.sakaiproject.site.cover.SiteService.getSites(SelectionType.MEMBER, null, null, null, SortType.TITLE_ASC, null);
 		setSakaiSessionUser(thisUserId);
 
 		Iterator i = siteList.iterator();
