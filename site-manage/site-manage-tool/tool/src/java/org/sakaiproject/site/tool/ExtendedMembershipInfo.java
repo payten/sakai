@@ -37,7 +37,8 @@ public class ExtendedMembershipInfo {
     }
 
     public String getFormattedDateCreated() {
-        Date created = site.getCreatedDate();
+        // Need this check because site.getCreatedDate() throws a NPE if the column is null.
+        Date created = (site.getCreatedTime() != null) ? site.getCreatedDate() : null;
 
         if (created == null) {
             return "";
