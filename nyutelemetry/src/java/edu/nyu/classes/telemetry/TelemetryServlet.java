@@ -63,6 +63,7 @@ public class TelemetryServlet extends HttpServlet {
 
             for (String metricName : groupedReadings.keySet()) {
                 List<Telemetry.TelemetryReading> readings = groupedReadings.get(metricName);
+                Collections.sort(readings, (Telemetry.TelemetryReading a, Telemetry.TelemetryReading b) -> { return Long.compare(a.getTime(), b.getTime()); } );
 
                 if (readings.get(0).getMetricType().equals(Telemetry.MetricType.TIMER) ||
                     readings.get(0).getMetricType().equals(Telemetry.MetricType.COUNTER)) {
