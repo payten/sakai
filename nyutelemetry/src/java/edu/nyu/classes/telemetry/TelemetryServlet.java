@@ -164,6 +164,23 @@ public class TelemetryServlet extends HttpServlet {
             }
         }
 
+        private String reformatBucket(String bucket) {
+            if (bucket.indexOf(" - ") < 0) {
+                return bucket;
+            }
+
+            String[] bits = bucket.split(" - ");
+
+            if (bits.length != 2) {
+                return bucket;
+            }
+
+            // Leading zeroes to spaces.  Add a unit.
+            return String.format("%5s ms - %5s ms",
+                                 bits[0].replaceAll("^0*([0-9])", "$1"),
+                                 bits[1].replaceAll("^0*([0-9])", "$1"));
+        }
+
         public HistogramChart(String name, Map<Long, List<Telemetry.TelemetryReading>> rawReadings) {
             this.name = name;
 
@@ -197,15 +214,17 @@ public class TelemetryServlet extends HttpServlet {
 
             // Build up our final structure
             for (String bucket : buckets) {
-                bucketsMap.put(bucket, new ArrayList<>());
+                String prettyBucket = reformatBucket(bucket);
+
+                bucketsMap.put(prettyBucket, new ArrayList<>());
 
                 for (long time : times) {
                     String key = time + "__" + bucket;
 
                     if (frequencies.containsKey(key)) {
-                        bucketsMap.get(bucket).add(new Reading(time, frequencies.get(key)));
+                        bucketsMap.get(prettyBucket).add(new Reading(time, frequencies.get(key)));
                     } else {
-                        bucketsMap.get(bucket).add(new Reading(time, 0));
+                        bucketsMap.get(prettyBucket).add(new Reading(time, 0));
                     }
                 }
             }
