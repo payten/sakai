@@ -839,6 +839,8 @@ public abstract class UsageSessionServiceAdaptor implements UsageSessionService
 				hostName = hostName.substring(0, 255);
 			}
 
+			org.sakaiproject.telemetry.cover.Telemetry.TelemetryTimer timer = org.sakaiproject.telemetry.cover.Telemetry.startTimer("create_session");
+
 			// process the insert
 			boolean ok = sqlService().dbWrite(statement, new Object[] {
 				session.getId(),
@@ -851,6 +853,9 @@ public abstract class UsageSessionServiceAdaptor implements UsageSessionService
 				session.getEnd(),
 				session.isClosed() ? null : Boolean.valueOf(true)
 			});
+
+			org.sakaiproject.telemetry.cover.Telemetry.finishTimer(timer);
+
 			if (!ok)
 			{
 				log.warn(".addSession(): dbWrite failed");
