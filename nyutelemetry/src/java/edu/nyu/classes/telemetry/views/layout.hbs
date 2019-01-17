@@ -25,6 +25,10 @@
                      type: 'datetime',
                  },
 
+                 yaxis: {
+                     min: 0,
+                 },
+
                  series: [{
                      name: '{{name}}',
                      data: [
@@ -65,6 +69,7 @@
                      xaxis: {
                          type: 'datetime',
                      },
+
                      colors: ["#008FFB"],
                      series: [
                          {{#each this.bucketsMap}}
