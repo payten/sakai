@@ -223,6 +223,17 @@ public class NYUDirectoryProvider extends UnboundidDirectoryProvider
 
                 UserEdit user = usersByEid.get(eid.toLowerCase());
 
+                if (user == null) {
+                    LOG.warn("Unexpected null while looking up user: " + eid);
+                    if (usersByEid.containsKey(eid.toLowerCase())) {
+                        LOG.warn("Key was present but entry was null: " + eid);
+                    } else {
+                        LOG.warn("Key was absent: " + eid);
+                    }
+
+                    continue;
+                }
+
                 user.setEmail(rs.getString("email"));
                 user.setFirstName(formatFirstName(rs.getString("fname"), rs.getString("mname")));
                 user.setLastName(rs.getString("lname"));
