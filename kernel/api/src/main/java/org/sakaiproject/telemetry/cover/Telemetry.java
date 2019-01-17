@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
+import java.util.Set;
 
 import org.sakaiproject.db.cover.SqlService;
 import org.sakaiproject.component.cover.ServerConfigurationService;
@@ -21,6 +22,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import java.util.Collection;
+
 
 /*
 Oracle
@@ -502,7 +505,7 @@ public class Telemetry
     }
 
 
-    /// Public entry points
+    /// Public entry points for recording telemetry events
     public static void addToCount(String metricName, String subkey, long count) {
         BaseMetric metric = metrics.get(metricName);
 
@@ -579,6 +582,122 @@ public class Telemetry
 
     public static void finishTimer(TelemetryTimer timer) {
         finishTimer(timer, null);
+    }
+
+
+    /// Public entry points for accessing telemetry data
+    public enum MetricType {
+        TIMER,
+        HISTOGRAM,
+        COUNTER,
+    }
+
+    public static class TelemetryReading {
+        private MetricType metricType;
+        private String key;
+        private String subKey;
+        private long time;
+        private long value;
+
+        public TelemetryReading(MetricType metricType, String key, String subKey, long time, long value) {
+            this.metricType = metricType;
+            this.key = key;
+            this.subKey = subKey;
+            this.time = time;
+            this.value = value;
+        }
+
+        public MetricType getMetricType() { return metricType; }
+        public String getKey() { return key; }
+        public String getSubKey() { return subKey; }
+        public long getTime() { return time; }
+        public long getValue() { return value; }
+
+        public String toString() {
+            return String.format("#<TelemetryReading type=%s key=%s subkey=%s time=%d value=%d>",
+                                 metricType, key, subKey, time, value);
+        }
+    }
+
+    // Fetch all readings since (whenever)
+    //
+    // For counters and histograms, we'll sum them across hosts and return single (aggregated) readings
+    public static Collection<TelemetryReading> fetchReadings(long since) {
+        Map<String, TelemetryReading> groupedReadings = new HashMap<>();
+        Connection connection = null;
+
+        try {
+            connection = SqlService.borrowConnection();
+
+            Set<String> metricNames = metrics.keySet();
+
+            String placeholders = metricNames.stream().map((name) -> { return "?"; }).collect(Collectors.joining(","));
+
+            try (PreparedStatement ps = connection.prepareStatement(String.format("select key, subkey, host, time, value" +
+                                                                                  " from nyu_t_telemetry" +
+                                                                                  " where time >= ? AND key in (%s) order by time",
+                                                                                  placeholders))) {
+                ps.setLong(1, since);
+                int pos = 2;
+                for (String name : metricNames) {
+                    ps.setString(pos, name);
+                    pos++;
+                }
+
+                int rowCount = 0;
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        BaseMetric metric = metrics.get(rs.getString("key"));
+
+                        MetricType metricType = null;
+                        if (metric instanceof TimerMetric) {
+                            metricType = MetricType.TIMER;
+                        } else if (metric instanceof HistogramMetric) {
+                            metricType = MetricType.HISTOGRAM;
+                        } else if (metric instanceof CounterMetric) {
+                            metricType = MetricType.COUNTER;
+                        } else {
+                            throw new RuntimeException("Unrecognized metric type for: " + rs.getString("key"));
+                        }
+
+                        TelemetryReading reading = new TelemetryReading(metricType,
+                                                                        rs.getString("key"),
+                                                                        rs.getString("subkey"),
+                                                                        rs.getLong("time"),
+                                                                        rs.getLong("value"));
+
+                        if (metric instanceof TimerMetric) {
+                            // No merge.  Just take the reading as is.
+                            groupedReadings.put(String.valueOf(rowCount), reading);
+                        } else {
+                            // Merge if we've already got a value for a given key/subkey/time
+                            String key = reading.getKey() + "::" + reading.getSubKey() + "::" + reading.getTime();
+
+                            if (groupedReadings.containsKey(key)) {
+                                TelemetryReading existingReading = groupedReadings.get(key);
+                                groupedReadings.put(key, new TelemetryReading(existingReading.getMetricType(),
+                                                                              existingReading.getKey(),
+                                                                              existingReading.getSubKey(),
+                                                                              existingReading.getTime(),
+                                                                              reading.getValue() + existingReading.getValue()));
+                            } else {
+                                groupedReadings.put(key, reading);
+                            }
+                        }
+
+                        rowCount += 1;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (connection != null) {
+                SqlService.returnConnection(connection);
+            }
+        }
+
+        return groupedReadings.values();
     }
 
 

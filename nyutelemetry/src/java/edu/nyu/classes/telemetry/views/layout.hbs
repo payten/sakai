@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" type="text/css" href="{{{skinRepo}}}/tool_base.css" />
+
+        {{{randomSakaiHeadStuff}}}
+    </head>
+    <body>
+        <script src="/telemetry/js/apexcharts.js"></script>
+
+        {{#lineCharts}}
+            <h2>{{name}}</h2>
+            <div id="{{name}}"></div>
+
+            <script>
+             var chart = new ApexCharts(document.querySelector('#{{name}}'), {
+                 chart: {
+                     type: 'line',
+                     width: 1280,
+                     height: 400,
+                 },
+
+                 xaxis: {
+                     type: 'datetime',
+                 },
+
+                 series: [{
+                     name: '{{name}}',
+                     data: [
+                         {{#each readings}}
+                         [{{x}}, {{y}}],
+                         {{/each}}
+                     ],
+                 }],
+             });
+
+             chart.render();
+            </script>
+        {{/lineCharts}}
+
+
+        {{#histogramCharts}}
+            <h2>{{this.name}}</h2>
+
+            <div id="{{this.name}}"></div>
+            <script>
+             var chart = new ApexCharts(
+                 document.querySelector("#{{this.name}}"),
+                 {
+                     chart: {
+                         width: 1280,
+                         height: 200,
+                         type: 'heatmap',
+                         animations: {
+                             enabled: false,
+                             dynamicAnimation: {
+                                 enabled: false,
+                             }
+                         }
+                     },
+                     dataLabels: {
+                         enabled: false
+                     },
+                     xaxis: {
+                         type: 'datetime',
+                     },
+                     colors: ["#008FFB"],
+                     series: [
+                         {{#each this.bucketsMap}}
+                         {
+                             name: '{{@key}}',
+                             data: [
+                                 {{#each this}}
+                                 {
+                                     x: {{this.time}},
+                                     y: {{this.count}},
+                                 },
+                                 {{/each}}
+                             ],
+                         },
+                         {{/each}}
+                     ],
+                 });
+
+
+             chart.render();
+
+            </script>
+        {{/histogramCharts}}
+
+
+        <script>includeLatestJQuery('layout.hbs');</script>
+
+    </body>
+</html>
