@@ -61,7 +61,14 @@ public class TelemetryServlet extends HttpServlet {
             List<LineChart> lineCharts = new ArrayList<>();
             List<HistogramChart> histogramCharts = new ArrayList<>();
 
+            List<String> excluded = Arrays.asList(ServerConfigurationService.getString("telemetry.metrics.excluded_from_report", "help_views").split(", *"));
+
             for (String metricName : groupedReadings.keySet()) {
+                if (excluded.indexOf(metricName) >= 0) {
+                    // Don't show this one.
+                    continue;
+                }
+
                 List<Telemetry.TelemetryReading> readings = groupedReadings.get(metricName);
                 Collections.sort(readings, (Telemetry.TelemetryReading a, Telemetry.TelemetryReading b) -> { return Long.compare(a.getTime(), b.getTime()); } );
 
