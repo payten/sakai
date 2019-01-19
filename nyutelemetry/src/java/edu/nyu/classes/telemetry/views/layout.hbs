@@ -8,6 +8,7 @@
     </head>
     <body>
         <script src="/telemetry/js/apexcharts.js"></script>
+        <script src="/telemetry/js/moment.min.js"></script>
 
         {{#lineCharts}}
             <h2>{{name}}</h2>
@@ -33,11 +34,17 @@
 
                  xaxis: {
                      type: 'datetime',
+                     tooltip: {
+                         formatter: function (value, opts) {
+                             return moment(new Date(value)).format('YYYY-MM-DD HH:mm');
+                         },
+                     },
                  },
 
                  yaxis: {
                      min: 0,
                  },
+
 
                  series: [{
                      name: '{{name}}',
@@ -82,7 +89,16 @@
                          enabled: false
                      },
                      xaxis: {
-                         type: 'datetime',
+                         type: 'category',
+                         labels: {
+                             show: false,
+                             formatter: function (value, timestamp, index) {
+                                 return moment(new Date(value)).format('YYYY-MM-DD HH:mm');
+                             },
+                         },
+                         axisTicks: {
+                             show: false,
+                         },
                      },
 
                      colors: ["#008FFB"],
