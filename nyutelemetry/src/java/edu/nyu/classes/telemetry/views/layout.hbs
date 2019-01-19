@@ -9,6 +9,7 @@
     <body>
         <script src="/telemetry/js/apexcharts.js"></script>
         <script src="/telemetry/js/moment.min.js"></script>
+        <script src="/telemetry/js/moment-timezone-with-data.js"></script>
 
         {{#lineCharts}}
             <h2>{{name}}</h2>
@@ -26,6 +27,12 @@
                      },
                  },
 
+                 tooltip: {
+                     x: {
+                         show: false,
+                     },
+                 },
+
                  markers: {
                      size: 2,
                      strokeWidth: 0,
@@ -34,9 +41,14 @@
 
                  xaxis: {
                      type: 'datetime',
+                     labels: {
+                         formatter: function (value, timestamp) {
+                             return moment(new Date(timestamp)).tz('America/New_York').format('DD MMM');
+                         },
+                     },
                      tooltip: {
                          formatter: function (value, opts) {
-                             return moment(new Date(value)).format('YYYY-MM-DD HH:mm');
+                             return moment(new Date(value)).tz('America/New_York').format('YYYY-MM-DD HH:mm');
                          },
                      },
                  },
@@ -93,7 +105,7 @@
                          labels: {
                              show: false,
                              formatter: function (value, timestamp, index) {
-                                 return moment(new Date(value)).format('YYYY-MM-DD HH:mm');
+                                 return moment(new Date(value)).tz('America/New_York').format('YYYY-MM-DD HH:mm');
                              },
                          },
                          axisTicks: {
