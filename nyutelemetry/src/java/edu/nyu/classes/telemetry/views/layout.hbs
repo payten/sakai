@@ -48,7 +48,7 @@
                      },
                      tooltip: {
                          formatter: function (value, opts) {
-                             return moment(new Date(value)).tz('America/New_York').format('YYYY-MM-DD HH:mm');
+                             return moment(new Date(value)).tz('America/New_York').format('ddd, YYYY-MM-DD HH:mm');
                          },
                      },
                  },
@@ -105,7 +105,7 @@
                          labels: {
                              show: false,
                              formatter: function (value, timestamp, index) {
-                                 return moment(new Date(value)).tz('America/New_York').format('YYYY-MM-DD HH:mm');
+                                 return moment(new Date(value)).tz('America/New_York').format('ddd, YYYY-MM-DD HH:mm');
                              },
                          },
                          axisTicks: {
