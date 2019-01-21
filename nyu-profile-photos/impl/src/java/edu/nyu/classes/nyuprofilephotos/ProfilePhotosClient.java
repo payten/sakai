@@ -40,7 +40,7 @@ class ProfilePhotosClient {
     private static final long RETRY_INTERVAL_MS = 10000;
 
     private static final int PAGESIZE = 10;
-    private static final int NETID_BATCHSIZE = PAGESIZE; // It won't send us more than this anyway...
+    private static final int NETID_BATCHSIZE = 256;
 
     // When fetching incrementals, go back this many days and request from there.
     private static final int MARGIN_DAYS = 7;
@@ -163,45 +163,74 @@ class ProfilePhotosClient {
 
 
     private void fetchPhotosForNetIds(List<String> netids) throws Exception {
-        boolean success = false;
+        ArrayList<String> workSet = new ArrayList(netids);
 
-        for (int failureCount = 0; !success && failureCount < MAX_FAILURES; failureCount++) {
-            URI url = new URIBuilder(this.profileURL)
-                .addParameter("netid", netids.stream().collect(Collectors.joining(",")))
-                .build();
+        // The idea: we have a set of netids we haven't yet successfully got
+        // photos for.  We send the workset on each attempt around the loop
+        // until we get back a 404 (meaning "nothing in this set was found").
+        //
+        // Doing things this way allows us to send a relatively large set of
+        // netids per request and helps to quickly skip over those without
+        // photos.
+        while (workSet.size() > 0) {
+            boolean success = false;
 
-            LOG.info("Fetching URL: " + url);
+            for (int failureCount = 0; failureCount < MAX_FAILURES; failureCount++) {
+                URI url = new URIBuilder(this.profileURL)
+                    .addParameter("netid", workSet.stream().collect(Collectors.joining(",")))
+                    .build();
 
-            HttpGet get = new HttpGet(url);
-            get.addHeader("Authorization", "Bearer " + this.accessToken);
+                LOG.info("Fetching URL: " + url);
 
-            HttpResponse response = httpclient.execute(get);
+                HttpGet get = new HttpGet(url);
+                get.addHeader("Authorization", "Bearer " + this.accessToken);
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                handleProfiles(parseJSONResponse(response));
-                success = true;
-            } else {
-                LOG.info("Fetching netid list returned unexpected status code: " + response.getStatusLine().getStatusCode());
-                EntityUtils.consumeQuietly(response.getEntity());
+                HttpResponse response = httpclient.execute(get);
 
-                switch (response.getStatusLine().getStatusCode()) {
-                case 403:
-                    // Try getting another token and retry
-                    authenticate();
-                    try {
-                        Thread.sleep(RETRY_INTERVAL_MS);
-                    } catch (InterruptedException e) {}
-                case 404:
-                    // OK...
-                    return;
-                default:
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    JsonNode json = parseJSONResponse(response);
+
+                    if (json.size() == 0) {
+                        // This shouldn't happen -- an empty set seems to be
+                        // signified by a 404.  But just so we don't spin
+                        // forever if that changes...
+                        return;
+                    }
+
+                    for (JsonNode element : json) {
+                        String netid = element.get("Netid").asText();
+
+                        if (netid != null) {
+                            workSet.remove(netid);
+                        }
+                    }
+
+                    handleProfiles(json);
+                    success = true;
                     break;
+                } else {
+                    LOG.info("Fetching netid list returned unexpected status code: " + response.getStatusLine().getStatusCode());
+                    EntityUtils.consumeQuietly(response.getEntity());
+
+                    switch (response.getStatusLine().getStatusCode()) {
+                    case 403:
+                        // Try getting another token and retry
+                        authenticate();
+                        try {
+                            Thread.sleep(RETRY_INTERVAL_MS);
+                        } catch (InterruptedException e) {}
+                    case 404:
+                        // OK.  We're all done with this set
+                        return;
+                    default:
+                        break;
+                    }
                 }
             }
-        }
 
-        if (!success) {
-            throw new RuntimeException("Failure while fetching profile photos for netids");
+            if (!success) {
+                throw new RuntimeException("Failure while fetching profile photos for netids");
+            }
         }
     }
 
