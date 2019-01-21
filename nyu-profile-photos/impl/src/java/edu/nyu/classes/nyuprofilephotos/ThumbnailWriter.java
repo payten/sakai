@@ -29,13 +29,12 @@ class ThumbnailWriter {
         }
     }
 
-    private OutputStream openOutput(String netid) throws Exception {
-        File outfile = fileFor(netid);
+    private OutputStream openOutput(File outfile) throws Exception {
         outfile.getParentFile().mkdirs();
         return new FileOutputStream(outfile);
     }
 
-    private File fileFor(String netid) throws Exception {
+    private File fileFor(String netid, String suffix) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
         digest.update(netid.getBytes("UTF-8"));
         byte[] hash = digest.digest();
@@ -48,20 +47,37 @@ class ThumbnailWriter {
                                  String.format("%02x", hash[4] & 0xff),
                                  netid + ".png");
 
-        return new File(outpath.toString());
+        String pathStr = outpath.toString();
+
+        if (suffix != null) {
+            pathStr += "." + suffix;
+        }
+
+        return new File(pathStr);
     }
 
     public boolean hasThumbnail(String netid) throws Exception {
-        return fileFor(netid).exists();
+        boolean result = fileFor(netid, null).exists();
+
+        System.err.println(String.format("** File '%s' exists? %s", fileFor(netid, null).getPath(), result));
+
+        return result;
     }
 
     public void generateThumbnail(String netid, byte[] jpegBytes) throws Exception {
-        try (OutputStream out = openOutput(netid.toLowerCase(Locale.ROOT))) {
+        File tempFile = fileFor(netid.toLowerCase(Locale.ROOT), "tmp");
+        File finalFile = fileFor(netid.toLowerCase(Locale.ROOT), null);
+
+        try (OutputStream out = openOutput(tempFile)) {
             BufferedImage sourceImage = ImageIO.read(new ByteArrayInputStream(jpegBytes));
 
             BufferedImage thumbnail = thumbnailForImage(sourceImage);
             ImageIO.write(thumbnail, "png", out);
         }
+
+        System.err.println(String.format("Producing file: %s", finalFile.getPath()));
+
+        tempFile.renameTo(finalFile);
     }
 
     private BufferedImage thumbnailForImage(BufferedImage source) {

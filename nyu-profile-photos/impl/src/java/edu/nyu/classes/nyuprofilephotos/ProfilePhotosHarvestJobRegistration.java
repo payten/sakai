@@ -19,9 +19,6 @@ public class ProfilePhotosHarvestJobRegistration {
         SchedulerManager schedulerManager = (SchedulerManager) ComponentManager.get("org.sakaiproject.api.app.scheduler.SchedulerManager");
         Scheduler scheduler = schedulerManager.getScheduler();
 
-        // "*****************************************************&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"
-        System.err.println("\n*** DEBUG " + System.currentTimeMillis() + "[ProfilePhotosHarvestJobRegistration.java:23 6ff26f]: " + "\n    '*****************************************************&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&' => " + ("*****************************************************&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&") + "\n");
-
         try {
             if (!ServerConfigurationService.getBoolean("startScheduler@org.sakaiproject.api.app.scheduler.SchedulerManager", true)) {
                 LOG.info("Doing nothing because the scheduler isn't started");

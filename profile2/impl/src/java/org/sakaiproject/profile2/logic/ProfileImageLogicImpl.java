@@ -332,7 +332,33 @@ public class ProfileImageLogicImpl implements ProfileImageLogic {
 				image.setExternalImageUrl(defaultImageUrl);
 				image.setDefault(true);
 			}
+		else if(StringUtils.equals(officialImageSource, ProfileConstants.OFFICIAL_IMAGE_SETTING_NYU)){
+			//get the path based on the config from sakai.properties, basedir, pattern etc
+			String filename = getOfficialImageFileSystemPathNYU(userUuid);
+
+			File file = new File(filename);
+
+			if (!file.exists()) {
+			    image.setExternalImageUrl(defaultImageUrl);
+			    image.setDefault(true);
+			} else {
+			    try {
+				byte[] data = getBytesFromFile(file);
+				if(data != null) {
+				    image.setUploadedImage(data);
+				} else {
+				    image.setExternalImageUrl(defaultImageUrl);
+				    image.setDefault(true);
+				}
+			    }
+			    catch (IOException e) {
+				log.error("Could not find/read official profile image file: " + filename + ". The default profile image will be used instead.");
+				image.setExternalImageUrl(defaultImageUrl);
+				image.setDefault(true);
+			    }
+			}
 		}
+
 		image.setAltText(getAltText(userUuid, isSameUser, true));
 				
 		return image;
@@ -955,6 +981,27 @@ public class ProfileImageLogicImpl implements ProfileImageLogic {
 		}
 		
 		return filename;
+	}
+	
+	private String getOfficialImageFileSystemPathNYU(String userUuid) {
+		//get basepath, common to all
+		String basepath = sakaiProxy.getOfficialImagesDirectory();
+
+		//get user, common for all
+		User user = sakaiProxy.getUserById(userUuid);
+		String userEid = user.getEid();
+
+		MessageDigest digest = MessageDigest.getInstance("SHA-1");
+		digest.update(userEid.getBytes("UTF-8"));
+		byte[] hash = digest.digest();
+
+		return Paths.get(basepath,
+				 String.format("%02x", hash[0] & 0xff),
+				 String.format("%02x", hash[1] & 0xff),
+				 String.format("%02x", hash[2] & 0xff),
+				 String.format("%02x", hash[3] & 0xff),
+				 String.format("%02x", hash[4] & 0xff),
+				 userEid + ".png").toString();
 	}
 	
 	/**

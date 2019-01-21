@@ -36,8 +36,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 class ProfilePhotosClient {
     private static final Log LOG = LogFactory.getLog(ProfilePhotosClient.class);
 
+    private static final int MAX_FAILURES = 10;
+    private static final long RETRY_INTERVAL_MS = 10000;
+
     private static final int PAGESIZE = 10;
-    private static final int NETID_BATCHSIZE = 256;
+    private static final int NETID_BATCHSIZE = PAGESIZE; // It won't send us more than this anyway...
+
+    // When fetching incrementals, go back this many days and request from there.
+    private static final int MARGIN_DAYS = 7;
 
     private final String authURL;
     private final String profileURL;
@@ -157,54 +163,100 @@ class ProfilePhotosClient {
 
 
     private void fetchPhotosForNetIds(List<String> netids) throws Exception {
-        URI url = new URIBuilder(this.profileURL)
-            .addParameter("netid", netids.stream().collect(Collectors.joining(",")))
-            .build();
+        boolean success = false;
 
-        LOG.info("Fetching URL: " + url);
+        for (int failureCount = 0; !success && failureCount < MAX_FAILURES; failureCount++) {
+            URI url = new URIBuilder(this.profileURL)
+                .addParameter("netid", netids.stream().collect(Collectors.joining(",")))
+                .build();
 
-        HttpGet get = new HttpGet(url);
-        get.addHeader("Authorization", "Bearer " + this.accessToken);
+            LOG.info("Fetching URL: " + url);
 
-        HttpResponse response = httpclient.execute(get);
+            HttpGet get = new HttpGet(url);
+            get.addHeader("Authorization", "Bearer " + this.accessToken);
 
-        if (response.getStatusLine().getStatusCode() != 200) {
-            LOG.info("Fetching netid list returned unexpected status code: " + response.getStatusLine().getStatusCode());
-            EntityUtils.consumeQuietly(response.getEntity());
-            return;
+            HttpResponse response = httpclient.execute(get);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                handleProfiles(parseJSONResponse(response));
+                success = true;
+            } else {
+                LOG.info("Fetching netid list returned unexpected status code: " + response.getStatusLine().getStatusCode());
+                EntityUtils.consumeQuietly(response.getEntity());
+
+                switch (response.getStatusLine().getStatusCode()) {
+                case 403:
+                    // Try getting another token and retry
+                    authenticate();
+                    try {
+                        Thread.sleep(RETRY_INTERVAL_MS);
+                    } catch (InterruptedException e) {}
+                case 404:
+                    // OK...
+                    return;
+                default:
+                    break;
+                }
+            }
         }
 
-        handleProfiles(parseJSONResponse(response));
+        if (!success) {
+            throw new RuntimeException("Failure while fetching profile photos for netids");
+        }
     }
 
 
     // "2017-07-28" has some stuff...
     public Date incrementalHarvest(Date lastRunDate) throws Exception {
-        LocalDate date = lastRunDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate date = lastRunDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().minusDays(MARGIN_DAYS);
         LocalDate today = LocalDate.now();
 
         while (date.compareTo(today) <= 0) {
             for (int offset = 0; ; offset += PAGESIZE) {
-                URI url = new URIBuilder(this.profileURL)
-                    .addParameter("photoeffectivedate", date.format(DateTimeFormatter.ISO_LOCAL_DATE))
-                    .addParameter("offset", String.valueOf(offset))
-                    .addParameter("limit", String.valueOf(PAGESIZE))
-                    .build();
+                boolean success = false;
 
-                LOG.info("Fetching URL: " + url);
+                for (int failureCount = 0; !success && failureCount < MAX_FAILURES; failureCount++) {
+                    URI url = new URIBuilder(this.profileURL)
+                        .addParameter("photoeffectivedate", date.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                        .addParameter("offset", String.valueOf(offset))
+                        .addParameter("limit", String.valueOf(PAGESIZE))
+                        .build();
 
-                HttpGet get = new HttpGet(url);
-                get.addHeader("Authorization", "Bearer " + this.accessToken);
+                    LOG.info("Fetching URL: " + url);
 
-                HttpResponse response = httpclient.execute(get);
+                    HttpGet get = new HttpGet(url);
+                    get.addHeader("Authorization", "Bearer " + this.accessToken);
 
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    // We've got all the pages for this day.
-                    EntityUtils.consumeQuietly(response.getEntity());
-                    break;
+                    HttpResponse response = httpclient.execute(get);
+
+                    if (response.getStatusLine().getStatusCode() == 200) {
+                        handleProfiles(parseJSONResponse(response));
+                        success = true;
+                    } else {
+                        EntityUtils.consumeQuietly(response.getEntity());
+
+                        switch (response.getStatusLine().getStatusCode()) {
+                        case 403:
+                            // Try getting another token and retry
+                            authenticate();
+                            try {
+                                Thread.sleep(RETRY_INTERVAL_MS);
+                            } catch (InterruptedException e) {}
+                        case 404:
+                            // OK...
+                            success = true;
+                            break;
+                        default:
+                            break;
+                        }
+                    }
                 }
 
-                handleProfiles(parseJSONResponse(response));
+                if (success) {
+                    break;
+                } else {
+                    throw new RuntimeException("Failure while fetching incremental update for profile photos");
+                }
             }
 
             date = date.plusDays(1);
