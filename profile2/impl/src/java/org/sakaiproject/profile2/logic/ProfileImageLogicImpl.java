@@ -23,6 +23,9 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.List;
 
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -44,6 +47,9 @@ import org.sakaiproject.profile2.util.Messages;
 import org.sakaiproject.profile2.util.ProfileConstants;
 import org.sakaiproject.profile2.util.ProfileUtils;
 import org.sakaiproject.user.api.User;
+
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Implementation of ProfileImageLogic API
@@ -332,7 +338,7 @@ public class ProfileImageLogicImpl implements ProfileImageLogic {
 				image.setExternalImageUrl(defaultImageUrl);
 				image.setDefault(true);
 			}
-		else if(StringUtils.equals(officialImageSource, ProfileConstants.OFFICIAL_IMAGE_SETTING_NYU)){
+		} else if(StringUtils.equals(officialImageSource, ProfileConstants.OFFICIAL_IMAGE_SETTING_NYU)){
 			//get the path based on the config from sakai.properties, basedir, pattern etc
 			String filename = getOfficialImageFileSystemPathNYU(userUuid);
 
@@ -984,13 +990,14 @@ public class ProfileImageLogicImpl implements ProfileImageLogic {
 	}
 	
 	private String getOfficialImageFileSystemPathNYU(String userUuid) {
-		//get basepath, common to all
-		String basepath = sakaiProxy.getOfficialImagesDirectory();
+	    //get basepath, common to all
+	    String basepath = sakaiProxy.getOfficialImagesDirectory();
 
-		//get user, common for all
-		User user = sakaiProxy.getUserById(userUuid);
-		String userEid = user.getEid();
+	    //get user, common for all
+	    User user = sakaiProxy.getUserById(userUuid);
+	    String userEid = user.getEid();
 
+	    try {
 		MessageDigest digest = MessageDigest.getInstance("SHA-1");
 		digest.update(userEid.getBytes("UTF-8"));
 		byte[] hash = digest.digest();
@@ -1002,7 +1009,11 @@ public class ProfileImageLogicImpl implements ProfileImageLogic {
 				 String.format("%02x", hash[3] & 0xff),
 				 String.format("%02x", hash[4] & 0xff),
 				 userEid + ".png").toString();
+	    } catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
+		return "/will-never-exist";
+	    }
 	}
+
 	
 	/**
 	 * Get a URL resource as a byte[]
