@@ -7486,9 +7486,14 @@
 
             var color = heatColorProps.color;
 
+            // NYU modification: avoid showing colors very close to white
             if (w.config.plotOptions.heatmap.enableShades) {
               var utils = new Utils();
-              color = Utils.hexToRgba(utils.shadeColor(colorShadePercent, heatColorProps.color), w.config.fill.opacity);
+                if (colorShadePercent >= 0.99) {
+                    color = Utils.hexToRgba(utils.shadeColor(colorShadePercent, heatColorProps.color), w.config.fill.opacity);
+                } else {
+                    color = Utils.hexToRgba(utils.shadeColor(colorShadePercent * 0.85, heatColorProps.color), w.config.fill.opacity);
+                }
             }
 
             var radius = this.rectRadius;
