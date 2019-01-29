@@ -162,6 +162,25 @@
                          },
                      },
 
+                     tooltip: {
+                         y: {
+                             formatter: function (value, chart) {
+                                 var col = chart.dataPointIndex;
+                                 var total = 0;
+
+                                 for (var seriesIdx = 0; seriesIdx < chart.series.length; seriesIdx++) {
+                                     total += chart.series[seriesIdx][col];
+                                 }
+
+                                 if (total == 0 || value == 0) {
+                                     return "0";
+                                 } else {
+                                     return "" + value + " (" + ((value / total) * 100).toFixed(2) + "%)";
+                                 }
+                             },
+                         },
+                     },
+
                      colors: ["#008FFB"],
                      series: [
                          {{#each this.bucketsMap}}
