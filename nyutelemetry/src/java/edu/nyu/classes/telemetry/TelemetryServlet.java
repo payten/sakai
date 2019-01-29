@@ -2,6 +2,7 @@ package edu.nyu.classes.telemetry;
 
 import java.util.*;
 import java.util.stream.*;
+import java.text.SimpleDateFormat;
 
 import java.io.IOException;
 import javax.servlet.ServletConfig;
@@ -21,8 +22,6 @@ import org.sakaiproject.tool.cover.ToolManager;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 
 import org.sakaiproject.telemetry.cover.Telemetry;
-
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -125,6 +124,27 @@ public class TelemetryServlet extends HttpServlet {
         public String getName() { return name; }
         public List<Reading> getReadings() { return readings; }
 
+        public TreeMap<String, Long> getCountsByDay() {
+            TreeMap<String, Long> countsByDay = new TreeMap<>();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd");
+            sdf.setCalendar(Calendar.getInstance(TimeZone.getTimeZone("America/New_York")));
+
+            for (Reading reading : readings) {
+                String label = sdf.format(reading.getX());
+
+                if (!countsByDay.containsKey(label)) {
+                    countsByDay.put(label, 0L);
+                }
+
+                countsByDay.put(label, (countsByDay.get(label) + 1));
+            }
+
+            return countsByDay;
+        }
+
+
+
         private class Reading {
             private long x;
             private long y;
@@ -162,6 +182,27 @@ public class TelemetryServlet extends HttpServlet {
         public String getName() { return name; }
         public TreeMap<String, List<Reading>> getBucketsMap() { return bucketsMap; }
 
+        public TreeMap<String, Long> getCountsByDay() {
+            TreeMap<String, Long> countsByDay = new TreeMap<>();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd");
+            sdf.setCalendar(Calendar.getInstance(TimeZone.getTimeZone("America/New_York")));
+
+            for (List<Reading> readings : bucketsMap.values()) {
+                for (Reading reading : readings) {
+                    String label = sdf.format(reading.getTime());
+
+                    if (!countsByDay.containsKey(label)) {
+                        countsByDay.put(label, 0L);
+                    }
+
+                    countsByDay.put(label, (countsByDay.get(label) + reading.getCount()));
+                }
+            }
+
+            return countsByDay;
+        }
+
         private class Reading {
             private long time;
             private long count;
@@ -192,6 +233,7 @@ public class TelemetryServlet extends HttpServlet {
                                  bits[0].replaceAll("^0*([0-9])", "$1"),
                                  bits[1].replaceAll("^0*([0-9])", "$1"));
         }
+
 
         public HistogramChart(String name, Map<Long, List<Telemetry.TelemetryReading>> rawReadings) {
             this.name = name;
