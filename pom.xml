@@ -101,7 +101,6 @@
                 <module>nyuclasses-monitoring</module>
                 <module>nyuclasses-job-test</module>
                 <module>nyuclasses-misc-jobs</module>
-                <module>nyu-profile-photos</module>
                 <module>pages</module>
                 <module>podcasts</module>
                 <module>polls</module>
