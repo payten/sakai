@@ -252,15 +252,6 @@ body {
   }
 }
 
-// CLASSES-3592 Lessons subnav top link
-body {
-  #toolMenu ul li .Mrphs-toolsNav__menuitem--link .Mrphs-toolsNav__menuitem--title,
-  #subSites ul li .Mrphs-toolsNav__menuitem--link .Mrphs-toolsNav__menuitem--title,
-  .floatingToolMenu ul li .Mrphs-toolsNav__menuitem--link .Mrphs-toolsNav__menuitem--title {
-    white-space: normal;
-  }
-}
-
 // --------------------------------------------------------------------------------------------------------------------
 //  Timeout Alert
 // --------------------------------------------------------------------------------------------------------------------
