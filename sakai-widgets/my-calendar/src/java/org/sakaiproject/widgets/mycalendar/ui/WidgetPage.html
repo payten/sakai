@@ -37,16 +37,12 @@
 <!--  templates -->
 <script id="my-calendar-event-template" type="text/x-jsrender">
 		<tr> 
-			<td class="my-calendar-event-time"> {{:eventTime}} </td>
-			<td class="my-calendar-event-type"> {{:eventType}} </td>
-		</tr>
-		<tr> 
-			<td></td>
-			<td> {{if eventUrl}} <a href="{{:eventUrl}}" target="{{:target}}">{{:eventTitle}}</a> {{else}} {{:eventTitle}} {{/if}} </td>
-		</tr>
-		<tr> 
-			<td></td>
-			<td> (<a href="{{:siteUrl}}" target="_top">{{:siteName}}</a>) </td>
+			<td class="my-calendar-event-time" style="vertical-align: top;"> {{:eventTime}} </td>
+			<td>
+				<span class="my-calendar-event-type">{{:eventType}}</span> <br>
+				{{if eventUrl}} <a href="{{:eventUrl}}" target="{{:target}}">{{:eventTitle}}</a> {{else}} {{:eventTitle}} {{/if}} <br>
+				(<a href="{{:siteUrl}}" target="_top">{{:siteName}}</a>) <br>
+			</td>
 		</tr>
 </script>
 
