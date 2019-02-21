@@ -17,7 +17,8 @@
 <div class="my-calendar-event-heading"></div>
 <div class="my-calendar-events-div">
 	<table class="my-calendar-events">
-		<thead class="hide">
+		<caption class="sr-only">Event listing</caption>
+		<thead class="sr-only">
 			<tr>
 				<th>Event Time</th>
 				<th>Event Details</th>
@@ -259,7 +260,7 @@ function displayEvents(formattedDate, today) {
 	// show the events
 	var selectedDayEvents = getEvents(formattedDate, true);
 	if (selectedDayEvents.length > 0) {
-		$(".my-calendar-events tbody").text("");
+		$(".my-calendar-events tbody").html("");
 		var eventsDisplay = getEventsDisplay(selectedDayEvents);
 		
 		var template = $.templates("#my-calendar-event-template");
@@ -267,7 +268,7 @@ function displayEvents(formattedDate, today) {
 		$(".my-calendar-events tbody").html(rendered);
 		
 	} else {
-		 $(".my-calendar-events").html("<tr><td colspan='2'>"+jQuery.i18n.prop('no_events')+"</td></tr>");
+		 $(".my-calendar-events tbody").html("<tr><td colspan='2'>"+jQuery.i18n.prop('no_events')+"</td></tr>");
 	}
 	
 	setMainFrameHeightNow(window.name, -1);
