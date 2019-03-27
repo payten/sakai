@@ -3862,3 +3862,28 @@ Aw3som3Cont3xtR3tain3r.prototype.generateStorageKey = function() {
 $(document).ready(function() {
     new Aw3som3Cont3xtR3tain3r($('.Mrphs-container.Mrphs-sakai-lessonbuildertool'));
 });
+
+$(document).ready(function () {
+    var maxUploadBytes = $('#maxuploadbytes').text();
+
+    if (!maxUploadBytes) {
+        return;
+    }
+
+    $(document).on('change', 'input[type="file"]', function () {
+        var fileInput = this;
+        var section = $(fileInput).closest('.mm-file-group');
+
+        $(fileInput.files).each(function () {
+            if (this.size > maxUploadBytes) {
+                $(fileInput).attr('disabled', 'disabled');
+                section.find('.mm-file-input-delete').click();
+
+                /* Clear the "add another file" input too */
+                $('.add-another-file-div input.mm-file-input').val(null);
+
+                alert("The selected file exceeds the maximum upload limit size and has not been selected");
+            }
+        });
+    });
+});

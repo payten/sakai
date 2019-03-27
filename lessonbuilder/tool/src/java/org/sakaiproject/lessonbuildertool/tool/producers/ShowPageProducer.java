@@ -3603,6 +3603,8 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		// NYU set lessonsCurrentPageId
 		UIOutput.make(tofill, "lessonsCurrentPageId")
 			.decorate(new UIFreeAttributeDecorator("value", String.valueOf(simplePageBean.getCurrentPage().getPageId())));
+
+		UIOutput.make(tofill, "maxuploadbytes", String.valueOf(ServerConfigurationService.getInt("content.upload.max", 9999) * 1024 * 1024));
 	}
 	
 	public void makeCsrf(UIContainer tofill, String rsfid) {
