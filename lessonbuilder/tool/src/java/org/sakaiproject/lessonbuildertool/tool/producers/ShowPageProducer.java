@@ -161,6 +161,8 @@ import org.sakaiproject.util.FormattedText;
 import org.sakaiproject.util.ResourceLoader;
 import org.sakaiproject.util.Web;
 
+import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
+
 import org.sakaiproject.site.api.ToolConfiguration;
 
 import edu.nyu.classes.externalhelp.api.ExternalHelpSystem;
@@ -237,6 +239,8 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
         String browserString = ""; // set by checkIEVersion;
     	public static int majorVersion = getMajorVersion();
         public static String fullVersion = getFullVersion();
+
+	private static GradebookExternalAssessmentService gradebookService = (GradebookExternalAssessmentService)ComponentManager.get("org.sakaiproject.service.gradebook.GradebookExternalAssessmentService");
 
 	protected static final int DEFAULT_EXPIRATION = 10 * 60;
 
@@ -3605,6 +3609,8 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 			.decorate(new UIFreeAttributeDecorator("value", String.valueOf(simplePageBean.getCurrentPage().getPageId())));
 
 		UIOutput.make(tofill, "maxuploadbytes", String.valueOf(ServerConfigurationService.getInt("content.upload.max", 9999) * 1024 * 1024));
+
+		UIOutput.make(tofill, "sitehasgradebook", String.valueOf(gradebookService.isGradebookDefined(simplePageBean.getCurrentSiteId())));
 	}
 	
 	public void makeCsrf(UIContainer tofill, String rsfid) {

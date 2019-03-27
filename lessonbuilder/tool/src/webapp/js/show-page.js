@@ -1839,6 +1839,15 @@ $(document).ready(function() {
                                         $("#prereqstuff").hide();
 					$("#prereqstuff input").prop('disabled', true);
 					$("#scormstuff").show();
+
+					if (($('#sitehasgradebook').text() === 'true')) {
+						$('#edit-scorm-sync-to-gradebook').prop('disabled', false);
+						$('#edit-scorm-sync-to-gradebook').attr('title', '');
+					} else {
+						$('#edit-scorm-sync-to-gradebook').prop('disabled', true);
+						$('#edit-scorm-sync-to-gradebook').attr('title', 'You must have a Gradebook tool activated in your site in order to send grades to the Gradebook');
+					}
+
 					$('#edit-scorm-sync-to-gradebook').prop('checked', gradebookSelected);
 					$('#edit-scorm-required').prop('checked', row.find('.scormRequired').text().trim() === 'true');
 					$('#edit-scorm-prerequisite').prop('checked', row.find('.scormPrerequisite').text().trim() === 'true');
@@ -2119,6 +2128,14 @@ $(document).ready(function() {
 			$("#add-scorm-dialog").prev().children(".ui-dialog-title").text($(this).text());
 			$("#scorm-error-container").hide();
 			$("#add-scorm-dialog").dialog('open');
+		        if (($('#sitehasgradebook').text() === 'true')) {
+		            $('#scorm-sync-to-gradebook').prop('disabled', false);
+		            $('#scorm-sync-to-gradebook').attr('title', '');
+			} else {
+		            $('#scorm-sync-to-gradebook').prop('disabled', true);
+		            $('#scorm-sync-to-gradebook').attr('title', 'You must have a Gradebook tool activated in your site in order to send grades to the Gradebook');
+			}
+
 			setupdialog($("#add-scorm-dialog"));
 			return false;
 		});
