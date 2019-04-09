@@ -3608,9 +3608,16 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		UIOutput.make(tofill, "lessonsCurrentPageId")
 			.decorate(new UIFreeAttributeDecorator("value", String.valueOf(simplePageBean.getCurrentPage().getPageId())));
 
-		UIOutput.make(tofill, "maxuploadbytes", String.valueOf(ServerConfigurationService.getInt("content.upload.max", 9999) * 1024 * 1024));
-
 		UIOutput.make(tofill, "sitehasgradebook", String.valueOf(gradebookService.isGradebookDefined(simplePageBean.getCurrentSiteId())));
+
+		long jsMaxSafeInt = 9007199254740991L;
+		long maxBytes = Math.multiplyExact((long)ServerConfigurationService.getInt("content.upload.max", 0), 1024L * 1024L);
+
+		if (maxBytes <= 0 || maxBytes > jsMaxSafeInt) {
+		    maxBytes = jsMaxSafeInt;
+		}
+
+		UIOutput.make(tofill, "maxuploadbytes", String.valueOf(maxBytes));
 	}
 	
 	public void makeCsrf(UIContainer tofill, String rsfid) {
