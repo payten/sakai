@@ -380,10 +380,69 @@ public class StarfishExport implements InterruptableJob {
 			log.error("Missing required field for CSV", e);
 		}
 
+		writeOutputsToSite(assessmentFile, scoreFile);
+
 		log.info(JOB_NAME + " ended.");
 	}
-	
-	
+
+
+	private void writeOutputsToSite(Path assessmentFile, Path scoreFile) {
+		try {
+			String exportSiteId = org.sakaiproject.component.cover.HotReloadConfigurationService.getString("nyu.starfish-export-site", "");
+
+			if (exportSiteId == null || exportSiteId.isEmpty()) {
+				log.info("Not doing export because nyu.starfish-export-site is not set.");
+				return;
+			}
+
+			String folderName = "starfish_exports";
+			String exportDir = org.sakaiproject.content.cover.ContentHostingService.getSiteCollection(exportSiteId) + folderName + "/";
+
+			// Ensure the folder exists in resources
+			try {
+				org.sakaiproject.content.api.ContentCollectionEdit edit =
+					org.sakaiproject.content.cover.ContentHostingService.addCollection(exportDir);
+				edit.getPropertiesEdit().addProperty(org.sakaiproject.entity.api.ResourceProperties.PROP_DISPLAY_NAME, folderName);
+				org.sakaiproject.content.cover.ContentHostingService.commitCollection(edit);
+			} catch (org.sakaiproject.exception.IdUsedException e) {}
+
+			String now = new java.text.SimpleDateFormat("YYYY-MM-dd").format(new Date());
+
+			// Write assessments
+			try (java.io.InputStream assessmentsInputStream = new java.io.FileInputStream(assessmentFile.toFile())) {
+				org.sakaiproject.content.api.ContentResourceEdit assessmentsResource =
+					org.sakaiproject.content.cover.ContentHostingService.addResource(exportDir,
+													 String.format("%s_assessments", now),
+													 "csv",
+													 10);
+
+				assessmentsResource.setContentType("text/csv");
+				assessmentsResource.setContent(assessmentsInputStream);
+
+				org.sakaiproject.content.cover.ContentHostingService.commitResource(assessmentsResource,
+												    org.sakaiproject.event.cover.NotificationService.NOTI_NONE);
+			}
+
+			// Write scores
+			try (java.io.InputStream scoresInputStream = new java.io.FileInputStream(scoreFile.toFile())) {
+				org.sakaiproject.content.api.ContentResourceEdit scoresResource =
+					org.sakaiproject.content.cover.ContentHostingService.addResource(exportDir,
+													 String.format("%s_scores", now),
+													 "csv",
+													 10);
+
+				scoresResource.setContentType("text/csv");
+				scoresResource.setContent(scoresInputStream);
+
+				org.sakaiproject.content.cover.ContentHostingService.commitResource(scoresResource,
+												    org.sakaiproject.event.cover.NotificationService.NOTI_NONE);
+			}
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	/**
 	 * Start a session for the admin user and the given jobName
 	 */
