@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -46,8 +45,6 @@ import com.unboundid.ldap.sdk.Attribute;
 import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPAttribute;
 import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPAttributeSet;
 import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPEntry;
-
-import java.util.stream.Collectors;
 
 /**
  * Implements LDAP attribute mappings and filter generations using
@@ -605,31 +602,42 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 		String emailAttr = attributeMappings.get(AttributeMappingConstants.EMAIL_ATTR_MAPPING_KEY);
 		String givenNameAttr = attributeMappings.get(AttributeMappingConstants.FIRST_NAME_ATTR_MAPPING_KEY);
 		String lastNameAttr = attributeMappings.get(AttributeMappingConstants.LAST_NAME_ATTR_MAPPING_KEY);
-
-		List<String> fields = Arrays.asList(eidAttr, emailAttr, givenNameAttr, lastNameAttr);
-		List<String> tokens = Arrays.asList(criteria.split("[\" ,]+")).stream().filter(s -> !s.isEmpty()).distinct().map(s -> escapeSearchFilterTerm(s)).collect(Collectors.toList());
-
-		// We want to end up with:
-		//
-		// (field1=term1 OR field2=term1 OR field3=term1) AND
-		// (field1=term2 OR field2=term2 OR field3=term2) AND
-		// (field1=term3 OR field2=term3 OR field3=term3)
-
-		List<String> subqueries = new ArrayList<>();
-		for (String token : tokens) {
-		    // A search for `token` against all fields in our list.
-		    String allFieldsSubquery =
-			String.format("(|%s)",
-				      fields
-				      .stream()
-				      .map(field -> { return String.format("(%s=%s*)", field, token); })
-				      .collect(Collectors.joining("")));
-
-		    subqueries.add(allFieldsSubquery);
-		}
-
-		// Our final search requires that every token appear *somewhere*
-		return String.format("(&%s)", subqueries.stream().collect(Collectors.joining("")));
+		
+		//This explicitly constructs the filter with wildcards in it.
+		//However, we escape the given criteria to prevent any other injection
+		criteria = escapeSearchFilterTerm(criteria);
+		
+		//(|(uid=criteria*)(mail=criteria*)(givenName=criteria*)(sn=criteria*))
+		StringBuilder sb = new StringBuilder();
+			sb.append("(|");
+			
+			sb.append("(");
+			sb.append(eidAttr);
+			sb.append("=");
+			sb.append(criteria);
+			sb.append("*)");
+			
+			sb.append("(");
+			sb.append(emailAttr);
+			sb.append("=");
+			sb.append(criteria);
+			sb.append("*)");
+			
+			sb.append("(");
+			sb.append(givenNameAttr);
+			sb.append("=");
+			sb.append(criteria);
+			sb.append("*)");
+			
+			sb.append("(");
+			sb.append(lastNameAttr);
+			sb.append("=");
+			sb.append(criteria);
+			sb.append("*)");
+			
+			sb.append(")");
+		
+		return sb.toString();
 	}
 
 	/**
