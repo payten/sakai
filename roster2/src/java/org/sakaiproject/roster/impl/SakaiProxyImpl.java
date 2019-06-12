@@ -1269,6 +1269,20 @@ public class SakaiProxyImpl implements SakaiProxy, Observer {
         return serverConfigurationService.getBoolean("roster.display.user.name.pronunciation", DEFAULT_VIEW_USER_NAME_PRONUNCIATION);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isNamePronunciationEnabledInSite() {
+        Site site = getSite(getCurrentSiteId());
+        if(site != null){
+            String siteProperty = site.getProperties().getProperty("roster-name-pronunciation");
+            if("true".equals(siteProperty)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void update(Observable o, Object arg) {
 
         if (arg instanceof Event) {

@@ -281,4 +281,11 @@ public interface SakaiProxy {
      * @return the value of the <code>roster.display.user.name.pronunciation</code> Sakai property.
      */
     public Boolean getViewUserNamePronunciation();
+
+    /**
+     * Returns if the name pronunciation feature is enabled in this site, using the "roster-name-pronunciation" property.
+     *
+     * @return true if is enabled in the site, false otherwise.
+     */
+    public boolean isNamePronunciationEnabledInSite();
 }
