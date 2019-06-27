@@ -218,7 +218,12 @@ public class ProfileImageLogicImpl implements ProfileImageLogic {
 		if(!allowed) {
 			allowed = privacyLogic.isActionAllowed(userUuid, currentUserUuid, PrivacyType.PRIVACY_OPTION_PROFILEIMAGE);
 		}
-		
+
+		//CLASSES-3690 - After all the permissions, if the user has access to the site, it should view the photo in the site context.
+		if(!allowed){
+			allowed = sakaiProxy.isUserAllowedInSite(currentUserUuid, "site.visit", siteId);
+		}
+
 		//default if still not allowed
 		if(!allowed){
 			image.setExternalImageUrl(defaultImageUrl);
