@@ -1286,16 +1286,26 @@ public class SakaiProxyImpl implements SakaiProxy, Observer {
      * {@inheritDoc}
      */
     public boolean isNamePronunciationEnabledInSite() {
+        return isSitePropertyEnabled(NAME_PRONUNCIATION_SITE_PROPERTY);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isOfficialPhotoEnabledInSite() {
+        return isSitePropertyEnabled(OFFICIAL_PHOTO_SITE_PROPERTY);
+    }
+
+    private boolean isSitePropertyEnabled(String propertyName){
         Site site = getSite(getCurrentSiteId());
         if(site != null){
-            String siteProperty = site.getProperties().getProperty("roster-name-pronunciation");
+            String siteProperty = site.getProperties().getProperty(propertyName);
             if("true".equals(siteProperty)){
                 return true;
             }
         }
         return false;
     }
-
     public void update(Observable o, Object arg) {
 
         if (arg instanceof Event) {
