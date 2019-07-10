@@ -489,7 +489,8 @@ public class ShowItemProducer implements ViewComponentProducer, NavigationCaseRe
 		    }
 	    }
 
-	    UIComponent iframe = UILink.make(tofill, "iframe1", source);
+	    UIComponent iframe = UILink.make(tofill, "iframe1", source)
+				.decorate(new UIFreeAttributeDecorator("allow", String.join(";", ServerConfigurationService.getStrings("browser.feature.allow"))));
 	    if (item != null && item.getType() == SimplePageItem.BLTI) {
 		String height = item.getHeight();
 		if (height == null || height.equals(""))
