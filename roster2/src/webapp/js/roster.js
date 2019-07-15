@@ -591,6 +591,7 @@
                 viewEmail: roster.viewEmail,
                 viewUserDisplayId: roster.viewUserDisplayId,
                 viewUserNamePronunciation: roster.viewUserNamePronunciation,
+                profileNamePronunciationLink: roster.profileNamePronunciationLink,
                 viewUserProperty: roster.viewUserProperty,
                 viewProfile: roster.currentUserPermissions.viewProfile,
                 viewGroup : roster.currentUserPermissions.viewGroup,
@@ -759,6 +760,13 @@
         var role = this.name;
 
         return roster.site.permissions[role].indexOf(perm) != -1;
+    });
+
+    Handlebars.registerHelper('ifCond', function(v1, v2, options) {
+      if(v1 === v2) {
+        return options.fn(this);
+      }
+      return options.inverse(this);
     });
 
     roster.init = function () {
