@@ -261,9 +261,9 @@ GoogleDriveContainer.prototype.init = function() {
 
   self.$container.on('click', '.file-list :checkbox', function(event) {
     if ($(this).is(':checked')) {
-      $(this).closest('li').addClass('active');
+      $(this).closest('tr').addClass('active');
     } else {
-      $(this).closest('li').removeClass('active');
+      $(this).closest('tr').removeClass('active');
     }
     self.handleCheckboxChange();
   });
@@ -335,7 +335,7 @@ GoogleDriveContainer.prototype.setupForm = function() {
 
 
 GoogleDriveContainer.prototype.resizeGoogleContainer = function() {
-  var containerHeight = $("#googleDriveModal").closest('.ui-dialog').height() - 140;
+  var containerHeight = $("#googleDriveModal").closest('.ui-dialog').height() - 210;
   this.$container.find('.scroll-container').height(containerHeight);
   this.$container.find('.google-drive-menu').height(containerHeight);
 };
@@ -482,7 +482,7 @@ function GoogleDriveForm(dialog) {
     });
   });
 
-  $('#returnToDrive').on('click', function(event) {
+  $('#returnToDrive, #returnToChangeSelection').on('click', function(event) {
     event.preventDefault();
     self.dialog.reload();
   });
@@ -547,6 +547,11 @@ GoogleDriveItemDialog.prototype.bindEvents = function() {
     $('#googleDriveModal').on('click', '.close-google-dialog', function() {
       $('#googleDriveModal').dialog('close');
     });
+
+    $('#googleDriveModal').on('click', '#cancelSelectedGoogleItems', function() {
+      $('#googleDriveModal').dialog('close');
+    });
+
 };
 
 GoogleDriveItemDialog.prototype.load = function(url, data, onSuccess) {

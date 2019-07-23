@@ -12,12 +12,11 @@
     margin: 0;
     border-bottom: 1px solid #FFFFFF;
 }
-
-.drive-body .file-list label:hover {
+.drive-body .file-list tr:hover {
     background-color: #FAFAFA;
 }
 
-.drive-body .file-list .active label {
+.drive-body .file-list tr.active td {
     background-color: #EEFAFF;
 }
 
@@ -224,8 +223,15 @@ body.sakai-drive-preview-open {
   overflow: hidden;
 }
 
-.google-drive-menu .nav .active {
-  background-color: #EEE;
+.google-drive-menu a {
+  text-decoration: none;
+  color: #777777 !important;
+}
+
+.google-drive-menu .nav .active, .google-drive-menu .nav .active a {
+  background-color: #e1f0fe !important;
+  color: #135bac !important;
+  font-weight: bold;
 }
 
 .google-drive-menu {
@@ -244,6 +250,11 @@ body.sakai-drive-preview-open {
 
 .google-drive-panel {
   border-left: 1px solid #AAA;
+}
+
+.google-drive-footer {
+  border-top: 1px solid #AAA;
+  text-align: center;
 }
 
 @keyframes spinner {
@@ -375,7 +386,11 @@ body.sakai-drive-preview-open {
 }
 
 .create-google-item-form label {
-  font-weight: normal;
+  font-weight: bold;
+}
+
+.create-google-item-form label::before {
+  content: '* ';
 }
 
 .sakai-google-group-category {
@@ -407,3 +422,15 @@ body.sakai-drive-preview-open {
 .sakai-google-group-category li > div {
   margin-left: 30px;
 }
+
+a.sakai-google-drive-readonly-item, .sakai-google-drive-readonly-item {
+    font-style:italic;
+    color: #999 !important;
+}
+
+.sakai-google-group-selector {
+    border: 1px solid #cccccc;
+    width: 72.4%;
+    margin-left: 15px;
+}
+

@@ -26,14 +26,21 @@ package org.sakaiproject.content.googledrive.handlers;
 
 import org.sakaiproject.content.googledrive.GoogleClient;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.tool.cover.SessionManager;
+import org.sakaiproject.util.ResourceLoader;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.CredentialRefreshListener;
@@ -53,6 +60,9 @@ import com.google.api.services.drive.model.FileList;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.stream.Collectors;
 import java.util.Collections;
@@ -74,7 +84,23 @@ public class DriveHandler implements Handler {
     public static final int MY_DRIVE = 1;
     public static final int STARRED = 2;
 
-    private int mode = 0;
+    private List<String> fileFieldsToRequest = Arrays.asList("id",
+                                                     "name",
+                                                     "mimeType",
+                                                     "description",
+                                                     "webViewLink",
+                                                     "iconLink",
+                                                     "thumbnailLink",
+                                                     "modifiedTime",
+                                                     "ownedByMe",
+                                                     "permissions");
+
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofLocalizedDateTime( FormatStyle.MEDIUM ).withLocale( Locale.US ).withZone( ZoneId.systemDefault() );
+
+    private static final ResourceLoader rb = new ResourceLoader("content");
+
+    //The default model for the view is RECENT.
+    private int mode = RECENT;
 
     public DriveHandler(int mode) {
         this.mode = mode;
@@ -91,25 +117,41 @@ public class DriveHandler implements Handler {
 
             FileList fileList = null;
 
-            if (RECENT == mode) {
-                fileList = getRecentFiles(google, user, p);
-            } else if (MY_DRIVE == mode) {
-                fileList = getChildrenForContext(google, user, p);
-            } else if (STARRED == mode) {
-                fileList = getChildrenForContext(google, user, p, true);
-            } else {
-                throw new RuntimeException("DriveHandler mode not supported: " + mode);
+            switch(mode){
+                case RECENT:
+                    fileList = getRecentFiles(google, user, p);
+                    break;
+                case MY_DRIVE:
+                    fileList = getChildrenForContext(google, user, p);
+                    break;
+                case STARRED:
+                    fileList = getChildrenForContext(google, user, p, true);
+                    break;
+                default:
+                    throw new RuntimeException("DriveHandler mode not supported: " + mode);
             }
 
             List<GoogleItem> items = new ArrayList<>();
 
             for (File entry : fileList.getFiles()) {
-                items.add(new GoogleItem(entry.getId(),
-                    entry.getName(),
-                    entry.getIconLink(),
-                    entry.getThumbnailLink(),
-                    entry.getWebViewLink(),
-                    entry.getMimeType()));
+                GoogleItem googleItem = new GoogleItem();
+                googleItem.setId(entry.getId());
+                googleItem.setName(entry.getName());
+                googleItem.setIconLink(entry.getIconLink());
+                googleItem.setThumbnailLink(entry.getThumbnailLink());
+                googleItem.setViewLink(entry.getWebViewLink());
+                googleItem.setMimeType(entry.getMimeType());
+                googleItem.setModifiedTime(dateFormatter.format(Instant.ofEpochMilli(entry.getModifiedTime().getValue())));
+
+                if(entry.getOwnedByMe()){
+                    googleItem.setAccessType(rb.getString("googledrive.role.owner"));
+                    googleItem.setReadOnly(false);
+                } else {
+                   googleItem.setAccessType(entry.getPermissions() == null ? rb.getString("googledrive.role.view") : rb.getString("googledrive.role.writer"));
+                   googleItem.setReadOnly(entry.getPermissions() == null);
+                }
+
+                items.add(googleItem);
             }
 
             ObjectMapper mapper = new ObjectMapper();
@@ -161,7 +203,7 @@ public class DriveHandler implements Handler {
             Drive.Files files = drive.files();
             Drive.Files.List list = files.list();
 
-            list.setFields("nextPageToken, files(id, name, mimeType, description, webViewLink, iconLink, thumbnailLink)");
+            list.setFields(String.format("nextPageToken, files(%s)", String.join(",", fileFieldsToRequest)));
 
             String queryString = "mimeType != 'application/vnd.google-apps.folder'";
 
@@ -200,7 +242,7 @@ public class DriveHandler implements Handler {
             Drive.Files files = drive.files();
             Drive.Files.List list = files.list();
 
-            list.setFields("nextPageToken, files(id, name, mimeType, description, webViewLink, iconLink, thumbnailLink)");
+            list.setFields(String.format("nextPageToken, files(%s)", String.join(",", fileFieldsToRequest)));
 
             String queryString = "'"+folderId+"' in parents";
 
@@ -237,28 +279,18 @@ public class DriveHandler implements Handler {
         }
     }
 
+    @NoArgsConstructor @AllArgsConstructor @Data
     private class GoogleItem {
-        public String id;
-        public String name;
-        public String iconLink;
-        public String thumbnailLink;
-        public String viewLink;
-        public String mimeType;
+        private String id;
+        private String name;
+        private String iconLink;
+        private String thumbnailLink;
+        private String viewLink;
+        private String mimeType;
+        private String accessType;
+        private String modifiedTime;
+        private boolean readOnly;
 
-        public GoogleItem(String id, String name, String iconLink, String thumbnailLink, String viewLink, String mimeType) {
-            this.id = id;
-            this.name = name;
-            this.iconLink = iconLink;
-            this.thumbnailLink = thumbnailLink;
-            this.viewLink = viewLink;
-            this.mimeType = mimeType;
-        }
-
-        public String getId() { return id; }
-        public String getName() { return name; }
-        public String getIconLink() { return iconLink; }
-        public String getThumbnailLink() { return thumbnailLink; }
-        public String getViewLink() { return viewLink; }
         public boolean isFolder() { return mimeType.equals("application/vnd.google-apps.folder"); }
     }
 }
