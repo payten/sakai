@@ -213,7 +213,7 @@ public class GoogleDriveItemType extends BaseResourceType
 
 	private String getIconClassForGoogleMimeType(String googleMimeType) {
 		String googleMimeTypeCSSClass = googleMimeType.replaceAll("[^A-Za-z0-9]", "-");
-		return "fa fa-google " + googleMimeTypeCSSClass;
+		return "sakai-google-file-icon " + googleMimeTypeCSSClass;
 	}
 
 	class MoveToTrashAction extends BaseServiceLevelAction {

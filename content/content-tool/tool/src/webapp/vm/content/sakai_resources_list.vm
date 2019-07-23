@@ -472,6 +472,9 @@
                         <span class="hidden-sm hidden-xs">$validator.escapeHtml($item.name)</span>
     									</a>
 									#end
+									#if($item.iconClass && $item.iconClass.contains("google"))
+										<span class="fa fa-google"></span>
+									#end
 								#end
 							#else
 								 <span class="$item.iconClass" aria-hidden="true"></span>

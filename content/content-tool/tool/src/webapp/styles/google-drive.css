@@ -434,3 +434,53 @@ a.sakai-google-drive-readonly-item, .sakai-google-drive-readonly-item {
     margin-left: 15px;
 }
 
+.sakai-google-file-icon{
+    position: relative;
+    margin-right: 15px;
+}
+
+.sakai-google-file-icon::before{
+    content: ' ';
+    height: 16px;
+    width: 16px;
+    display: inline-block;
+    position: absolute;
+    top: 0px;
+    left: -3px;
+}
+
+/*CLASSES-3703 - Add Resources MIME types for all Google Drive item types. Include more icons to support more mimetypes. */
+.application-vnd-google-apps-document::before {
+    background-image: url('https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.document');
+}
+
+.application-vnd-google-apps-spreadsheet::before {
+    background-image: url('https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.spreadsheet');
+}
+.application-pdf::before {
+    background-image: url('https://drive-thirdparty.googleusercontent.com/16/type/application/pdf');
+}
+.application-vnd-google-apps-site::before {
+    background-image: url('https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.site');
+}
+
+.application-vnd-google-apps-map::before {
+    background-image: url('https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.map');
+}
+
+.application-vnd-google-apps-presentation::before {
+    background-image: url('https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.presentation');
+}
+
+.application-vnd-google-apps-form::before {
+    background-image: url('https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.form');
+}
+
+.application-vnd-google-apps-folder::before {
+    background-image: url('https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.folder');
+}
+
+.video-quicktime::before {
+    background-image: url('https://drive-thirdparty.googleusercontent.com/16/type/video/quicktime');
+}
+
