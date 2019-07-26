@@ -1715,6 +1715,13 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 			return false;
 		}
 
+                if (id.indexOf("/group/citationsAdmin/config/") == 0) {
+                    // Citations admin config's get pulled on startup and
+                    // calling getSite() at this point causes deadlocks.  See
+                    // CLASSES-3705 for details.
+                    return false;
+                }
+
 		String siteId = refs[2];
 
 		try {
