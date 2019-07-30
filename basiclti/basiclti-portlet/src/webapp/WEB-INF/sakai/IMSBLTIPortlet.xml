@@ -1466,7 +1466,7 @@ cannot be altered by by the instructor.  -->
 	<tool
 			id="nyu.zoom"
 			title="Zoom - Quick Launch"
-			description="Conduct web conferencing sessions for synchronous online/blended courses. &lt;br&gt;Note: before adding this tool to your site's left menu, please complete the Zoom certification training and activate your Zoom account.">
+			description="Integration with Zoom web conferencing tool. Please activate your NYU Zoom account at https://nyu.zoom.us before using the tool.">
 		<configuration name="sakai:portlet-pre-render" value="true" />
 		<category name="course" />
 		<category name="project" />
@@ -1514,7 +1514,7 @@ cannot be altered by by the instructor.  -->
 	<tool
 			id="nyu.zoom.enhanced"
 			title="Zoom"
-			description="Conduct web conferencing sessions for synchronous online/blended courses. &lt;br&gt;Note: before adding this tool to your site's left menu, please complete the Zoom certification training and activate your Zoom account.">
+			description="Integration with Zoom web conferencing tool. Please activate your NYU Zoom account at https://nyu.zoom.us before using the tool.">
 		<configuration name="sakai:portlet-pre-render" value="true" />
 		<category name="course" />
 		<category name="project" />
@@ -1562,7 +1562,7 @@ cannot be altered by by the instructor.  -->
 	<tool
 			id="nyu.zoom.pro"
 			title="Zoom"
-			description="Integration with Zoom web conferencing tool">
+			description="Integration with Zoom web conferencing tool. Please activate your NYU Zoom account at https://nyu.zoom.us before using the tool.">
 		<configuration name="sakai:portlet-pre-render" value="true" />
 		<category name="course" />
 		<category name="project" />
