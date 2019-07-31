@@ -149,7 +149,7 @@
                     roles: roster.site.userRoles,
                     checkOfficialPicturesButton: roster.officialPictureMode,
                     viewGroup : roster.currentUserPermissions.viewGroup,
-                    viewOfficialPhoto: roster.currentUserPermissions.viewOfficialPhoto },
+                    viewOfficialPhoto: roster.currentUserPermissions.viewOfficialPhoto && roster.officialPictureMode },
                 'roster_content');
 
             $(document).ready(function () {
@@ -185,7 +185,7 @@
                 roster.setupPrintButton();
                 roster.setupPicturesButton();
 
-                if (roster.currentUserPermissions.viewOfficialPhoto) {
+                if (roster.currentUserPermissions.viewOfficialPhoto && roster.officialPictureMode) {
 
                     $('#roster_official_picture_button').click(function (e) {
 
@@ -233,7 +233,7 @@
                 { enrollmentSets: roster.site.siteEnrollmentSets,
                     onlyOne: roster.site.siteEnrollmentSets.length == 1,
                     enrollmentStatusCodes: roster.site.enrollmentStatusCodes,
-                    viewOfficialPhoto: roster.currentUserPermissions.viewOfficialPhoto },
+                    viewOfficialPhoto: roster.currentUserPermissions.viewOfficialPhoto && roster.officialPictureMode },
                 'roster_content');
 
             $(document).ready(function () {
@@ -258,7 +258,7 @@
                 roster.setupPrintButton();
                 roster.setupPicturesButton();
 
-                if (roster.currentUserPermissions.viewOfficialPhoto) {
+                if (roster.currentUserPermissions.viewOfficialPhoto && roster.officialPictureMode) {
 
                     $('#roster_official_picture_button').click(function (e) {
 
@@ -597,7 +597,7 @@
                 viewGroup : roster.currentUserPermissions.viewGroup,
                 viewPicture: true,
                 currentUserId: roster.userId,
-                viewOfficialPhoto: roster.currentUserPermissions.viewOfficialPhoto,
+                viewOfficialPhoto: roster.currentUserPermissions.viewOfficialPhoto && roster.officialPictureMode,
                 enrollmentsMode: enrollmentsMode,
                 viewSiteVisits: roster.currentUserPermissions.viewSiteVisits,
                 viewConnections: ((undefined != window.friendStatus) && roster.viewConnections),
@@ -653,7 +653,7 @@
                 viewProfile: roster.currentUserPermissions.viewProfile,
                 viewPicture: true,
                 currentUserId: roster.userId,
-                viewOfficialPhoto: roster.currentUserPermissions.viewOfficialPhoto,
+                viewOfficialPhoto: roster.currentUserPermissions.viewOfficialPhoto && roster.officialPictureMode,
                 enrollmentsMode: enrollmentsMode
             };
         var t = Handlebars.templates['pictures'];
@@ -806,7 +806,7 @@
 
         
 
-        if (!roster.currentUserPermissions.viewOfficialPhoto) {
+        if (!roster.currentUserPermissions.viewOfficialPhoto && roster.officialPictureMode) {
             // The official photo permission should always override the
             // roster.display.officialPicturesByDefault property
             roster.officialPictureMode = false;
