@@ -147,7 +147,7 @@
                     membersTotal: roster.i18n.currently_displaying_participants.replace(/\{0\}/, roster.site.membersTotal),
                     roleFragments: roster.getRoleFragments(roster.site.roleCounts),
                     roles: roster.site.userRoles,
-                    checkOfficialPicturesButton: roster.officialPictureMode,
+                    checkOfficialPicturesButton: false,
                     viewGroup : roster.currentUserPermissions.viewGroup,
                     viewOfficialPhoto: roster.currentUserPermissions.viewOfficialPhoto && roster.officialPictureMode },
                 'roster_content');
