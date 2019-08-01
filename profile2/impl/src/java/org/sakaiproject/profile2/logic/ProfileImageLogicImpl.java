@@ -419,23 +419,40 @@ public class ProfileImageLogicImpl implements ProfileImageLogic {
 
 			File file = new File(filename);
 
+			boolean useAvatarInitials = Boolean.valueOf(sakaiProxy.getServerConfigurationParameter("profile2.avatar.initials.enabled", "true"));
+
 			if (!file.exists()) {
-			    image.setExternalImageUrl(defaultImageUrl);
-			    image.setDefault(true);
+			    if (useAvatarInitials) {
+				image = this.getProfileAvatarInitials(userUuid);
+				image.setMimeType("image/png");
+			    } else {
+				image.setExternalImageUrl(defaultImageUrl);
+				image.setDefault(true);
+			    }
 			} else {
 			    try {
 				byte[] data = getBytesFromFile(file);
 				if(data != null) {
 				    image.setUploadedImage(data);
 				} else {
-				    image.setExternalImageUrl(defaultImageUrl);
-				    image.setDefault(true);
+				    if (useAvatarInitials) {
+					image = this.getProfileAvatarInitials(userUuid);
+					image.setMimeType("image/png");
+				    } else {
+					image.setExternalImageUrl(defaultImageUrl);
+					image.setDefault(true);
+				    }
 				}
 			    }
 			    catch (IOException e) {
 				log.error("Could not find/read official profile image file: " + filename + ". The default profile image will be used instead.");
-				image.setExternalImageUrl(defaultImageUrl);
-				image.setDefault(true);
+				if (useAvatarInitials) {
+				    image = this.getProfileAvatarInitials(userUuid);
+				    image.setMimeType("image/png");
+				} else {
+				    image.setExternalImageUrl(defaultImageUrl);
+				    image.setDefault(true);
+				}
 			    }
 			}
 		}
