@@ -610,7 +610,7 @@ public class MyProfile extends BasePage {
 	@Override
 	public void renderHead(IHeaderResponse response) {
 		super.renderHead(response);
-		response.render(JavaScriptHeaderItem.forUrl("/library/webjars/recordrtc/5.5.4/RecordRTC.js"));
+		response.render(JavaScriptHeaderItem.forUrl("/profile2-tool/javascript/recordrtc.js"));
 		response.render(JavaScriptHeaderItem.forUrl("/library/webjars/webrtc-adapter/7.2.1/out/adapter.js"));  
 	}
 

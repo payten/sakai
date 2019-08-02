@@ -476,10 +476,20 @@ public class ProfileEntityProvider extends AbstractEntityProvider implements Cor
 			if(bytes != null && bytes.length > 0) {
 				try {
 					// NYU set mime type here before header is sent
-					requestGetter.getResponse().setContentType("audio/ogg");
+					requestGetter.getResponse().setContentType("audio/wav");
+					requestGetter.getResponse().setHeader("Content-Disposition", "attachment; filename=\"test.WAV\"");
 
-					out.write(bytes);
-					ActionReturn actionReturn = new ActionReturn(StandardCharsets.UTF_8.name(), "audio/ogg", out);
+					if ("bytes=0-1".equals(requestGetter.getRequest().getHeader("Range"))) {
+						requestGetter.getResponse().setHeader("Content-Range", String.format("bytes %s-%s/%s", "0", "1", String.valueOf(bytes.length)));
+						requestGetter.getResponse().setHeader("Content-Length", "1");
+						out.write(bytes[0]);
+					} else {
+						requestGetter.getResponse().setHeader("Content-Range", String.format("bytes %s-%s/%s", "0", String.valueOf(bytes.length), String.valueOf(bytes.length)));
+						requestGetter.getResponse().setHeader("Content-Length", String.valueOf(bytes.length));
+						out.write(bytes);
+					}
+
+					ActionReturn actionReturn = new ActionReturn(StandardCharsets.UTF_8.name(), "audio/wav", out);
 
 					Map<String,String> headers = new HashMap<>();
 					headers.put("Expires", "0");

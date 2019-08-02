@@ -124,7 +124,7 @@
                 $btnReleaseMicrophone.click();
             }
 
-            var fileObject = new File([recorder.getBlob()], "audio.ogg", {type: 'audio/ogg'});
+            var fileObject = new File([recorder.getBlob()], "audio.ogg", {type: 'audio/wav'});
             getBase64(fileObject).then(
                 data => document.getElementById('audioBase64').value = data
             );
